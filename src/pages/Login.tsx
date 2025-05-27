@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import Modal from '../components/Modal';
@@ -16,6 +16,44 @@ const Login: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const message = (location.state as any)?.message;
+
+  // Handle email confirmation
+  useEffect(() => {
+    const handleEmailConfirmation = async () => {
+      const hash = window.location.hash;
+      if (hash && hash.includes('access_token')) {
+        try {
+          const hashParams = new URLSearchParams(hash.substring(1));
+          const accessToken = hashParams.get('access_token');
+          const refreshToken = hashParams.get('refresh_token');
+          const type = hashParams.get('type');
+
+          if (type === 'signup' && accessToken && refreshToken) {
+            const { error } = await supabase.auth.setSession({
+              access_token: accessToken,
+              refresh_token: refreshToken,
+            });
+
+            if (error) throw error;
+
+            // Clear the hash from the URL
+            window.location.hash = '';
+            
+            // Show success message and redirect
+            navigate('/login', {
+              replace: true,
+              state: { message: 'Email confirmed successfully! You can now log in.' }
+            });
+          }
+        } catch (err: any) {
+          console.error('Error confirming email:', err);
+          setError('Failed to confirm email. Please try again.');
+        }
+      }
+    };
+
+    handleEmailConfirmation();
+  }, [navigate]);
 
   const handleResendConfirmation = async () => {
     setResendingEmail(true);
