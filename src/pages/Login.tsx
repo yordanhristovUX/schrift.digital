@@ -37,7 +37,7 @@ const Login: React.FC = () => {
             if (error) throw error;
 
             // Clear the hash from the URL
-            window.location.hash = '';
+            window.history.replaceState(null, '', window.location.pathname);
             
             // Show success message and redirect
             navigate('/login', {
@@ -62,6 +62,9 @@ const Login: React.FC = () => {
       const { error } = await supabase.auth.resend({
         type: 'signup',
         email: email,
+        options: {
+          emailRedirectTo: window.location.origin
+        }
       });
       
       if (error) throw error;
