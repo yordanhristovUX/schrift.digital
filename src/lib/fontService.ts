@@ -5,16 +5,31 @@ import { saveAs } from 'file-saver';
 
 export const getFeaturedFonts = async (limit = 3) => {
   try {
+    // First test the connection
+    const isConnected = await testConnection();
+    if (!isConnected) {
+      throw new Error('Unable to connect to Supabase');
+    }
+
     const { data, error } = await supabase
       .from('fonts')
       .select('*')
+      .eq('featured', true)
       .limit(limit);
       
-    if (error) throw error;
+    if (error) {
+      console.error('Supabase query error:', error);
+      throw error;
+    }
+    
+    if (!data || data.length === 0) {
+      console.log('No featured fonts found');
+    }
+    
     return data || [];
   } catch (err) {
     console.error('Error fetching featured fonts:', err);
-    return [];
+    throw err; // Re-throw to allow component to handle error
   }
 };
 
