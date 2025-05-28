@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Mail, Facebook, Twitter, Instagram } from 'lucide-react';
+import { Mail, Facebook, Instagram } from 'lucide-react';
 import { Logo } from './Logo';
 
 const Footer: React.FC = () => {
@@ -59,16 +59,6 @@ const Footer: React.FC = () => {
               <li>
                 <Link to="/about" className="text-[#BCBDC0] hover:text-[#FFFFFC] transition-colors">
                   За проекта
-                </Link>
-              </li>
-              <li>
-                <Link to="/login" className="text-[#BCBDC0] hover:text-[#FFFFFC] transition-colors">
-                  Вход
-                </Link>
-              </li>
-              <li>
-                <Link to="/register" className="text-[#BCBDC0] hover:text-[#FFFFFC] transition-colors">
-                  Регистрация
                 </Link>
               </li>
             </ul>
