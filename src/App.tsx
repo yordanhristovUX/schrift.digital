@@ -18,8 +18,8 @@ import { supabase } from './lib/supabase';
 
 // SEO component for dynamic meta tags
 const SEO: React.FC<{ title?: string; description?: string }> = ({ 
-  title = 'Schrift.Digital | Културен шрифт',
-  description = 'Открийте красиви български шрифтове с автентична кирилица. Безплатни и премиум шрифтове, оптимизирани за Figma с поддръжка на български букви.'
+  title = 'Български шрифтове с кирилица | Schrift.Digital',
+  description = 'Открийте професионални български шрифтове с автентична кирилица и italic стилове. Безплатни и премиум шрифтове, оптимизирани за Figma.'
 }) => {
   const location = useLocation();
   const canonicalUrl = `https://schrift.digital${location.pathname}`;
@@ -80,15 +80,15 @@ function App() {
       <Layout>
         <Routes>
           <Route path="/" element={<><SEO /><Home /></>} />
-          <Route path="/about" element={<><SEO title="За нас | Schrift.Digital\" description="Научете повече за мисията ни да върнем българската кирилица в съвременния дизайн." /><About /></>} />
-          <Route path="/login" element={<><SEO title="Вход | Schrift.Digital\" description="Влезте в профила си за достъп до всички шрифтове." /><Login /></>} />
-          <Route path="/register" element={<><SEO title="Регистрация | Schrift.Digital\" description="Създайте профил за достъп до всички шрифтове." /><Register /></>} />
+          <Route path="/about" element={<><SEO title="За българската кирилица | Schrift.Digital" description="Научете повече за мисията ни да върнем българската кирилица в съвременния дизайн с нашите професионални шрифтове." /><About /></>} />
+          <Route path="/login" element={<><SEO title="Вход | Български шрифтове с кирилица" description="Влезте в профила си за достъп до всички български шрифтове с кирилица." /><Login /></>} />
+          <Route path="/register" element={<><SEO title="Регистрация | Български шрифтове с кирилица" description="Създайте профил за достъп до всички български шрифтове с кирилица и italic стилове." /><Register /></>} />
           <Route path="/fonts/:id" element={<FontDetail />} />
-          <Route path="/profile" element={<><SEO title="Профил | Schrift.Digital\" description="Управлявайте профила си и абонамента си." /><Profile /></>} />
-          <Route path="/supporter" element={<><SEO title="Стани поддръжник | Schrift.Digital\" description="Подкрепете проекта и получете достъп до всички премиум шрифтове." /><Supporter /></>} />
+          <Route path="/profile" element={<><SEO title="Профил | Български шрифтове с кирилица" description="Управлявайте профила си и достъпа до български шрифтове с кирилица." /><Profile /></>} />
+          <Route path="/supporter" element={<><SEO title="Поддръжник | Български шрифтове с кирилица" description="Подкрепете проекта и получете достъп до всички премиум български шрифтове с кирилица." /><Supporter /></>} />
           <Route path="/admin" element={<AdminRoute><Dashboard /></AdminRoute>} />
           <Route path="/admin/fonts" element={<AdminRoute><FontManager /></AdminRoute>} />
-          <Route path="*" element={<><SEO title="404 | Schrift.Digital\" description="Страницата не беше намерена." /><NotFound /></>} />
+          <Route path="*" element={<><SEO title="404 | Български шрифтове с кирилица" description="Страницата не беше намерена." /><NotFound /></>} />
         </Routes>
       </Layout>
     </BrowserRouter>
