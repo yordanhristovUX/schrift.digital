@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '../lib/supabase';
+import { getAuthErrorMessage } from '../lib/authErrorHandler';
 
 const Register: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -9,6 +11,7 @@ const Register: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { t } = useTranslation(['auth', 'errors']);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -16,19 +19,6 @@ const Register: React.FC = () => {
     setError(null);
 
     try {
-      // First check if the email is already registered
-      const { data: existingUser } = await supabase
-        .from('users')
-        .select('id')
-        .eq('email', email)
-        .maybeSingle();
-
-      if (existingUser) {
-        setError('An account with this email already exists');
-        setLoading(false);
-        return;
-      }
-
       // Sign up the user with Supabase Auth
       const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email,
@@ -41,12 +31,7 @@ const Register: React.FC = () => {
         }
       });
 
-      if (signUpError) {
-        if (signUpError.message.includes('over_email_send_rate_limit')) {
-          throw new Error('Too many registration attempts. Please try again in a few minutes.');
-        }
-        throw signUpError;
-      }
+      if (signUpError) throw signUpError;
 
       if (!authData.user?.id) {
         throw new Error('Failed to create user account');
@@ -58,27 +43,26 @@ const Register: React.FC = () => {
         .insert([
           {
             id: authData.user.id,
-            email,
+            email: email.toLowerCase(),
             full_name: fullName,
             role: 'user'
           }
         ]);
 
       if (profileError) {
-        // Log the error but don't attempt to delete the auth user
         console.error('Failed to create user profile:', profileError);
-        throw new Error('Failed to complete registration. Please contact support.');
+        throw new Error('Failed to complete registration');
       }
 
       // Redirect to login with success message
       navigate('/login', { 
         replace: true,
         state: { 
-          message: 'Registration successful! Please check your email to confirm your account.' 
+          message: t('auth:register.success_message')
         }
       });
     } catch (err: any) {
-      setError(err.message || 'Failed to register');
+      setError(getAuthErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -88,7 +72,9 @@ const Register: React.FC = () => {
     <div className="min-h-screen pt-32 pb-16 px-4 bg-[#141204]">
       <div className="container mx-auto max-w-md">
         <div className="bg-[#FFFFFC] rounded-sm shadow-lg p-8">
-          <h2 className="text-2xl font-bold mb-6 text-[#141204] font-['Listopad']">Регистрация</h2>
+          <h2 className="text-2xl font-bold mb-6 text-[#141204] font-['Listopad']">
+            {t('auth:register.title')}
+          </h2>
           
           {error && (
             <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-sm font-['Listopad']">
@@ -102,7 +88,7 @@ const Register: React.FC = () => {
                 htmlFor="fullName" 
                 className="block text-sm font-medium text-[#141204] mb-1 font-['Listopad']"
               >
-                Име и фамилия
+                {t('auth:register.fullName')}
               </label>
               <input
                 id="fullName"
@@ -119,7 +105,7 @@ const Register: React.FC = () => {
                 htmlFor="email" 
                 className="block text-sm font-medium text-[#141204] mb-1 font-['Listopad']"
               >
-                Имейл
+                {t('auth:register.email')}
               </label>
               <input
                 id="email"
@@ -136,7 +122,7 @@ const Register: React.FC = () => {
                 htmlFor="password" 
                 className="block text-sm font-medium text-[#141204] mb-1 font-['Listopad']"
               >
-                Парола
+                {t('auth:register.password')}
               </label>
               <input
                 id="password"
@@ -148,7 +134,7 @@ const Register: React.FC = () => {
                 minLength={6}
               />
               <p className="mt-1 text-sm text-[#5E6572] font-['Listopad']">
-                Минимум 6 символа
+                {t('auth:register.minLength')}
               </p>
             </div>
             
@@ -157,13 +143,13 @@ const Register: React.FC = () => {
               disabled={loading}
               className="w-full py-3 px-4 bg-[#141204] text-[#FFFFFC] rounded-sm hover:bg-[#2D2B1F] disabled:opacity-50 font-['Listopad']"
             >
-              {loading ? 'Регистрация...' : 'Регистрирай се'}
+              {loading ? t('auth:register.processing') : t('auth:register.submit')}
             </button>
 
             <div className="text-center text-sm text-[#5E6572] font-['Listopad']">
-              Вече имате акаунт?{' '}
+              {t('auth:register.hasAccount')}{' '}
               <Link to="/login" className="text-[#141204] hover:text-[#2D2B1F]">
-                Влезте тук
+                {t('auth:register.login')}
               </Link>
             </div>
           </form>
