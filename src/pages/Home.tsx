@@ -77,15 +77,17 @@ const Home: React.FC = () => {
           <h2 className="text-2xl text-text-tertiary mb-8 font-['Listopad']">
             Разгледай, тествай и изтегли шрифтове българска кирилица
           </h2>
-          <p className="text-text-tertiary text-lg mb-8 font-['Listopad']">
-            Библиотека от {fonts.length} шрифтови фамилии с българска кирилица
-          </p>
         </div>
       </header>
 
       {/* Font Preview Section */}
       <section className="py-16 px-4 bg-background-primary">
         <div className="container mx-auto max-w-5xl">
+          {/* Library count */}
+          <p className="text-lg text-[#5E6572] mb-8 font-['Listopad']">
+            Библиотека от {fonts.length} шрифтови фамилии с българска кирилица
+          </p>
+
           {/* Preview text input */}
           <div className="mb-12">
             <input
