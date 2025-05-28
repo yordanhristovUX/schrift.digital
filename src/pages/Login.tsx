@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import Modal from '../components/Modal';
+import { getAuthErrorMessage } from '../lib/authErrorHandler';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -47,7 +48,7 @@ const Login: React.FC = () => {
           }
         } catch (err: any) {
           console.error('Error confirming email:', err);
-          setError('Failed to confirm email. Please try again.');
+          setError(getAuthErrorMessage(err));
         }
       }
     };
@@ -71,7 +72,7 @@ const Login: React.FC = () => {
       
       setEmailResent(true);
     } catch (err: any) {
-      setError(err.message || 'Failed to resend confirmation email');
+      setError(getAuthErrorMessage(err));
     } finally {
       setResendingEmail(false);
     }
@@ -89,7 +90,7 @@ const Login: React.FC = () => {
       setResetSent(true);
       setError(null);
     } catch (err: any) {
-      setError(err.message || 'Failed to send password reset email');
+      setError(getAuthErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -113,15 +114,8 @@ const Login: React.FC = () => {
       });
 
       if (authError) {
-        if (authError.message.includes('Invalid login credentials')) {
-          setError('Invalid email or password. Please try again or reset your password.');
-          return;
-        }
-        if (authError.message.includes('Email not confirmed')) {
-          setError('Your email address has not been confirmed. Please check your inbox for the confirmation email or click below to receive a new one.');
-          return;
-        }
-        throw authError;
+        setError(getAuthErrorMessage(authError));
+        return;
       }
 
       const { data: userData, error: userError } = await supabase
@@ -140,7 +134,7 @@ const Login: React.FC = () => {
       const from = (location.state as any)?.from || '/';
       navigate(from, { replace: true });
     } catch (err: any) {
-      setError(err.message || 'Failed to sign in');
+      setError(getAuthErrorMessage(err));
     } finally {
       setLoading(false);
     }
