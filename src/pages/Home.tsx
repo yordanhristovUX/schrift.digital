@@ -89,7 +89,7 @@ const Home: React.FC = () => {
               type="text"
               value={previewText}
               onChange={(e) => setPreviewText(e.target.value)}
-              className="w-full text-2xl p-6 bg-[#FFFFFC] text-text-primary border border-[#D9D9D9] hover:border-[#141204] focus:border-[#141204] focus:outline-none transition-colors duration-200 rounded-sm font-['Listopad']"
+              className="w-full text-xl p-6 bg-[#FFFFFC] text-text-primary border border-[#D9D9D9] hover:border-[#141204] focus:border-[#141204] focus:outline-none transition-colors duration-200 rounded-sm font-['Listopad']"
               placeholder="Въведете текст за преглед..."
             />
           </div>
