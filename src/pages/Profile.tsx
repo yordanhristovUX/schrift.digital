@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { User, Crown } from 'lucide-react';
+import { format } from 'date-fns';
 
 const Profile: React.FC = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<any>(null);
+  const [subscription, setSubscription] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -21,6 +23,7 @@ const Profile: React.FC = () => {
           return;
         }
 
+        // Get user profile
         const { data: profile, error } = await supabase
           .from('users')
           .select('*')
@@ -28,6 +31,23 @@ const Profile: React.FC = () => {
           .single();
 
         if (error) throw error;
+
+        // Get subscription info
+        const { data: customerData } = await supabase
+          .from('stripe_customers')
+          .select('customer_id')
+          .eq('user_id', session.user.id)
+          .single();
+
+        if (customerData?.customer_id) {
+          const { data: subscriptionData } = await supabase
+            .from('stripe_subscriptions')
+            .select('*')
+            .eq('customer_id', customerData.customer_id)
+            .single();
+
+          setSubscription(subscriptionData);
+        }
 
         setUser(profile);
         setFullName(profile.full_name);
@@ -86,6 +106,11 @@ const Profile: React.FC = () => {
     );
   }
 
+  const isActiveSubscription = subscription?.status === 'active';
+  const subscriptionEnd = subscription?.current_period_end 
+    ? new Date(subscription.current_period_end * 1000)
+    : null;
+
   return (
     <div className="min-h-screen pt-32 pb-16 bg-[#FFFFFC]">
       <div className="container mx-auto px-4 max-w-3xl">
@@ -95,7 +120,7 @@ const Profile: React.FC = () => {
             <p className="text-[#5E6572] font-['Listopad']">Управлявайте вашите лични данни и абонамент</p>
           </div>
           <div className="flex items-center">
-            {user?.subscription_status === 'active' ? (
+            {isActiveSubscription ? (
               <div className="flex items-center text-[#141204] font-['Listopad']">
                 <Crown className="w-5 h-5 mr-2 text-[#C40000]" />
                 Активен абонамент
@@ -171,7 +196,7 @@ const Profile: React.FC = () => {
           </form>
         </div>
 
-        {user?.subscription_status === 'active' && (
+        {isActiveSubscription && (
           <div className="bg-white rounded-sm shadow-md p-6">
             <h2 className="text-xl font-bold mb-6 text-[#141204] font-['Listopad']">Абонамент</h2>
             <div className="space-y-4">
@@ -180,13 +205,19 @@ const Profile: React.FC = () => {
                 <span className="text-[#141204] font-['Listopad']">Активен</span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-[#D9D9D9]">
-                <span className="text-[#5E6572] font-['Listopad']">Следващо плащане</span>
-                <span className="text-[#141204] font-['Listopad']">15 юни 2025</span>
+                <span className="text-[#5E6572] font-['Listopad']">Валиден до</span>
+                <span className="text-[#141204] font-['Listopad']">
+                  {subscriptionEnd ? format(subscriptionEnd, 'dd.MM.yyyy') : 'N/A'}
+                </span>
               </div>
-              <div className="flex justify-between items-center py-2">
-                <span className="text-[#5E6572] font-['Listopad']">Метод на плащане</span>
-                <span className="text-[#141204] font-['Listopad']">•••• 4242</span>
-              </div>
+              {subscription?.payment_method_last4 && (
+                <div className="flex justify-between items-center py-2">
+                  <span className="text-[#5E6572] font-['Listopad']">Метод на плащане</span>
+                  <span className="text-[#141204] font-['Listopad']">
+                    {subscription.payment_method_brand} •••• {subscription.payment_method_last4}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         )}
