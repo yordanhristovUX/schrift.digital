@@ -47,7 +47,7 @@ const Supporter: React.FC = () => {
         setPrice(amount);
       } catch (err) {
         console.error('Error fetching price:', err);
-        setPrice('19.00'); // Fallback price
+        setPrice('2.00'); // Fallback price
       }
     };
 
@@ -122,7 +122,7 @@ const Supporter: React.FC = () => {
 
         <div className="bg-white rounded-sm shadow-lg p-8 mb-12">
           <div className="flex items-center justify-center mb-8">
-            <span className="text-4xl font-bold text-[#141204] font-['Listopad']">{price} лв</span>
+            <span className="text-4xl font-bold text-[#141204] font-['Listopad']">{price}€</span>
             <span className="text-[#5E6572] ml-2 font-['Listopad']">/ месец</span>
           </div>
 

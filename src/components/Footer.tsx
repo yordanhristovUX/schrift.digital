@@ -43,17 +43,6 @@ const Footer: React.FC = () => {
           </div>
           
           <div className="col-span-1">
-            <h3 className="text-lg font-semibold mb-4 font-['Listopad']">Шрифтове</h3>
-            <ul className="space-y-2 font-['Listopad']">
-              <li>
-                <Link to="/" className="text-[#BCBDC0] hover:text-[#FFFFFC] transition-colors">
-                  Всички шрифтове
-                </Link>
-              </li>
-            </ul>
-          </div>
-          
-          <div className="col-span-1">
             <h3 className="text-lg font-semibold mb-4 font-['Listopad']">За нас</h3>
             <ul className="space-y-2 font-['Listopad']">
               <li>
