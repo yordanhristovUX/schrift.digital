@@ -28,7 +28,16 @@ const Register: React.FC = () => {
           data: {
             full_name: fullName
           },
-          emailRedirectTo: `${window.location.origin}/login`
+          emailRedirectTo: `${window.location.origin}/login`,
+          // Add email template customization
+          emailOptions: {
+            template: 'signup',
+            data: {
+              full_name: fullName,
+              site_url: window.location.origin,
+              confirmation_url: `${window.location.origin}/login`
+            }
+          }
         }
       });
 
