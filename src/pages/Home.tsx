@@ -7,7 +7,6 @@ import { getFeaturedFonts, loadFontFaces, getGroupedWeights, getWeightValue } fr
 const Home: React.FC = () => {
   const [fonts, setFonts] = useState<Font[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [previewText, setPreviewText] = useState('Щурецът свири, а жабите скачат върху дъбови листа.');
   const [fontSizes, setFontSizes] = useState<Record<string, number>>({});
   const [fontWeights, setFontWeights] = useState<Record<string, number>>({});
@@ -16,7 +15,6 @@ const Home: React.FC = () => {
   useEffect(() => {
     const fetchFonts = async () => {
       try {
-        setError(null);
         const data = await getFeaturedFonts();
         
         // Initialize font sizes and weights
@@ -35,7 +33,6 @@ const Home: React.FC = () => {
         loadFontFaces(data);
       } catch (err) {
         console.error('Error fetching fonts:', err);
-        setError('Unable to load fonts. Please check your connection and try again.');
       } finally {
         setLoading(false);
       }
@@ -65,20 +62,6 @@ const Home: React.FC = () => {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-sm h-12 w-12 border-b-2 border-[#141204]"></div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen p-4">
-        <div className="text-red-600 mb-4">{error}</div>
-        <button 
-          onClick={() => window.location.reload()} 
-          className="px-4 py-2 bg-[#141204] text-white rounded-sm hover:bg-[#2D2B1F] transition-colors"
-        >
-          Опитай отново
-        </button>
       </div>
     );
   }
