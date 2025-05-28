@@ -40,7 +40,12 @@ const Register: React.FC = () => {
         }
       });
 
-      if (signUpError) throw signUpError;
+      if (signUpError) {
+        if (signUpError.message.includes('over_email_send_rate_limit')) {
+          throw new Error('Too many registration attempts. Please try again in a few minutes.');
+        }
+        throw signUpError;
+      }
 
       if (!authData.user?.id) {
         throw new Error('Failed to create user account');
@@ -85,7 +90,7 @@ const Register: React.FC = () => {
           <h2 className="text-2xl font-bold mb-6 text-[#141204] font-['Listopad']">Регистрация</h2>
           
           {error && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-sm">
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-sm font-['Listopad']">
               {error}
             </div>
           )}
@@ -141,6 +146,9 @@ const Register: React.FC = () => {
                 required
                 minLength={6}
               />
+              <p className="mt-1 text-sm text-[#5E6572] font-['Listopad']">
+                Минимум 6 символа
+              </p>
             </div>
             
             <button
