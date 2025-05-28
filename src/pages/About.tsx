@@ -19,7 +19,7 @@ const About: React.FC = () => {
       {/* Main content */}
       <section className="py-16 bg-[#FFFFFC]">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl">
-          <div className="prose prose-lg max-w-none space-y-8 text-[#141204]">
+          <div className="prose prose-lg max-w-none space-y-8 text-[#141204] font-['Listopad']">
             <p className="text-lg leading-relaxed">
               В света на дизайна детайлите имат значение. За българските дизайнери използването на автентична българска кирилица не е просто естетически избор — това е въпрос на идентичност, четимост и уважение към езика ни.
             </p>
