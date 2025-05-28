@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
+import { BrowserRouter, Routes, Route, useLocation, Navigate } from 'react-router-dom';
+import { Helmet, HelmetProvider } from 'react-helmet-async';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Home from './pages/Home';
@@ -36,6 +36,30 @@ const SEO: React.FC<{ title?: string; description?: string }> = ({
       <meta name="twitter:description" content={description} />
     </Helmet>
   );
+};
+
+// Protected Route component
+const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const location = useLocation();
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setIsAuthenticated(!!session);
+    };
+    checkAuth();
+  }, []);
+
+  if (isAuthenticated === null) {
+    return <div>Loading...</div>;
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  return <>{children}</>;
 };
 
 // Wrapper component to conditionally render navbar and footer
@@ -76,22 +100,24 @@ function App() {
   }, []);
 
   return (
-    <BrowserRouter future={{ v7_relativeSplatPath: true }}>
-      <Layout>
-        <Routes>
-          <Route path="/" element={<><SEO /><Home /></>} />
-          <Route path="/about" element={<><SEO title="За българската кирилица | Schrift.Digital\" description="Научете повече за мисията ни да върнем българската кирилица в съвременния дизайн с нашите професионални шрифтове." /><About /></>} />
-          <Route path="/login" element={<><SEO title="Вход | Български шрифтове с кирилица\" description="Влезте в профила си за достъп до всички български шрифтове с кирилица." /><Login /></>} />
-          <Route path="/register" element={<><SEO title="Регистрация | Български шрифтове с кирилица\" description="Създайте профил за достъп до всички български шрифтове с кирилица и italic стилове." /><Register /></>} />
-          <Route path="/fonts/:id" element={<FontDetail />} />
-          <Route path="/profile" element={<><SEO title="Профил | Български шрифтове с кирилица\" description="Управлявайте профила си и достъпа до български шрифтове с кирилица." /><Profile /></>} />
-          <Route path="/supporter" element={<><SEO title="Поддръжник | Български шрифтове с кирилица\" description="Подкрепете проекта и получете достъп до всички премиум български шрифтове с кирилица." /><Supporter /></>} />
-          <Route path="/admin" element={<AdminRoute><Dashboard /></AdminRoute>} />
-          <Route path="/admin/fonts" element={<AdminRoute><FontManager /></AdminRoute>} />
-          <Route path="*" element={<><SEO title="404 | Български шрифтове с кирилица\" description="Страницата не беше намерена." /><NotFound /></>} />
-        </Routes>
-      </Layout>
-    </BrowserRouter>
+    <HelmetProvider>
+      <BrowserRouter>
+        <Layout>
+          <Routes>
+            <Route path="/" element={<><SEO /><Home /></>} />
+            <Route path="/about" element={<><SEO title="За българската кирилица | Schrift.Digital" description="Научете повече за мисията ни да върнем българската кирилица в съвременния дизайн с нашите професионални шрифтове." /><About /></>} />
+            <Route path="/login" element={<><SEO title="Вход | Български шрифтове с кирилица" description="Влезте в профила си за достъп до всички български шрифтове с кирилица." /><Login /></>} />
+            <Route path="/register" element={<><SEO title="Регистрация | Български шрифтове с кирилица" description="Създайте профил за достъп до всички български шрифтове с кирилица и italic стилове." /><Register /></>} />
+            <Route path="/fonts/:id" element={<FontDetail />} />
+            <Route path="/profile" element={<ProtectedRoute><SEO title="Профил | Български шрифтове с кирилица" description="Управлявайте профила си и достъпа до български шрифтове с кирилица." /><Profile /></ProtectedRoute>} />
+            <Route path="/supporter" element={<ProtectedRoute><SEO title="Поддръжник | Български шрифтове с кирилица" description="Подкрепете проекта и получете достъп до всички премиум български шрифтове с кирилица." /><Supporter /></ProtectedRoute>} />
+            <Route path="/admin" element={<AdminRoute><Dashboard /></AdminRoute>} />
+            <Route path="/admin/fonts" element={<AdminRoute><FontManager /></AdminRoute>} />
+            <Route path="*" element={<><SEO title="404 | Български шрифтове с кирилица" description="Страницата не беше намерена." /><NotFound /></>} />
+          </Routes>
+        </Layout>
+      </BrowserRouter>
+    </HelmetProvider>
   );
 }
 
