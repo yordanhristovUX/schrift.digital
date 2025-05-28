@@ -9,8 +9,8 @@ const About: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>{t('about.meta.title')}</title>
-        <meta name="description" content={t('about.meta.description')} />
+        <title>{t('about.title')} | Schrift.Digital</title>
+        <meta name="description" content={t('about.subtitle')} />
       </Helmet>
 
       {/* Hero section */}
