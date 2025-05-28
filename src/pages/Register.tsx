@@ -21,10 +21,11 @@ const Register: React.FC = () => {
         .from('users')
         .select('id')
         .eq('email', email)
-        .single();
+        .maybeSingle();
 
       if (existingUser) {
         setError('An account with this email already exists');
+        setLoading(false);
         return;
       }
 
@@ -64,9 +65,9 @@ const Register: React.FC = () => {
         ]);
 
       if (profileError) {
-        // If profile creation fails, we should clean up the auth user
-        await supabase.auth.admin.deleteUser(authData.user.id);
-        throw profileError;
+        // Log the error but don't attempt to delete the auth user
+        console.error('Failed to create user profile:', profileError);
+        throw new Error('Failed to complete registration. Please contact support.');
       }
 
       // Redirect to login with success message
