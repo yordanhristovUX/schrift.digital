@@ -3,30 +3,24 @@
     "title": "Bulgarian Cyrillic Fonts | Schrift.Digital",
     "description": "Discover a collection of professional Bulgarian fonts with authentic Cyrillic letterforms, including italic styles. Download free and premium fonts with Bulgarian Cyrillic support for Figma."
   },
-  "home": {
-    "title": "Bulgarian Cyrillic Fonts for Figma",
-    "subtitle": "Browse, test, and download Bulgarian Cyrillic fonts",
-    "library_count": "Library of {{count}} font families with Bulgarian Cyrillic",
-    "preview_placeholder": "Enter text to preview...",
-    "download": "download fonts",
-    "font_size": "Size",
-    "font_weight": "Weight",
-    "font_info": {
-      "designer": "Designer",
-      "category": "Category",
-      "language_support": "Language Support",
-      "opentype_features": "OpenType Features",
-      "file_format": "File Format"
-    }
-  },
   "about": {
+    "meta": {
+      "title": "About Bulgarian Cyrillic | Schrift.Digital",
+      "description": "Learn more about our mission to bring Bulgarian Cyrillic back to modern design with our professional fonts."
+    },
     "title": "Why We Created This Project",
     "subtitle": "Bringing Bulgarian Cyrillic Back to Modern Design",
+    "content": {
+      "intro": "In the world of design, details matter. For Bulgarian designers, using authentic Bulgarian Cyrillic is not just an aesthetic choice — it's a matter of identity, readability, and respect for our language.",
+      "problem": "Although many fonts support Bulgarian variants of Cyrillic, Figma doesn't allow their automatic activation through language settings. This makes it difficult to use Bulgarian Cyrillic in designs, especially with fonts that offer specific forms for the Bulgarian language.",
+      "consequence": "As a result, designers are often forced to use Russian variants of Cyrillic, which don't reflect the characteristic features of Bulgarian writing. This not only disrupts the visual integrity of the design but also undermines our cultural identity.",
+      "belief": "We believe that every designer working with Bulgarian text deserves access to tools that reflect our language and culture in the best possible way. With this project, we strive to make Bulgarian Cyrillic accessible, visible, and a natural part of digital design.",
+      "call_to_action": "Join us in our efforts to bring Bulgarian Cyrillic back to where it belongs — at the heart of modern design."
+    },
+    "mission": {
+      "title": "Our Mission",
+      "description": "Our project aims to overcome this limitation by providing adapted versions of popular fonts with activated Bulgarian variants for each font weight. This allows designers to use Bulgarian Cyrillic in Figma without additional settings or compromises in design quality."
+    },
     "contact_us": "Contact Us"
-  },
-  "footer": {
-    "all_rights_reserved": "All rights reserved",
-    "about_project": "About Project",
-    "contacts": "Contacts"
   }
 }
