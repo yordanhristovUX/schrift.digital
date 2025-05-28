@@ -132,7 +132,7 @@ const Navbar: React.FC = () => {
                   onClick={() => setShowDropdown(!showDropdown)}
                   className={`flex items-center px-4 ${isScrolled ? 'py-1.5' : 'py-2'} transition-colors font-['Listopad'] ${
                     isWhiteHeader
-                      ? 'text-[#141204] hover:text-[#5E6572] border border-[#141204] rounded-sm'
+                      ? 'text-[#141204] hover:text-[#5E6572]'
                       : 'text-[#FFFFFC] hover:text-[#BCBDC0]'
                   }`}
                 >
@@ -184,7 +184,7 @@ const Navbar: React.FC = () => {
                 to="/login" 
                 className={`px-4 ${isScrolled ? 'py-1.5' : 'py-2'} transition-colors font-['Listopad'] ${
                   isWhiteHeader
-                    ? 'text-[#141204] hover:text-[#5E6572] border border-[#141204] rounded-sm'
+                    ? 'text-[#141204] hover:text-[#5E6572]'
                     : 'text-[#FFFFFC] hover:text-[#BCBDC0]'
                 }`}
               >
