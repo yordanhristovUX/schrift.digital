@@ -10,6 +10,23 @@
     "preview_placeholder": "Enter text to preview...",
     "download": "download fonts",
     "font_size": "Size",
-    "font_weight": "Weight"
+    "font_weight": "Weight",
+    "font_info": {
+      "designer": "Designer",
+      "category": "Category",
+      "language_support": "Language Support",
+      "opentype_features": "OpenType Features",
+      "file_format": "File Format"
+    }
+  },
+  "about": {
+    "title": "Why We Created This Project",
+    "subtitle": "Bringing Bulgarian Cyrillic Back to Modern Design",
+    "contact_us": "Contact Us"
+  },
+  "footer": {
+    "all_rights_reserved": "All rights reserved",
+    "about_project": "About Project",
+    "contacts": "Contacts"
   }
 }

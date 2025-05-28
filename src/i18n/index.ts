@@ -11,7 +11,7 @@ i18n
     fallbackLng: 'bg',
     supportedLngs: ['bg', 'en'],
     defaultNS: 'common',
-    ns: ['common', 'auth', 'errors'],
+    ns: ['common', 'nav', 'auth', 'errors'],
     interpolation: {
       escapeValue: false,
     },

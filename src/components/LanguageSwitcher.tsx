@@ -13,7 +13,7 @@ const LanguageSwitcher: React.FC = () => {
   return (
     <button
       onClick={toggleLanguage}
-      className="px-3 py-1 text-sm rounded-sm font-['Listopad'] bg-[#D9D9D9] text-[#141204] hover:bg-[#BCBDC0]"
+      className="px-4 py-2 rounded-sm text-sm font-medium bg-[#FFFFFC] text-[#141204] hover:bg-[#D9D9D9] transition-colors font-['Listopad']"
     >
       {i18n.language === 'bg' ? 'EN' : 'БГ'}
     </button>

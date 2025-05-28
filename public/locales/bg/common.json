@@ -10,6 +10,23 @@
     "preview_placeholder": "Въведете текст за преглед...",
     "download": "изтегли шрифтове",
     "font_size": "Размер",
-    "font_weight": "Тежина"
+    "font_weight": "Тежина",
+    "font_info": {
+      "designer": "Автор",
+      "category": "Категория",
+      "language_support": "Поддържани езици",
+      "opentype_features": "OpenType функции",
+      "file_format": "Формат на файла"
+    }
+  },
+  "about": {
+    "title": "Защо създадохме този проект",
+    "subtitle": "Връщаме българската кирилица в съвременния дизайн",
+    "contact_us": "Свържете се с нас"
+  },
+  "footer": {
+    "all_rights_reserved": "Всички права запазени",
+    "about_project": "За проекта",
+    "contacts": "Контакти"
   }
 }
