@@ -71,7 +71,10 @@ const Home: React.FC = () => {
       {/* Header */}
       <header className="pt-32 pb-16 px-4 bg-background-inverse">
         <div className="container mx-auto max-w-6xl">
-          <h2 className="text-5xl md:text-6xl text-text-inverse font-bold mb-4 font-['Listopad']">
+          <h1 className="text-5xl md:text-6xl text-text-inverse font-bold mb-4 font-['Listopad']">
+            Български шрифтове с кирилица за Figma
+          </h1>
+          <h2 className="text-2xl text-text-tertiary mb-8 font-['Listopad']">
             Разгледай, тествай и изтегли шрифтове българска кирилица
           </h2>
           <p className="text-text-tertiary text-lg mb-8 font-['Listopad']">
