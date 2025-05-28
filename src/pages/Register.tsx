@@ -19,7 +19,7 @@ const Register: React.FC = () => {
     setError(null);
 
     try {
-      // Sign up the user with Supabase Auth
+      // Sign up with Supabase Auth
       const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
@@ -32,27 +32,6 @@ const Register: React.FC = () => {
       });
 
       if (signUpError) throw signUpError;
-
-      if (!authData.user?.id) {
-        throw new Error('Failed to create user account');
-      }
-
-      // Create user profile in the users table
-      const { error: profileError } = await supabase
-        .from('users')
-        .insert([
-          {
-            id: authData.user.id,
-            email: email.toLowerCase(),
-            full_name: fullName,
-            role: 'user'
-          }
-        ]);
-
-      if (profileError) {
-        console.error('Failed to create user profile:', profileError);
-        throw new Error('Failed to complete registration');
-      }
 
       // Redirect to login with success message
       navigate('/login', { 
