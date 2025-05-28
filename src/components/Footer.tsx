@@ -15,16 +15,14 @@ const Footer: React.FC = () => {
             </p>
             <div className="flex space-x-4">
               <a 
-                href="https://twitter.com/cyrillictype" 
-                target="_blank" 
-                rel="noopener noreferrer"
+                href="mailto:contact@schrift.digital"
                 className="text-[#BCBDC0] hover:text-[#FFFFFC] transition-colors"
-                aria-label="Twitter"
+                aria-label="Email"
               >
-                <Twitter size={20} />
+                <Mail size={20} />
               </a>
               <a 
-                href="https://facebook.com/cyrillictype" 
+                href="https://facebook.com/schrift.digital"
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-[#BCBDC0] hover:text-[#FFFFFC] transition-colors"
@@ -33,20 +31,13 @@ const Footer: React.FC = () => {
                 <Facebook size={20} />
               </a>
               <a 
-                href="https://instagram.com/cyrillictype" 
+                href="https://instagram.com/schrift.digital"
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-[#BCBDC0] hover:text-[#FFFFFC] transition-colors"
                 aria-label="Instagram"
               >
                 <Instagram size={20} />
-              </a>
-              <a 
-                href="mailto:contact@cyrillictype.com"
-                className="text-[#BCBDC0] hover:text-[#FFFFFC] transition-colors"
-                aria-label="Email"
-              >
-                <Mail size={20} />
               </a>
             </div>
           </div>
@@ -55,18 +46,8 @@ const Footer: React.FC = () => {
             <h3 className="text-lg font-semibold mb-4 font-['Listopad']">Шрифтове</h3>
             <ul className="space-y-2 font-['Listopad']">
               <li>
-                <Link to="/fonts" className="text-[#BCBDC0] hover:text-[#FFFFFC] transition-colors">
+                <Link to="/" className="text-[#BCBDC0] hover:text-[#FFFFFC] transition-colors">
                   Всички шрифтове
-                </Link>
-              </li>
-              <li>
-                <Link to="/fonts?type=free" className="text-[#BCBDC0] hover:text-[#FFFFFC] transition-colors">
-                  Безплатни
-                </Link>
-              </li>
-              <li>
-                <Link to="/fonts?type=premium" className="text-[#BCBDC0] hover:text-[#FFFFFC] transition-colors">
-                  Премиум
                 </Link>
               </li>
             </ul>
@@ -97,8 +78,8 @@ const Footer: React.FC = () => {
             <h3 className="text-lg font-semibold mb-4 font-['Listopad']">Контакти</h3>
             <ul className="space-y-2 font-['Listopad']">
               <li>
-                <a href="mailto:contact@cyrillictype.com" className="text-[#BCBDC0] hover:text-[#FFFFFC] transition-colors">
-                  contact@cyrillictype.com
+                <a href="mailto:contact@schrift.digital" className="text-[#BCBDC0] hover:text-[#FFFFFC] transition-colors">
+                  contact@schrift.digital
                 </a>
               </li>
             </ul>
@@ -107,7 +88,7 @@ const Footer: React.FC = () => {
         
         <div className="border-t border-[#5E6572] mt-12 pt-8 text-center sm:text-left sm:flex sm:justify-between font-['Listopad']">
           <p className="text-[#BCBDC0] text-sm">
-            &copy; {new Date().getFullYear()} CyrillicType. Всички права запазени.
+            &copy; {new Date().getFullYear()} Schrift.Digital. Всички права запазени.
           </p>
         </div>
       </div>

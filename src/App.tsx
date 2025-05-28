@@ -11,6 +11,7 @@ import Profile from './pages/Profile';
 import Supporter from './pages/Supporter';
 import Dashboard from './pages/admin/Dashboard';
 import FontManager from './pages/admin/FontManager';
+import NotFound from './pages/NotFound';
 import AdminRoute from './components/AdminRoute';
 import { supabase } from './lib/supabase';
 
@@ -64,6 +65,7 @@ function App() {
           <Route path="/supporter" element={<Supporter />} />
           <Route path="/admin" element={<AdminRoute><Dashboard /></AdminRoute>} />
           <Route path="/admin/fonts" element={<AdminRoute><FontManager /></AdminRoute>} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </Layout>
     </BrowserRouter>
