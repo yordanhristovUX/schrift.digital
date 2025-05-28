@@ -1,5 +1,5 @@
 import { Font, FontWeight } from '../types/font';
-import { supabase } from './supabase';
+import { supabase, testConnection } from './supabase';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 
