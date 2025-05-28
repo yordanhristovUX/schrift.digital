@@ -80,10 +80,10 @@ const Navbar: React.FC = () => {
       className={`fixed w-full z-50 transition-all duration-300 ${
         isScrolled 
           ? 'mt-0 py-2 bg-[#141204] md:bg-opacity-95' 
-          : 'mt-6 py-4 md:bg-transparent'
+          : 'mt-6 py-4'
       } ${
         isWhiteHeader && !isScrolled
-          ? 'bg-[#141204] md:bg-[#141204]'
+          ? 'md:bg-[#FFFFFC]'
           : ''
       } ${
         isWhiteHeader && isScrolled
@@ -96,7 +96,7 @@ const Navbar: React.FC = () => {
           <Link to="/" className={`flex items-center transition-transform duration-300 ${isScrolled ? 'scale-75 -translate-y-1' : ''}`}>
             <Logo 
               className="h-8 w-auto" 
-              variant={isWhiteHeader && isScrolled ? 'dark' : 'light'} 
+              variant={isWhiteHeader ? 'dark' : 'light'} 
             />
           </Link>
           
@@ -131,7 +131,7 @@ const Navbar: React.FC = () => {
                 <button
                   onClick={() => setShowDropdown(!showDropdown)}
                   className={`flex items-center px-4 py-2 transition-colors font-['Listopad'] ${
-                    isWhiteHeader && isScrolled
+                    isWhiteHeader
                       ? 'text-[#141204] hover:text-[#5E6572]'
                       : 'text-[#FFFFFC] hover:text-[#BCBDC0]'
                   }`}
@@ -183,7 +183,7 @@ const Navbar: React.FC = () => {
               <Link 
                 to="/login" 
                 className={`px-4 py-2 transition-colors font-['Listopad'] ${
-                  isWhiteHeader && isScrolled
+                  isWhiteHeader
                     ? 'text-[#141204] hover:text-[#5E6572]'
                     : 'text-[#FFFFFC] hover:text-[#BCBDC0]'
                 }`}
@@ -198,7 +198,7 @@ const Navbar: React.FC = () => {
             <button
               onClick={() => setIsOpen(!isOpen)}
               className={`transition-colors ${
-                isWhiteHeader && isScrolled
+                isWhiteHeader
                   ? 'text-[#141204] hover:text-[#5E6572]'
                   : 'text-[#FFFFFC] hover:text-[#BCBDC0]'
               } focus:outline-none`}
