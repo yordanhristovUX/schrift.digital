@@ -1,0 +1,16 @@
+{
+  "auth": {
+    "invalid_credentials": "Invalid email or password",
+    "email_not_confirmed": "Email not confirmed. Please check your inbox",
+    "user_not_found": "User not found",
+    "email_taken": "Email already registered",
+    "weak_password": "Password is too weak",
+    "passwords_not_match": "Passwords do not match",
+    "invalid_email": "Invalid email address",
+    "over_email_send_rate_limit": "Too many attempts. Please try again in a few minutes",
+    "expired_token": "Link expired. Please request a new one",
+    "invalid_token": "Invalid or expired link",
+    "network_error": "Network error. Please check your internet connection",
+    "unknown": "An unexpected error occurred. Please try again"
+  }
+}
