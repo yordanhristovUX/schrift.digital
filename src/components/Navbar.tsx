@@ -104,10 +104,10 @@ const Navbar: React.FC = () => {
           <div className="hidden md:flex items-center space-x-4">
             <Link 
               to="/" 
-              className={`px-4 py-2 rounded-sm transition-colors font-['Listopad'] ${
+              className={`px-4 ${isScrolled ? 'py-1.5' : 'py-2'} rounded-sm transition-colors font-['Listopad'] ${
                 isHomePage
                   ? 'bg-[#D9D9D9] text-[#141204] cursor-default'
-                  : isWhiteHeader && isScrolled
+                  : isWhiteHeader
                     ? 'bg-[#FFFFFC] text-[#141204] border border-[#141204] hover:bg-[#D9D9D9]'
                     : 'bg-[#FFFFFC] text-[#141204] hover:bg-[#D9D9D9]'
               }`}
@@ -116,10 +116,10 @@ const Navbar: React.FC = () => {
             </Link>
             <Link 
               to="/about" 
-              className={`px-4 py-2 rounded-sm transition-colors font-['Listopad'] ${
+              className={`px-4 ${isScrolled ? 'py-1.5' : 'py-2'} rounded-sm transition-colors font-['Listopad'] ${
                 isAboutPage
                   ? 'bg-[#D9D9D9] text-[#141204] cursor-default'
-                  : isWhiteHeader && isScrolled
+                  : isWhiteHeader
                     ? 'bg-[#FFFFFC] text-[#141204] border border-[#141204] hover:bg-[#D9D9D9]'
                     : 'bg-[#FFFFFC] text-[#141204] hover:bg-[#D9D9D9]'
               }`}
@@ -130,9 +130,9 @@ const Navbar: React.FC = () => {
               <div className="relative user-dropdown">
                 <button
                   onClick={() => setShowDropdown(!showDropdown)}
-                  className={`flex items-center px-4 py-2 transition-colors font-['Listopad'] ${
+                  className={`flex items-center px-4 ${isScrolled ? 'py-1.5' : 'py-2'} transition-colors font-['Listopad'] ${
                     isWhiteHeader
-                      ? 'text-[#141204] hover:text-[#5E6572]'
+                      ? 'text-[#141204] hover:text-[#5E6572] border border-[#141204] rounded-sm'
                       : 'text-[#FFFFFC] hover:text-[#BCBDC0]'
                   }`}
                 >
@@ -182,9 +182,9 @@ const Navbar: React.FC = () => {
             ) : (
               <Link 
                 to="/login" 
-                className={`px-4 py-2 transition-colors font-['Listopad'] ${
+                className={`px-4 ${isScrolled ? 'py-1.5' : 'py-2'} transition-colors font-['Listopad'] ${
                   isWhiteHeader
-                    ? 'text-[#141204] hover:text-[#5E6572]'
+                    ? 'text-[#141204] hover:text-[#5E6572] border border-[#141204] rounded-sm'
                     : 'text-[#FFFFFC] hover:text-[#BCBDC0]'
                 }`}
               >
