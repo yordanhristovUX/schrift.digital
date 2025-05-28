@@ -10,6 +10,7 @@ const Register: React.FC = () => {
   const [fullName, setFullName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [confirmationSent, setConfirmationSent] = useState(false);
   const navigate = useNavigate();
   const { t } = useTranslation(['auth', 'errors']);
 
@@ -27,25 +28,40 @@ const Register: React.FC = () => {
           data: {
             full_name: fullName
           },
-          emailRedirectTo: window.location.origin
+          emailRedirectTo: `${window.location.origin}/login`
         }
       });
 
       if (signUpError) throw signUpError;
 
-      // Redirect to login with success message
-      navigate('/login', { 
-        replace: true,
-        state: { 
-          message: t('auth:register.success_message')
-        }
-      });
+      // Show confirmation message
+      setConfirmationSent(true);
     } catch (err: any) {
       setError(getAuthErrorMessage(err));
     } finally {
       setLoading(false);
     }
   };
+
+  if (confirmationSent) {
+    return (
+      <div className="min-h-screen pt-32 pb-16 px-4 bg-[#141204]">
+        <div className="container mx-auto max-w-md">
+          <div className="bg-[#FFFFFC] rounded-sm shadow-lg p-8">
+            <h2 className="text-2xl font-bold mb-6 text-[#141204] font-['Listopad']">
+              {t('auth:register.confirmation_sent')}
+            </h2>
+            <p className="text-[#5E6572] mb-6 font-['Listopad']">
+              {t('auth:register.check_email', { email })}
+            </p>
+            <p className="text-[#5E6572] font-['Listopad']">
+              {t('auth:register.spam_notice')}
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen pt-32 pb-16 px-4 bg-[#141204]">
