@@ -75,16 +75,20 @@ const Navbar: React.FC = () => {
 
   return (
     <nav 
-      className={`fixed w-full z-50 transition-all duration-300 mt-6 ${
-        isScrolled || isHomePage
-          ? 'bg-[#141204]' 
-          : 'bg-transparent'
+      className={`fixed w-full z-50 transition-all duration-300 ${
+        isScrolled 
+          ? 'mt-0 py-2 bg-[#141204] md:bg-opacity-95' 
+          : 'mt-6 py-4 bg-[#141204] md:bg-transparent'
+      } ${
+        isFontDetailPage && isScrolled
+          ? '!bg-[#FFFFFC] !bg-opacity-95 border-b border-[#D9D9D9]'
+          : ''
       }`}
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          <Link to="/" className="flex items-center">
-            <Logo className="h-8 w-auto" variant={isFontDetailPage ? 'dark' : 'light'} />
+        <div className="flex justify-between items-center">
+          <Link to="/" className={`flex items-center transition-transform duration-300 ${isScrolled ? 'scale-75 -translate-y-1' : ''}`}>
+            <Logo className="h-8 w-auto" variant={isFontDetailPage && isScrolled ? 'dark' : 'light'} />
           </Link>
           
           {/* Desktop Navigation */}
@@ -94,7 +98,9 @@ const Navbar: React.FC = () => {
               className={`px-4 py-2 rounded-sm transition-colors font-['Listopad'] ${
                 isHomePage
                   ? 'bg-[#D9D9D9] text-[#141204] cursor-default'
-                  : 'bg-[#FFFFFC] text-[#141204] hover:bg-[#D9D9D9]'
+                  : isFontDetailPage && isScrolled
+                    ? 'bg-[#FFFFFC] text-[#141204] border border-[#141204] hover:bg-[#D9D9D9]'
+                    : 'bg-[#FFFFFC] text-[#141204] hover:bg-[#D9D9D9]'
               }`}
             >
               ШРИФТОВЕ
@@ -104,7 +110,9 @@ const Navbar: React.FC = () => {
               className={`px-4 py-2 rounded-sm transition-colors font-['Listopad'] ${
                 isAboutPage
                   ? 'bg-[#D9D9D9] text-[#141204] cursor-default'
-                  : 'bg-[#FFFFFC] text-[#141204] hover:bg-[#D9D9D9]'
+                  : isFontDetailPage && isScrolled
+                    ? 'bg-[#FFFFFC] text-[#141204] border border-[#141204] hover:bg-[#D9D9D9]'
+                    : 'bg-[#FFFFFC] text-[#141204] hover:bg-[#D9D9D9]'
               }`}
             >
               ЗА НАС
@@ -113,7 +121,11 @@ const Navbar: React.FC = () => {
               <div className="relative user-dropdown">
                 <button
                   onClick={() => setShowDropdown(!showDropdown)}
-                  className="flex items-center px-4 py-2 text-[#FFFFFC] hover:text-[#BCBDC0] transition-colors font-['Listopad']"
+                  className={`flex items-center px-4 py-2 transition-colors font-['Listopad'] ${
+                    isFontDetailPage && isScrolled
+                      ? 'text-[#141204] hover:text-[#5E6572]'
+                      : 'text-[#FFFFFC] hover:text-[#BCBDC0]'
+                  }`}
                 >
                   <User size={20} className="mr-2" />
                   <span>{user.full_name}</span>
@@ -161,7 +173,11 @@ const Navbar: React.FC = () => {
             ) : (
               <Link 
                 to="/login" 
-                className="px-4 py-2 text-[#FFFFFC] hover:text-[#BCBDC0] transition-colors font-['Listopad']"
+                className={`px-4 py-2 transition-colors font-['Listopad'] ${
+                  isFontDetailPage && isScrolled
+                    ? 'text-[#141204] hover:text-[#5E6572]'
+                    : 'text-[#FFFFFC] hover:text-[#BCBDC0]'
+                }`}
               >
                 ВХОД
               </Link>
@@ -172,7 +188,11 @@ const Navbar: React.FC = () => {
           <div className="md:hidden flex items-center">
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="text-[#FFFFFC] hover:text-[#BCBDC0] focus:outline-none"
+              className={`transition-colors ${
+                isFontDetailPage && isScrolled
+                  ? 'text-[#141204] hover:text-[#5E6572]'
+                  : 'text-[#FFFFFC] hover:text-[#BCBDC0]'
+              } focus:outline-none`}
             >
               {isOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
