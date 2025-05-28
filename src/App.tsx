@@ -80,15 +80,15 @@ function App() {
       <Layout>
         <Routes>
           <Route path="/" element={<><SEO /><Home /></>} />
-          <Route path="/about" element={<><SEO title="За нас | Schrift.Digital" description="Научете повече за мисията ни да върнем българската кирилица в съвременния дизайн." /><About /></>} />
-          <Route path="/login" element={<><SEO title="Вход | Schrift.Digital" description="Влезте в профила си за достъп до всички шрифтове." /><Login /></>} />
-          <Route path="/register" element={<><SEO title="Регистрация | Schrift.Digital" description="Създайте профил за достъп до всички шрифтове." /><Register /></>} />
+          <Route path="/about" element={<><SEO title="За нас | Schrift.Digital\" description="Научете повече за мисията ни да върнем българската кирилица в съвременния дизайн." /><About /></>} />
+          <Route path="/login" element={<><SEO title="Вход | Schrift.Digital\" description="Влезте в профила си за достъп до всички шрифтове." /><Login /></>} />
+          <Route path="/register" element={<><SEO title="Регистрация | Schrift.Digital\" description="Създайте профил за достъп до всички шрифтове." /><Register /></>} />
           <Route path="/fonts/:id" element={<FontDetail />} />
-          <Route path="/profile" element={<><SEO title="Профил | Schrift.Digital" description="Управлявайте профила си и абонамента си." /><Profile /></>} />
-          <Route path="/supporter" element={<><SEO title="Стани поддръжник | Schrift.Digital" description="Подкрепете проекта и получете достъп до всички премиум шрифтове." /><Supporter /></>} />
+          <Route path="/profile" element={<><SEO title="Профил | Schrift.Digital\" description="Управлявайте профила си и абонамента си." /><Profile /></>} />
+          <Route path="/supporter" element={<><SEO title="Стани поддръжник | Schrift.Digital\" description="Подкрепете проекта и получете достъп до всички премиум шрифтове." /><Supporter /></>} />
           <Route path="/admin" element={<AdminRoute><Dashboard /></AdminRoute>} />
           <Route path="/admin/fonts" element={<AdminRoute><FontManager /></AdminRoute>} />
-          <Route path="*" element={<><SEO title="404 | Schrift.Digital" description="Страницата не беше намерена." /><NotFound /></>} />
+          <Route path="*" element={<><SEO title="404 | Schrift.Digital\" description="Страницата не беше намерена." /><NotFound /></>} />
         </Routes>
       </Layout>
     </BrowserRouter>
