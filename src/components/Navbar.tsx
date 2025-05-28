@@ -3,6 +3,8 @@ import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, User, ChevronDown, Crown, LogOut } from 'lucide-react';
 import { Logo } from './Logo';
 import { supabase } from '../lib/supabase';
+import { useTranslation } from 'react-i18next';
+import LanguageSwitcher from './LanguageSwitcher';
 
 const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -10,6 +12,8 @@ const Navbar: React.FC = () => {
   const [user, setUser] = useState<any>(null);
   const [showDropdown, setShowDropdown] = useState(false);
   const location = useLocation();
+  const { t } = useTranslation(['common', 'nav']);
+  
   const isHomePage = location.pathname === '/';
   const isAboutPage = location.pathname === '/about';
   const isFontDetailPage = location.pathname.startsWith('/fonts/');
@@ -63,7 +67,6 @@ const Navbar: React.FC = () => {
     setShowDropdown(false);
   };
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (showDropdown && !(event.target as Element).closest('.user-dropdown')) {
@@ -112,7 +115,7 @@ const Navbar: React.FC = () => {
                     : 'bg-[#FFFFFC] text-[#141204] hover:bg-[#D9D9D9]'
               }`}
             >
-              ШРИФТОВЕ
+              {t('nav:fonts')}
             </Link>
             <Link 
               to="/about" 
@@ -124,8 +127,9 @@ const Navbar: React.FC = () => {
                     : 'bg-[#FFFFFC] text-[#141204] hover:bg-[#D9D9D9]'
               }`}
             >
-              ЗА НАС
+              {t('nav:about')}
             </Link>
+            <LanguageSwitcher />
             {user ? (
               <div className="relative user-dropdown">
                 <button
@@ -150,7 +154,7 @@ const Navbar: React.FC = () => {
                         onClick={() => setShowDropdown(false)}
                       >
                         <User size={16} className="mr-2" />
-                        Админ панел
+                        {t('nav:admin_panel')}
                       </Link>
                     )}
                     <Link
@@ -159,7 +163,7 @@ const Navbar: React.FC = () => {
                       onClick={() => setShowDropdown(false)}
                     >
                       <User size={16} className="mr-2" />
-                      Профил
+                      {t('nav:profile')}
                     </Link>
                     <Link
                       to="/supporter"
@@ -167,14 +171,14 @@ const Navbar: React.FC = () => {
                       onClick={() => setShowDropdown(false)}
                     >
                       <Crown size={16} className="mr-2" />
-                      Стани поддръжник
+                      {t('nav:become_supporter')}
                     </Link>
                     <button
                       onClick={handleLogout}
                       className="block w-full text-left px-4 py-2 text-[#141204] hover:bg-[#D9D9D9] font-['Listopad'] flex items-center"
                     >
                       <LogOut size={16} className="mr-2" />
-                      Изход
+                      {t('nav:logout')}
                     </button>
                   </div>
                 )}
@@ -188,13 +192,14 @@ const Navbar: React.FC = () => {
                     : 'text-[#FFFFFC] hover:text-[#BCBDC0]'
                 }`}
               >
-                ВХОД
+                {t('nav:login')}
               </Link>
             )}
           </div>
           
           {/* Mobile menu button */}
-          <div className="md:hidden flex items-center">
+          <div className="md:hidden flex items-center space-x-2">
+            <LanguageSwitcher />
             <button
               onClick={() => setIsOpen(!isOpen)}
               className={`transition-colors ${
@@ -221,7 +226,7 @@ const Navbar: React.FC = () => {
                 }`}
                 onClick={() => setIsOpen(false)}
               >
-                ШРИФТОВЕ
+                {t('nav:fonts')}
               </Link>
               <Link 
                 to="/about" 
@@ -232,7 +237,7 @@ const Navbar: React.FC = () => {
                 }`}
                 onClick={() => setIsOpen(false)}
               >
-                ЗА НАС
+                {t('nav:about')}
               </Link>
               {user ? (
                 <div className="border-t border-[#5E6572] pt-2 mt-2">
@@ -246,7 +251,7 @@ const Navbar: React.FC = () => {
                       className="block px-4 py-2 text-[#FFFFFC] hover:text-[#BCBDC0] text-center font-['Listopad']"
                       onClick={() => setIsOpen(false)}
                     >
-                      Админ панел
+                      {t('nav:admin_panel')}
                     </Link>
                   )}
                   <Link
@@ -254,14 +259,14 @@ const Navbar: React.FC = () => {
                     className="block px-4 py-2 text-[#FFFFFC] hover:text-[#BCBDC0] text-center font-['Listopad']"
                     onClick={() => setIsOpen(false)}
                   >
-                    Профил
+                    {t('nav:profile')}
                   </Link>
                   <Link
                     to="/supporter"
                     className="block px-4 py-2 text-[#FFFFFC] hover:text-[#BCBDC0] text-center font-['Listopad']"
                     onClick={() => setIsOpen(false)}
                   >
-                    Стани поддръжник
+                    {t('nav:become_supporter')}
                   </Link>
                   <button 
                     onClick={() => {
@@ -270,7 +275,7 @@ const Navbar: React.FC = () => {
                     }}
                     className="w-full px-4 py-2 text-[#FFFFFC] hover:text-[#BCBDC0] text-center font-['Listopad']"
                   >
-                    Изход
+                    {t('nav:logout')}
                   </button>
                 </div>
               ) : (
@@ -279,7 +284,7 @@ const Navbar: React.FC = () => {
                   className="px-4 py-2 text-[#FFFFFC] hover:text-[#BCBDC0] transition-colors text-center font-['Listopad']"
                   onClick={() => setIsOpen(false)}
                 >
-                  ВХОД
+                  {t('nav:login')}
                 </Link>
               )}
             </div>

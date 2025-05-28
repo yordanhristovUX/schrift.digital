@@ -1,0 +1,15 @@
+{
+  "meta": {
+    "title": "Bulgarian Cyrillic Fonts | Schrift.Digital",
+    "description": "Discover a collection of professional Bulgarian fonts with authentic Cyrillic letterforms, including italic styles. Download free and premium fonts with Bulgarian Cyrillic support for Figma."
+  },
+  "home": {
+    "title": "Bulgarian Cyrillic Fonts for Figma",
+    "subtitle": "Browse, test, and download Bulgarian Cyrillic fonts",
+    "library_count": "Library of {{count}} font families with Bulgarian Cyrillic",
+    "preview_placeholder": "Enter text to preview...",
+    "download": "download fonts",
+    "font_size": "Size",
+    "font_weight": "Weight"
+  }
+}
