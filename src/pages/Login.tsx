@@ -150,6 +150,8 @@ const Login: React.FC = () => {
     }
   };
 
+  const isInvalidCredentialsError = error?.includes('Invalid email or password');
+
   return (
     <div className="min-h-screen pt-32 pb-16 px-4 bg-[#141204]">
       <div className="container mx-auto max-w-md">
@@ -165,17 +167,28 @@ const Login: React.FC = () => {
           )}
 
           {error && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-sm font-['Listopad']">
-              {error}
-              {error.includes('not been confirmed') && (
-                <div className="mt-2">
-                  <button
-                    onClick={handleResendConfirmation}
-                    disabled={resendingEmail || emailResent}
-                    className="text-red-700 underline hover:no-underline disabled:opacity-50 font-['Listopad']"
-                  >
-                    {resendingEmail ? 'Изпращане...' : emailResent ? 'Имейлът е изпратен!' : 'Изпрати отново имейл за потвърждение'}
-                  </button>
+            <div className="mb-6">
+              <div className="p-4 bg-red-50 border border-red-200 text-red-700 rounded-sm font-['Listopad']">
+                {error}
+                {error.includes('not been confirmed') && (
+                  <div className="mt-2">
+                    <button
+                      onClick={handleResendConfirmation}
+                      disabled={resendingEmail || emailResent}
+                      className="text-red-700 underline hover:no-underline disabled:opacity-50 font-['Listopad']"
+                    >
+                      {resendingEmail ? 'Изпращане...' : emailResent ? 'Имейлът е изпратен!' : 'Изпрати отново имейл за потвърждение'}
+                    </button>
+                  </div>
+                )}
+              </div>
+              {isInvalidCredentialsError && (
+                <div className="mt-2 text-sm text-gray-600 font-['Listopad']">
+                  <p>Възможни причини:</p>
+                  <ul className="list-disc ml-5 mt-1">
+                    <li>Грешно въведен имейл или парола</li>
+                    <li>Все още нямате регистрация</li>
+                  </ul>
                 </div>
               )}
             </div>
