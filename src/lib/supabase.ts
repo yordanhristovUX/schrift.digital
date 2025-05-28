@@ -48,12 +48,11 @@ export const onAuthStateChange = (callback: (session: any) => void) => {
 export const testConnection = async () => {
   try {
     const { data, error } = await supabase
-      .from('users')
+      .from('fonts')
       .select('count')
-      .single();
+      .limit(1);
       
     if (error) throw error;
-    console.log('Supabase connection successful');
     return true;
   } catch (error) {
     console.error('Supabase connection error:', error);
