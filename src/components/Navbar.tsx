@@ -13,6 +13,8 @@ const Navbar: React.FC = () => {
   const isHomePage = location.pathname === '/';
   const isAboutPage = location.pathname === '/about';
   const isFontDetailPage = location.pathname.startsWith('/fonts/');
+  const isWhiteHeader = isFontDetailPage || location.pathname === '/login' || 
+                       location.pathname === '/profile' || location.pathname === '/supporter';
   
   useEffect(() => {
     const handleScroll = () => {
@@ -78,9 +80,13 @@ const Navbar: React.FC = () => {
       className={`fixed w-full z-50 transition-all duration-300 ${
         isScrolled 
           ? 'mt-0 py-2 bg-[#141204] md:bg-opacity-95' 
-          : 'mt-6 py-4 bg-[#141204] md:bg-transparent'
+          : 'mt-6 py-4 md:bg-transparent'
       } ${
-        isFontDetailPage && isScrolled
+        isWhiteHeader && !isScrolled
+          ? 'bg-[#141204] md:bg-[#141204]'
+          : ''
+      } ${
+        isWhiteHeader && isScrolled
           ? '!bg-[#FFFFFC] !bg-opacity-95 border-b border-[#D9D9D9]'
           : ''
       }`}
@@ -88,7 +94,10 @@ const Navbar: React.FC = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center">
           <Link to="/" className={`flex items-center transition-transform duration-300 ${isScrolled ? 'scale-75 -translate-y-1' : ''}`}>
-            <Logo className="h-8 w-auto" variant={isFontDetailPage && isScrolled ? 'dark' : 'light'} />
+            <Logo 
+              className="h-8 w-auto" 
+              variant={isWhiteHeader && isScrolled ? 'dark' : 'light'} 
+            />
           </Link>
           
           {/* Desktop Navigation */}
@@ -98,7 +107,7 @@ const Navbar: React.FC = () => {
               className={`px-4 py-2 rounded-sm transition-colors font-['Listopad'] ${
                 isHomePage
                   ? 'bg-[#D9D9D9] text-[#141204] cursor-default'
-                  : isFontDetailPage && isScrolled
+                  : isWhiteHeader && isScrolled
                     ? 'bg-[#FFFFFC] text-[#141204] border border-[#141204] hover:bg-[#D9D9D9]'
                     : 'bg-[#FFFFFC] text-[#141204] hover:bg-[#D9D9D9]'
               }`}
@@ -110,7 +119,7 @@ const Navbar: React.FC = () => {
               className={`px-4 py-2 rounded-sm transition-colors font-['Listopad'] ${
                 isAboutPage
                   ? 'bg-[#D9D9D9] text-[#141204] cursor-default'
-                  : isFontDetailPage && isScrolled
+                  : isWhiteHeader && isScrolled
                     ? 'bg-[#FFFFFC] text-[#141204] border border-[#141204] hover:bg-[#D9D9D9]'
                     : 'bg-[#FFFFFC] text-[#141204] hover:bg-[#D9D9D9]'
               }`}
@@ -122,7 +131,7 @@ const Navbar: React.FC = () => {
                 <button
                   onClick={() => setShowDropdown(!showDropdown)}
                   className={`flex items-center px-4 py-2 transition-colors font-['Listopad'] ${
-                    isFontDetailPage && isScrolled
+                    isWhiteHeader && isScrolled
                       ? 'text-[#141204] hover:text-[#5E6572]'
                       : 'text-[#FFFFFC] hover:text-[#BCBDC0]'
                   }`}
@@ -174,7 +183,7 @@ const Navbar: React.FC = () => {
               <Link 
                 to="/login" 
                 className={`px-4 py-2 transition-colors font-['Listopad'] ${
-                  isFontDetailPage && isScrolled
+                  isWhiteHeader && isScrolled
                     ? 'text-[#141204] hover:text-[#5E6572]'
                     : 'text-[#FFFFFC] hover:text-[#BCBDC0]'
                 }`}
@@ -189,7 +198,7 @@ const Navbar: React.FC = () => {
             <button
               onClick={() => setIsOpen(!isOpen)}
               className={`transition-colors ${
-                isFontDetailPage && isScrolled
+                isWhiteHeader && isScrolled
                   ? 'text-[#141204] hover:text-[#5E6572]'
                   : 'text-[#FFFFFC] hover:text-[#BCBDC0]'
               } focus:outline-none`}
