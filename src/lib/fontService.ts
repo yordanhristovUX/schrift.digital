@@ -5,6 +5,7 @@ import { saveAs } from 'file-saver';
 
 export const getFeaturedFonts = async (limit = 3) => {
   try {
+    console.log('Fetching featured fonts...');
     const { data, error, count } = await supabase
       .from('fonts')
       .select('*', { count: 'exact' })
@@ -20,7 +21,7 @@ export const getFeaturedFonts = async (limit = 3) => {
     console.log(`Found ${count} featured fonts:`, data);
     
     if (!data || data.length === 0) {
-      console.warn('No featured fonts found');
+      console.log('No featured fonts found');
       return [];
     }
     
