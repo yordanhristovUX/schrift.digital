@@ -13,7 +13,11 @@ const LanguageSwitcher: React.FC = () => {
   return (
     <button
       onClick={toggleLanguage}
-      className="px-4 py-2 rounded-sm text-sm font-medium bg-[#FFFFFC] text-[#141204] hover:bg-[#D9D9D9] transition-colors font-['Listopad']"
+      className={`px-4 ${isScrolled ? 'py-1.5' : 'py-2'} rounded-sm transition-colors font-['Listopad'] ${
+        isWhiteHeader
+          ? 'bg-[#FFFFFC] text-[#141204] border border-[#141204] hover:bg-[#D9D9D9]'
+          : 'bg-[#FFFFFC] text-[#141204] hover:bg-[#D9D9D9]'
+      }`}
     >
       {i18n.language === 'bg' ? 'EN' : 'БГ'}
     </button>
