@@ -20,6 +20,8 @@ const Register: React.FC = () => {
     setError(null);
 
     try {
+      console.log('Starting registration process...');
+
       // Sign up with Supabase Auth
       const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email,
@@ -28,24 +30,18 @@ const Register: React.FC = () => {
           data: {
             full_name: fullName
           },
-          emailRedirectTo: `${window.location.origin}/login`,
-          // Add email template customization
-          emailOptions: {
-            template: 'signup',
-            data: {
-              full_name: fullName,
-              site_url: window.location.origin,
-              confirmation_url: `${window.location.origin}/login`
-            }
-          }
+          emailRedirectTo: `${window.location.origin}/login`
         }
       });
+
+      console.log('Sign up response:', { authData, signUpError });
 
       if (signUpError) throw signUpError;
 
       // Show confirmation message
       setConfirmationSent(true);
     } catch (err: any) {
+      console.error('Registration error:', err);
       setError(getAuthErrorMessage(err));
     } finally {
       setLoading(false);
