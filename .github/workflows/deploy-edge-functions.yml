@@ -1,12 +1,11 @@
-
- name: Deploy Supabase Edge Functions
+name: Deploy Supabase Edge Functions
 
 on:
   push:
-    paths:
-      - 'supabase/functions/**'
     branches:
       - main
+    paths:
+      - 'supabase/functions/**'
 
 jobs:
   deploy:
