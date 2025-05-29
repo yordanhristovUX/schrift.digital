@@ -1,0 +1,30 @@
+name: Deploy Supabase Edge Functions
+
+on:
+  push:
+    paths:
+      - 'supabase/functions/**'
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy Edge Function
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install Supabase CLI
+        run: npm install -g supabase
+
+      - name: Deploy Supabase Edge Functions
+        run: |
+          cd supabase
+          supabase functions deploy --project-ref ${{ secrets.SUPABASE_PROJECT_ID }} --token ${{ secrets.SUPABASE_ACCESS_TOKEN }}
