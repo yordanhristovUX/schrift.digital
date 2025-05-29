@@ -8,24 +8,40 @@ interface LanguageSwitcherProps {
 
 const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ isScrolled, isWhiteHeader }) => {
   const { i18n } = useTranslation();
-
-  const toggleLanguage = () => {
-    const newLang = i18n.language === 'bg' ? 'en' : 'bg';
+  
+  const setLanguage = (lang: 'bg' | 'en') => {
+    const newLang = lang;
     i18n.changeLanguage(newLang);
     document.documentElement.lang = newLang;
   };
 
   return (
-    <button
-      onClick={toggleLanguage}
-      className={`px-4 ${isScrolled ? 'py-1.5' : 'py-2'} rounded-sm transition-colors font-['Listopad'] ${
-        isWhiteHeader
-          ? 'bg-[#FFFFFC] text-[#141204] border border-[#141204] hover:bg-[#D9D9D9]'
-          : 'bg-[#FFFFFC] text-[#141204] hover:bg-[#D9D9D9]'
-      }`}
-    >
-      {i18n.language === 'bg' ? 'EN' : 'БГ'}
-    </button>
+    <div className={`flex rounded-sm overflow-hidden ${
+      isWhiteHeader
+        ? 'bg-[#FFFFFC] border border-[#141204]'
+        : 'bg-[#FFFFFC]'
+    }`}>
+      <button
+        onClick={() => setLanguage('bg')}
+        className={`px-3 ${isScrolled ? 'py-1.5' : 'py-2'} transition-colors font-['Listopad'] ${
+          i18n.language === 'bg'
+            ? 'bg-[#141204] text-[#FFFFFC]'
+            : 'text-[#141204] hover:bg-[#D9D9D9]'
+        }`}
+      >
+        БГ
+      </button>
+      <button
+        onClick={() => setLanguage('en')}
+        className={`px-3 ${isScrolled ? 'py-1.5' : 'py-2'} transition-colors font-['Listopad'] ${
+          i18n.language === 'en'
+            ? 'bg-[#141204] text-[#FFFFFC]'
+            : 'text-[#141204] hover:bg-[#D9D9D9]'
+        }`}
+      >
+        EN
+      </button>
+    </div>
   );
 };
 
