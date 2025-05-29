@@ -8,13 +8,23 @@ export const getFeaturedFonts = async (limit = 3) => {
     const { data, error } = await supabase
       .from('fonts')
       .select('*')
+      .eq('featured', true)
       .limit(limit);
       
-    if (error) throw error;
-    return data || [];
+    if (error) {
+      console.error('Supabase error:', error);
+      throw new Error(`Failed to fetch fonts: ${error.message}`);
+    }
+    
+    if (!data) {
+      console.warn('No fonts found');
+      return [];
+    }
+    
+    return data;
   } catch (err) {
     console.error('Error fetching featured fonts:', err);
-    return [];
+    throw err; // Re-throw to allow component-level error handling
   }
 };
 
@@ -26,11 +36,15 @@ export const getFontById = async (id: string): Promise<Font | null> => {
       .eq('id', id)
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('Supabase error:', error);
+      throw new Error(`Failed to fetch font: ${error.message}`);
+    }
+    
     return data;
   } catch (err) {
     console.error('Error fetching font:', err);
-    return null;
+    throw err;
   }
 };
 
@@ -43,7 +57,10 @@ export const incrementDownloads = async (fontId: string) => {
       .eq('id', fontId)
       .single();
 
-    if (fetchError) throw fetchError;
+    if (fetchError) {
+      console.error('Supabase error:', fetchError);
+      throw fetchError;
+    }
 
     // Increment the downloads count
     const newDownloads = (font?.downloads || 0) + 1;
@@ -54,9 +71,13 @@ export const incrementDownloads = async (fontId: string) => {
       .update({ downloads: newDownloads })
       .eq('id', fontId);
 
-    if (updateError) throw updateError;
+    if (updateError) {
+      console.error('Supabase error:', updateError);
+      throw updateError;
+    }
   } catch (err) {
     console.error('Error incrementing downloads:', err);
+    throw err;
   }
 };
 
@@ -85,6 +106,10 @@ export const downloadFont = async (font: Font, selectedWeight?: string, selected
       }
 
       const response = await fetch(fontFile.path);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch font file: ${response.statusText}`);
+      }
+      
       const blob = await response.blob();
       saveAs(blob, `${font.name}-${fontFile.weight}${fontFile.style !== 'Normal' ? `-${fontFile.style}` : ''}.${fontFile.path.split('.').pop()}`);
     } else {
@@ -99,6 +124,10 @@ export const downloadFont = async (font: Font, selectedWeight?: string, selected
       // Add each font file to the zip
       for (const [key, file] of Object.entries(font.weight_files)) {
         const response = await fetch(file.path);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch font file: ${response.statusText}`);
+        }
+        
         const blob = await response.blob();
         const fileName = `${font.name}-${file.weight}${file.style !== 'Normal' ? `-${file.style}` : ''}.${file.path.split('.').pop()}`;
         fontFolder.file(fileName, blob);
@@ -110,7 +139,7 @@ export const downloadFont = async (font: Font, selectedWeight?: string, selected
     }
   } catch (error) {
     console.error('Error downloading font:', error);
-    alert('Failed to download font. Please try again later.');
+    throw error;
   }
 };
 

@@ -12,31 +12,51 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: true
+  },
+  global: {
+    headers: {
+      'X-Client-Info': 'schrift-web',
+    }
   }
 });
 
 export const checkAdminRole = async () => {
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) return false;
-  
-  const { data, error } = await supabase
-    .from('users')
-    .select('role')
-    .eq('id', session.user.id)
-    .single();
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return false;
     
-  if (error || !data) return false;
-  return data.role === 'admin';
+    const { data, error } = await supabase
+      .from('users')
+      .select('role')
+      .eq('id', session.user.id)
+      .single();
+      
+    if (error || !data) return false;
+    return data.role === 'admin';
+  } catch (error) {
+    console.error('Error checking admin role:', error);
+    return false;
+  }
 };
 
 export const isAuthenticated = async () => {
-  const { data: { session } } = await supabase.auth.getSession();
-  return !!session;
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    return !!session;
+  } catch (error) {
+    console.error('Error checking authentication:', error);
+    return false;
+  }
 };
 
 export const getSession = async () => {
-  const { data: { session } } = await supabase.auth.getSession();
-  return session;
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    return session;
+  } catch (error) {
+    console.error('Error getting session:', error);
+    return null;
+  }
 };
 
 export const onAuthStateChange = (callback: (session: any) => void) => {
