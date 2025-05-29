@@ -1,16 +1,14 @@
-import { Font, FontWeight } from '../types/font';
+import { Font } from '../types/font';
 import { supabase } from './supabase';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 
 export const getFeaturedFonts = async (limit = 3) => {
   try {
-    console.log('Fetching featured fonts...');
-    const { data, error, count } = await supabase
+    console.log('Fetching fonts...');
+    const { data, error } = await supabase
       .from('fonts')
-      .select('*', { count: 'exact' })
-      .eq('featured', true)
-      .order('created_at', { ascending: false })
+      .select('*')
       .limit(limit);
       
     if (error) {
@@ -18,16 +16,16 @@ export const getFeaturedFonts = async (limit = 3) => {
       throw new Error(`Failed to fetch fonts: ${error.message}`);
     }
     
-    console.log(`Found ${count} featured fonts:`, data);
+    console.log('Fetched fonts:', data);
     
     if (!data || data.length === 0) {
-      console.log('No featured fonts found');
+      console.log('No fonts found');
       return [];
     }
     
     return data;
   } catch (err) {
-    console.error('Error fetching featured fonts:', err);
+    console.error('Error fetching fonts:', err);
     throw err;
   }
 };
