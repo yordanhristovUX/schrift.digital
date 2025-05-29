@@ -159,7 +159,7 @@ export const downloadFont = async (font: Font, selectedWeight?: string, selected
           throw new Error(`Failed to fetch font file: ${response.statusText}`);
         }
         // Cache the response
-        await cacheResponse(fontFile.path, response);
+        await cacheResponse(fontFile.path, response.clone());
       }
       
       const blob = await response.blob();
@@ -186,7 +186,7 @@ export const downloadFont = async (font: Font, selectedWeight?: string, selected
             throw new Error(`Failed to fetch font file: ${response.statusText}`);
           }
           // Cache the response
-          await cacheResponse(file.path, response);
+          await cacheResponse(file.path, response.clone());
         }
         
         const blob = await response.blob();
@@ -221,9 +221,12 @@ export const loadFontFaces = async (fonts: Font[]) => {
           } else {
             const response = await fetch(file.path);
             if (response.ok) {
+              // Clone the response before using it
+              const responseClone = response.clone();
+              // Cache the cloned response
+              await cacheResponse(file.path, responseClone);
+              // Use the original response for creating the blob
               const blob = await response.blob();
-              // Cache the response
-              await cacheResponse(file.path, response.clone());
               fontUrl = URL.createObjectURL(blob);
             }
           }
