@@ -17,9 +17,9 @@ serve(async (req) => {
   }
 
   try {
-    const { user } = await req.json();
+    const { record } = await req.json();
 
-    if (!user?.id || !user?.email) {
+    if (!record?.id || !record?.email) {
       throw new Error('Missing user data');
     }
 
@@ -28,9 +28,9 @@ serve(async (req) => {
       .from('users')
       .insert([
         {
-          id: user.id,
-          email: user.email,
-          full_name: user.user_metadata?.full_name || '',
+          id: record.id,
+          email: record.email,
+          full_name: record.raw_user_meta_data?.full_name || '',
           role: 'user'
         }
       ]);
