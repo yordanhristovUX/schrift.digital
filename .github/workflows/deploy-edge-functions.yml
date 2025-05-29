@@ -1,3 +1,7 @@
+
+      
+- name: Debug - Show project ref
+  run: echo "Project Ref is ${{ secrets.SUPABASE_PROJECT_ID }}"
 name: Deploy Supabase Edge Functions
 
 on:
@@ -6,6 +10,7 @@ on:
       - 'supabase/functions/**'
     branches:
       - main
+
 
 jobs:
   deploy:
