@@ -1,7 +1,5 @@
 
-      
-
-name: Deploy Supabase Edge Functions
+ name: Deploy Supabase Edge Functions
 
 on:
   push:
@@ -10,16 +8,15 @@ on:
     branches:
       - main
 
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
     name: Deploy Edge Function
 
     steps:
+      - name: Debug - Show project ref
+        run: echo "Project Ref is ${{ secrets.SUPABASE_PROJECT_ID }}"
 
-    - name: Debug - Show project ref
-  run: echo "Project Ref is ${{ secrets.SUPABASE_PROJECT_ID }}"
       - name: Checkout repo
         uses: actions/checkout@v3
 
