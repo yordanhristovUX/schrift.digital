@@ -129,7 +129,7 @@ const Navbar: React.FC = () => {
             >
               {t('nav:about')}
             </Link>
-            <LanguageSwitcher />
+            <LanguageSwitcher isScrolled={isScrolled} isWhiteHeader={isWhiteHeader} />
             {user ? (
               <div className="relative user-dropdown">
                 <button
@@ -199,7 +199,7 @@ const Navbar: React.FC = () => {
           
           {/* Mobile menu button */}
           <div className="md:hidden flex items-center space-x-2">
-            <LanguageSwitcher />
+            <LanguageSwitcher isScrolled={isScrolled} isWhiteHeader={isWhiteHeader} />
             <button
               onClick={() => setIsOpen(!isOpen)}
               className={`transition-colors ${

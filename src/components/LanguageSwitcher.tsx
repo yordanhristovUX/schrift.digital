@@ -1,7 +1,12 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-const LanguageSwitcher: React.FC = () => {
+interface LanguageSwitcherProps {
+  isScrolled: boolean;
+  isWhiteHeader: boolean;
+}
+
+const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ isScrolled, isWhiteHeader }) => {
   const { i18n } = useTranslation();
 
   const toggleLanguage = () => {
