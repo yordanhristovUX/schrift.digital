@@ -21,10 +21,7 @@ jobs:
         with:
           node-version: 18
 
-      - name: Install Supabase CLI
-        run: npm install -g supabase
-
-      - name: Deploy Supabase Edge Functions
+      - name: Deploy Supabase Edge Functions via NPX
         run: |
           cd supabase
-          supabase functions deploy --project-ref ${{ secrets.SUPABASE_PROJECT_ID }} --token ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          npx supabase functions deploy --project-ref ${{ secrets.SUPABASE_PROJECT_ID }} --token ${{ secrets.SUPABASE_ACCESS_TOKEN }}
