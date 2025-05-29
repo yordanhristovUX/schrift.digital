@@ -25,8 +25,8 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ isScrolled, isWhite
         onClick={() => setLanguage('bg')}
         className={`px-3 ${isScrolled ? 'py-1.5' : 'py-2'} transition-colors font-['Listopad'] ${
           i18n.language === 'bg'
-            ? 'bg-[#141204] text-[#FFFFFC]'
-            : 'text-[#141204] hover:bg-[#D9D9D9]'
+            ? 'text-[#141204] hover:bg-[#D9D9D9]'
+            : 'bg-[#141204] text-[#FFFFFC]'
         }`}
       >
         БГ
@@ -35,8 +35,8 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ isScrolled, isWhite
         onClick={() => setLanguage('en')}
         className={`px-3 ${isScrolled ? 'py-1.5' : 'py-2'} transition-colors font-['Listopad'] ${
           i18n.language === 'en'
-            ? 'bg-[#141204] text-[#FFFFFC]'
-            : 'text-[#141204] hover:bg-[#D9D9D9]'
+            ? 'text-[#141204] hover:bg-[#D9D9D9]'
+            : 'bg-[#141204] text-[#FFFFFC]'
         }`}
       >
         EN
