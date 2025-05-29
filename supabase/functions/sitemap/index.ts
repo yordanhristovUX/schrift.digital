@@ -7,21 +7,42 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
 
   try {
+    // Verify environment variables
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY');
+
+    if (!supabaseUrl || !supabaseKey) {
+      throw new Error('Missing required environment variables');
+    }
+
     // Initialize Supabase client
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
+    // Test database connection
+    const { data: testData, error: testError } = await supabase
+      .from('fonts')
+      .select('count')
+      .single();
+
+    if (testError) {
+      throw new Error(`Database connection failed: ${testError.message}`);
+    }
+
     // Fetch all fonts
-    const { data: fonts } = await supabase
+    const { data: fonts, error: fontsError } = await supabase
       .from('fonts')
       .select('id, updated_at')
       .order('updated_at', { ascending: false });
+
+    if (fontsError) {
+      throw new Error(`Failed to fetch fonts: ${fontsError.message}`);
+    }
 
     const baseUrl = 'https://schrift.digital';
     const today = new Date().toISOString().split('T')[0];
@@ -70,12 +91,18 @@ serve(async (req) => {
     });
   } catch (error) {
     console.error('Error generating sitemap:', error);
-    return new Response(JSON.stringify({ error: 'Failed to generate sitemap' }), {
-      status: 500,
-      headers: {
-        ...corsHeaders,
-        'Content-Type': 'application/json',
-      },
-    });
+    return new Response(
+      JSON.stringify({ 
+        error: error instanceof Error ? error.message : 'Failed to generate sitemap',
+        timestamp: new Date().toISOString()
+      }), 
+      {
+        status: 500,
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
   }
 });
