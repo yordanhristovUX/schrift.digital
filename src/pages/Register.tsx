@@ -22,7 +22,6 @@ const Register: React.FC = () => {
     try {
       console.log('Starting registration process...');
 
-      // Sign up with Supabase Auth
       const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
@@ -38,7 +37,6 @@ const Register: React.FC = () => {
 
       if (signUpError) throw signUpError;
 
-      // Show confirmation message
       setConfirmationSent(true);
     } catch (err: any) {
       console.error('Registration error:', err);
