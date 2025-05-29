@@ -1,12 +1,7 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
-import { createClient } from 'npm:@supabase/supabase-js@2.39.3';
 import { Resend } from 'npm:resend@2.1.0';
 
 const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
-const supabase = createClient(
-  Deno.env.get('SUPABASE_URL') ?? '',
-  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-);
 
 serve(async (req) => {
   const corsHeaders = {
