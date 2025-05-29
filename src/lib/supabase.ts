@@ -7,76 +7,85 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase environment variables');
 }
 
+console.log('Initializing Supabase client with URL:', supabaseUrl);
+
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: true
-  },
-  global: {
-    headers: {
-      'X-Client-Info': 'schrift-web',
-    }
   }
 });
 
-export const checkAdminRole = async () => {
+export const testConnection = async () => {
   try {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return false;
+    console.log('Testing Supabase connection...');
     
-    const { data, error } = await supabase
-      .from('users')
-      .select('role')
-      .eq('id', session.user.id)
+    // First test basic connection
+    const { data: fontsData, error: fontsError } = await supabase
+      .from('fonts')
+      .select('count')
       .single();
       
-    if (error || !data) return false;
-    return data.role === 'admin';
+    if (fontsError) {
+      console.error('Fonts query error:', fontsError);
+      throw fontsError;
+    }
+
+    console.log('Fonts count:', fontsData);
+
+    // Test featured fonts query
+    const { data: featuredData, error: featuredError } = await supabase
+      .from('fonts')
+      .select('*')
+      .eq('featured', true)
+      .limit(3);
+
+    if (featuredError) {
+      console.error('Featured fonts query error:', featuredError);
+      throw featuredError;
+    }
+
+    console.log('Featured fonts:', featuredData);
+    
+    return true;
   } catch (error) {
-    console.error('Error checking admin role:', error);
+    console.error('Supabase connection test failed:', error);
     return false;
   }
+};
+
+// Test connection immediately
+testConnection().then(success => {
+  console.log('Connection test result:', success);
+});
+
+export const checkAdminRole = async () => {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) return false;
+  
+  const { data, error } = await supabase
+    .from('users')
+    .select('role')
+    .eq('id', session.user.id)
+    .single();
+    
+  if (error || !data) return false;
+  return data.role === 'admin';
 };
 
 export const isAuthenticated = async () => {
-  try {
-    const { data: { session } } = await supabase.auth.getSession();
-    return !!session;
-  } catch (error) {
-    console.error('Error checking authentication:', error);
-    return false;
-  }
+  const { data: { session } } = await supabase.auth.getSession();
+  return !!session;
 };
 
 export const getSession = async () => {
-  try {
-    const { data: { session } } = await supabase.auth.getSession();
-    return session;
-  } catch (error) {
-    console.error('Error getting session:', error);
-    return null;
-  }
+  const { data: { session } } = await supabase.auth.getSession();
+  return session;
 };
 
 export const onAuthStateChange = (callback: (session: any) => void) => {
   return supabase.auth.onAuthStateChange((_event, session) => {
     callback(session);
   });
-};
-
-export const testConnection = async () => {
-  try {
-    const { data, error } = await supabase
-      .from('users')
-      .select('count')
-      .single();
-      
-    if (error) throw error;
-    console.log('Supabase connection successful');
-    return true;
-  } catch (error) {
-    console.error('Supabase connection error:', error);
-    return false;
-  }
 };
