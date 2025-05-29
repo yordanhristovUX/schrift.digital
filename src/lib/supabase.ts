@@ -17,6 +17,30 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   }
 });
 
+// Test email configuration
+export const testEmailConfig = async () => {
+  try {
+    // Test auth settings by attempting to send a password reset email
+    const { error } = await supabase.auth.resetPasswordForEmail(
+      'test@example.com',
+      {
+        redirectTo: `${window.location.origin}/reset-password`,
+      }
+    );
+
+    if (error) {
+      console.error('Email configuration test failed:', error);
+      return false;
+    }
+
+    console.log('Email configuration test successful');
+    return true;
+  } catch (error) {
+    console.error('Email configuration test error:', error);
+    return false;
+  }
+};
+
 export const testConnection = async () => {
   try {
     console.log('Testing Supabase connection...');
@@ -47,6 +71,10 @@ export const testConnection = async () => {
     }
 
     console.log('Featured fonts:', featuredData);
+    
+    // Test email configuration
+    const emailConfigWorking = await testEmailConfig();
+    console.log('Email configuration working:', emailConfigWorking);
     
     return true;
   } catch (error) {
