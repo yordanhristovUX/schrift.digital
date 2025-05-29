@@ -5,10 +5,11 @@ import { saveAs } from 'file-saver';
 
 export const getFeaturedFonts = async (limit = 3) => {
   try {
-    const { data, error } = await supabase
+    const { data, error, count } = await supabase
       .from('fonts')
-      .select('*')
+      .select('*', { count: 'exact' })
       .eq('featured', true)
+      .order('created_at', { ascending: false })
       .limit(limit);
       
     if (error) {
@@ -16,15 +17,17 @@ export const getFeaturedFonts = async (limit = 3) => {
       throw new Error(`Failed to fetch fonts: ${error.message}`);
     }
     
-    if (!data) {
-      console.warn('No fonts found');
+    console.log(`Found ${count} featured fonts:`, data);
+    
+    if (!data || data.length === 0) {
+      console.warn('No featured fonts found');
       return [];
     }
     
     return data;
   } catch (err) {
     console.error('Error fetching featured fonts:', err);
-    throw err; // Re-throw to allow component-level error handling
+    throw err;
   }
 };
 
@@ -50,7 +53,6 @@ export const getFontById = async (id: string): Promise<Font | null> => {
 
 export const incrementDownloads = async (fontId: string) => {
   try {
-    // First get the current downloads count
     const { data: font, error: fetchError } = await supabase
       .from('fonts')
       .select('downloads')
@@ -62,10 +64,8 @@ export const incrementDownloads = async (fontId: string) => {
       throw fetchError;
     }
 
-    // Increment the downloads count
     const newDownloads = (font?.downloads || 0) + 1;
 
-    // Update the font with the new downloads count
     const { error: updateError } = await supabase
       .from('fonts')
       .update({ downloads: newDownloads })
@@ -92,11 +92,9 @@ export const downloadFont = async (font: Font, selectedWeight?: string, selected
       throw new Error('No font files available');
     }
 
-    // Increment download count
     await incrementDownloads(font.id);
 
     if (selectedWeight && selectedStyle) {
-      // Find the specific weight and style combination
       const fontFile = Object.values(font.weight_files).find(
         file => file.weight === selectedWeight && file.style === selectedStyle
       );
@@ -113,7 +111,6 @@ export const downloadFont = async (font: Font, selectedWeight?: string, selected
       const blob = await response.blob();
       saveAs(blob, `${font.name}-${fontFile.weight}${fontFile.style !== 'Normal' ? `-${fontFile.style}` : ''}.${fontFile.path.split('.').pop()}`);
     } else {
-      // Download all weights in a zip file
       const zip = new JSZip();
       const fontFolder = zip.folder(font.name);
       
@@ -121,7 +118,6 @@ export const downloadFont = async (font: Font, selectedWeight?: string, selected
         throw new Error('Failed to create zip folder');
       }
 
-      // Add each font file to the zip
       for (const [key, file] of Object.entries(font.weight_files)) {
         const response = await fetch(file.path);
         if (!response.ok) {
@@ -133,7 +129,6 @@ export const downloadFont = async (font: Font, selectedWeight?: string, selected
         fontFolder.file(fileName, blob);
       }
 
-      // Generate and download the zip file
       const zipBlob = await zip.generateAsync({ type: 'blob' });
       saveAs(zipBlob, `${font.name}-family.zip`);
     }
