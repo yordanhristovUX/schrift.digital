@@ -3,6 +3,51 @@ import { supabase } from './supabase';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 
+// Cache configuration
+const CACHE_NAME = 'schrift-fonts-v1';
+const CACHE_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
+
+// Helper function to check if cache is supported
+const isCacheSupported = () => {
+  return 'caches' in window;
+};
+
+// Helper function to get cached response
+const getCachedResponse = async (url: string) => {
+  if (!isCacheSupported()) return null;
+  
+  try {
+    const cache = await caches.open(CACHE_NAME);
+    const cachedResponse = await cache.match(url);
+    
+    if (!cachedResponse) return null;
+    
+    // Check if cache is expired
+    const cachedDate = new Date(cachedResponse.headers.get('date') || '');
+    if (Date.now() - cachedDate.getTime() > CACHE_DURATION) {
+      await cache.delete(url);
+      return null;
+    }
+    
+    return cachedResponse;
+  } catch (error) {
+    console.error('Cache error:', error);
+    return null;
+  }
+};
+
+// Helper function to cache response
+const cacheResponse = async (url: string, response: Response) => {
+  if (!isCacheSupported()) return;
+  
+  try {
+    const cache = await caches.open(CACHE_NAME);
+    await cache.put(url, response.clone());
+  } catch (error) {
+    console.error('Cache error:', error);
+  }
+};
+
 export const getFeaturedFonts = async (limit = 3) => {
   try {
     console.log('Fetching fonts...');
@@ -102,9 +147,19 @@ export const downloadFont = async (font: Font, selectedWeight?: string, selected
         throw new Error('Selected weight and style combination not found');
       }
 
-      const response = await fetch(fontFile.path);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch font file: ${response.statusText}`);
+      // Try to get font from cache first
+      const cachedResponse = await getCachedResponse(fontFile.path);
+      let response;
+
+      if (cachedResponse) {
+        response = cachedResponse;
+      } else {
+        response = await fetch(fontFile.path);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch font file: ${response.statusText}`);
+        }
+        // Cache the response
+        await cacheResponse(fontFile.path, response);
       }
       
       const blob = await response.blob();
@@ -117,10 +172,21 @@ export const downloadFont = async (font: Font, selectedWeight?: string, selected
         throw new Error('Failed to create zip folder');
       }
 
+      // Download and cache all font files
       for (const [key, file] of Object.entries(font.weight_files)) {
-        const response = await fetch(file.path);
-        if (!response.ok) {
-          throw new Error(`Failed to fetch font file: ${response.statusText}`);
+        // Try to get font from cache first
+        const cachedResponse = await getCachedResponse(file.path);
+        let response;
+
+        if (cachedResponse) {
+          response = cachedResponse;
+        } else {
+          response = await fetch(file.path);
+          if (!response.ok) {
+            throw new Error(`Failed to fetch font file: ${response.statusText}`);
+          }
+          // Cache the response
+          await cacheResponse(file.path, response);
         }
         
         const blob = await response.blob();
@@ -137,25 +203,46 @@ export const downloadFont = async (font: Font, selectedWeight?: string, selected
   }
 };
 
-export const loadFontFaces = (fonts: Font[]) => {
-  fonts.forEach(font => {
+export const loadFontFaces = async (fonts: Font[]) => {
+  for (const font of fonts) {
     if (font.weight_files) {
       const style = document.createElement('style');
       document.head.appendChild(style);
 
-      const fontFaces = Object.entries(font.weight_files).map(([key, file]) => `
-        @font-face {
-          font-family: "${font.name}";
-          src: url("${file.path}");
-          font-weight: ${getWeightValue(file.weight)};
-          font-style: ${file.style.toLowerCase()};
-          font-display: swap;
-        }
-      `).join('\n');
+      const fontFaces = await Promise.all(
+        Object.entries(font.weight_files).map(async ([key, file]) => {
+          // Try to get font from cache first
+          const cachedResponse = await getCachedResponse(file.path);
+          let fontUrl = file.path;
 
-      style.textContent = fontFaces;
+          if (cachedResponse) {
+            const blob = await cachedResponse.blob();
+            fontUrl = URL.createObjectURL(blob);
+          } else {
+            const response = await fetch(file.path);
+            if (response.ok) {
+              const blob = await response.blob();
+              // Cache the response
+              await cacheResponse(file.path, response.clone());
+              fontUrl = URL.createObjectURL(blob);
+            }
+          }
+
+          return `
+            @font-face {
+              font-family: "${font.name}";
+              src: url("${fontUrl}");
+              font-weight: ${getWeightValue(file.weight)};
+              font-style: ${file.style.toLowerCase()};
+              font-display: swap;
+            }
+          `;
+        })
+      );
+
+      style.textContent = fontFaces.join('\n');
     }
-  });
+  }
 };
 
 export const getWeightValue = (weight: string): number => {
