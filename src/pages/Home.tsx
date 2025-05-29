@@ -9,6 +9,7 @@ import { getFeaturedFonts, loadFontFaces, getGroupedWeights, getWeightValue } fr
 const Home: React.FC = () => {
   const [fonts, setFonts] = useState<Font[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [previewText, setPreviewText] = useState('Щурецът свири, а жабите скачат върху дъбови листа.');
   const [fontSizes, setFontSizes] = useState<Record<string, number>>({});
   const [fontWeights, setFontWeights] = useState<Record<string, number>>({});
@@ -18,7 +19,22 @@ const Home: React.FC = () => {
   useEffect(() => {
     const fetchFonts = async () => {
       try {
+        // Test direct Supabase query first
+        const { data: directData, error: directError } = await supabase
+          .from('fonts')
+          .select('*')
+          .eq('featured', true)
+          .limit(3);
+
+        if (directError) {
+          throw directError;
+        }
+
+        console.log('Direct query result:', directData);
+        
+        // Then try through the service
         const data = await getFeaturedFonts();
+        console.log('Service query result:', data);
         
         // Initialize font sizes and weights
         const sizes: Record<string, number> = {};
@@ -34,8 +50,9 @@ const Home: React.FC = () => {
 
         // Load fonts dynamically
         loadFontFaces(data);
-      } catch (err) {
+      } catch (err: any) {
         console.error('Error fetching fonts:', err);
+        setError(err.message || 'Failed to fetch fonts');
       } finally {
         setLoading(false);
       }
@@ -74,6 +91,16 @@ const Home: React.FC = () => {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-sm h-12 w-12 border-b-2 border-[#141204]"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-red-600 p-4 bg-red-50 rounded-sm">
+          Error: {error}
+        </div>
       </div>
     );
   }
