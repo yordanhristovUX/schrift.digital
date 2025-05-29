@@ -14,7 +14,7 @@ jobs:
 
     steps:
       - name: Debug - Show project ref
-        run: echo "Project Ref is ${{ secrets.SUPABASE_PROJECT_ID }}"
+        run: echo "Project Ref is ${{ secrets.VITE_SUPABASE_URL }}"
 
       - name: Checkout repo
         uses: actions/checkout@v3
@@ -27,4 +27,4 @@ jobs:
       - name: Deploy Supabase Edge Functions via NPX
         run: |
           cd supabase
-          npx supabase functions deploy --project-ref ${{ secrets.SUPABASE_PROJECT_ID }} --token ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          npx supabase functions deploy --project-ref ${{ secrets.VITE_SUPABASE_URL }} --token ${{ secrets.VITE_SUPABASE_ANON_KEY }}
