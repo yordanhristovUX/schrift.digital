@@ -17,33 +17,34 @@ serve(async (req) => {
   }
 
   try {
-    const { record, type } = await req.json();
+    const { user } = await req.json();
 
-    if (type === 'INSERT' && record?.id) {
-      // Send welcome email
-      const { error: emailError } = await supabase.auth.admin.sendEmailInvite({
-        email: record.email,
-        data: {
-          full_name: record.full_name,
-        },
-      });
-
-      if (emailError) throw emailError;
-
-      return new Response(JSON.stringify({ message: 'Welcome email sent' }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200,
-      });
+    if (!user?.id || !user?.email) {
+      throw new Error('Missing user data');
     }
 
-    return new Response(JSON.stringify({ message: 'No action taken' }), {
+    // Insert into public.users table
+    const { error: insertError } = await supabase
+      .from('users')
+      .insert([
+        {
+          id: user.id,
+          email: user.email,
+          full_name: user.user_metadata?.full_name || '',
+          role: 'user'
+        }
+      ]);
+
+    if (insertError) throw insertError;
+
+    return new Response(JSON.stringify({ message: 'User created successfully' }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 200,
+      status: 200
     });
   } catch (error) {
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 400,
+      status: 400
     });
   }
 });

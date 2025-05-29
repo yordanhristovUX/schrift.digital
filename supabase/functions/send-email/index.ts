@@ -9,59 +9,60 @@ const supabase = createClient(
 );
 
 serve(async (req) => {
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  };
+
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders });
+  }
+
   try {
     const { type, email, data } = await req.json();
 
-    let template;
     let subject;
+    let html;
 
     switch (type) {
       case 'confirmation':
-        template = 'confirmation';
         subject = 'Confirm your email address';
+        html = `
+          <h1>Confirm your email address</h1>
+          <p>Hello ${data.full_name},</p>
+          <p>Please confirm your email address by clicking the link below:</p>
+          <p><a href="${data.confirmation_url}">Confirm Email</a></p>
+        `;
         break;
       case 'recovery':
-        template = 'recovery';
         subject = 'Reset your password';
-        break;
-      case 'magic-link':
-        template = 'magic-link';
-        subject = 'Your magic link';
+        html = `
+          <h1>Reset your password</h1>
+          <p>Hello,</p>
+          <p>Click the link below to reset your password:</p>
+          <p><a href="${data.reset_url}">Reset Password</a></p>
+        `;
         break;
       default:
         throw new Error('Invalid email type');
     }
 
-    const { error: templateError, data: templateData } = await supabase
-      .storage
-      .from('email-templates')
-      .download(`${template}.html`);
-
-    if (templateError) {
-      throw templateError;
-    }
-
-    const templateContent = await templateData.text();
-    const htmlContent = templateContent.replace(/\${([^}]+)}/g, (_, key) => data[key] || '');
-
     const { data: emailData, error: emailError } = await resend.emails.send({
       from: 'Schrift.Digital <noreply@schrift.digital>',
       to: email,
-      subject: subject,
-      html: htmlContent
+      subject,
+      html
     });
 
-    if (emailError) {
-      throw emailError;
-    }
+    if (emailError) throw emailError;
 
     return new Response(JSON.stringify(emailData), {
-      headers: { 'Content-Type': 'application/json' },
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200
     });
   } catch (error) {
     return new Response(JSON.stringify({ error: error.message }), {
-      headers: { 'Content-Type': 'application/json' },
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 400
     });
   }
