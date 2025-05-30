@@ -4,29 +4,3 @@ site_url = "https://schrift.digital"
 additional_redirect_urls = ["https://schrift.digital/*"]
 jwt_expiry = 3600
 enable_signup = true
-
-[auth.email]
-enable_signup = true
-enable_confirmations = true
-double_confirm_changes = true
-
-[auth.email.template.invite]
-subject = "Welcome to Schrift.Digital"
-content_path = "emails/invite.html"
-
-[auth.email.template.confirmation]
-subject = "Confirm your email address"
-content_path = "emails/confirmation.html"
-
-[auth.email.template.recovery]
-subject = "Reset your password"
-content_path = "emails/recovery.html"
-
-[auth.email.template.magic_link]
-subject = "Your magic link"
-content_path = "emails/magic-link.html"
-
-[auth.email.template.email_change]
-subject = "Confirm your new email address"
-content_path = "emails/email-change.html"
-
