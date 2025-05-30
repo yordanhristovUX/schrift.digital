@@ -13,9 +13,6 @@ jobs:
     name: Deploy Edge Function
 
     steps:
-      - name: Debug - Show project ref
-        run: echo "Project Ref is ${{ secrets.VITE_SUPABASE_URL }}"
-
       - name: Checkout repo
         uses: actions/checkout@v3
 
@@ -24,7 +21,13 @@ jobs:
         with:
           node-version: 18
 
-      - name: Deploy Supabase Edge Functions via NPX
+      - name: Install Supabase CLI
+        run: npm install -g supabase
+
+      - name: Deploy Supabase Function
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
         run: |
           cd supabase
-          npx supabase functions deploy --project-ref ${{ secrets.VITE_SUPABASE_URL }} --token ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          npx supabase functions deploy <your-function-name> \
+            --project-ref ${{ secrets.SUPABASE_PROJECT_ID }}
