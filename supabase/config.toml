@@ -30,11 +30,3 @@ content_path = "emails/magic-link.html"
 subject = "Confirm your new email address"
 content_path = "emails/email-change.html"
 
-[auth.smtp]
-host = "smtp.resend.com"
-port = 587
-user = "resend"
-password = "${RESEND_API_KEY}"
-sender_name = "Schrift.Digital"
-sender_email = "noreply@schrift.digital"
-admin_email = "admin@schrift.digital"
