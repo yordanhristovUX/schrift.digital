@@ -67,6 +67,28 @@ npm run dev
 - `npm run build` - Build for production
 - `npm run preview` - Preview production build locally
 
+## Package Management
+
+The project uses npm for package management with two key configuration files:
+
+### package.json
+- Main project configuration
+- Defines:
+  - Project metadata
+  - Dependencies for production
+  - Development dependencies
+  - Build and development scripts
+  - Module type (ES modules)
+
+### package-lock.json
+- Automatically generated dependency lock file
+- Ensures consistent installations across environments
+- Contains:
+  - Exact versions of all packages
+  - Complete dependency tree
+  - Integrity hashes
+- Should always be committed to version control
+
 ## TypeScript Configuration
 
 The project uses a split TypeScript configuration approach for better separation of concerns:
