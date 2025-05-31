@@ -79,11 +79,37 @@ This separation allows for different TypeScript settings between browser and Nod
 
 ## Routing and Navigation
 
+
 The project uses React Router for client-side routing with a catch-all redirect setup:
 
 1. The `public/_redirects` file tells the server to redirect all requests to `index.html`
 2. When a page is not found, React Router renders the `NotFound` component (`src/pages/NotFound.tsx`)
 3. This enables client-side routing while ensuring proper handling of 404 cases
+
+## Build Configuration
+
+### Tailwind CSS
+
+The project uses Tailwind CSS with a custom configuration (`tailwind.config.js`) that:
+
+- Scans all HTML/JS/TS/TSX files for classes
+- Extends the default theme with custom design tokens
+- Defines semantic color variables for:
+  - Background colors (primary, secondary, tertiary, inverse)
+  - Text colors (primary, secondary, tertiary, inverse)
+  - Border colors (primary, secondary)
+  - Action colors (primary, secondary with hover states)
+
+### Vite
+
+Vite configuration (`vite.config.ts`) includes:
+
+- React plugin for JSX/TSX support
+- Custom sitemap generation during build
+- Optimized chunk splitting:
+  - Vendor bundle for React and routing
+  - Automatic code splitting for optimal loading
+- Development server with hot module replacement
 
 ## License
 
