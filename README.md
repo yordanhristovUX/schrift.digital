@@ -111,6 +111,17 @@ Vite configuration (`vite.config.ts`) includes:
   - Automatic code splitting for optimal loading
 - Development server with hot module replacement
 
+## ESLint Configuration
+
+The project uses ESLint's modern flat config format (`eslint.config.js`) with:
+
+- TypeScript support via `typescript-eslint`
+- React Hooks linting rules
+- React Refresh plugin for development
+- Browser environment globals
+- ECMAScript 2020 features
+- Ignores build output (`dist`)
+
 ## License
 
 All rights reserved.
