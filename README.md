@@ -67,10 +67,6 @@ npm run dev
 - `npm run build` - Build for production
 - `npm run preview` - Preview production build locally
 
-## Deployment
-
-The site is automatically deployed to Netlify when changes are pushed to the main branch.
-
 ## License
 
 All rights reserved.
