@@ -67,6 +67,24 @@ npm run dev
 - `npm run build` - Build for production
 - `npm run preview` - Preview production build locally
 
+## TypeScript Configuration
+
+The project uses a split TypeScript configuration approach for better separation of concerns:
+
+- `tsconfig.json` - Base configuration file that references other specific configs
+- `tsconfig.app.json` - Configuration for the React application source code
+- `tsconfig.node.json` - Configuration for Node.js files like `vite.config.ts`
+
+This separation allows for different TypeScript settings between browser and Node.js environments.
+
+## Routing and Navigation
+
+The project uses React Router for client-side routing with a catch-all redirect setup:
+
+1. The `public/_redirects` file tells the server to redirect all requests to `index.html`
+2. When a page is not found, React Router renders the `NotFound` component (`src/pages/NotFound.tsx`)
+3. This enables client-side routing while ensuring proper handling of 404 cases
+
 ## License
 
 All rights reserved.
