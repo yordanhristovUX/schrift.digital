@@ -1,9 +1,19 @@
 import type { Config } from 'tailwindcss'
 
 const config: Config = {
-  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
+  content: [
+    './index.html',
+    './src/**/*.{js,ts,jsx,tsx}',
+    './src/components/**/*.{js,ts,jsx,tsx}'
+  ],
+  future: {
+    hoverOnlyWhenSupported: true
+  },
   theme: {
     extend: {
+      fontFamily: {
+        listopad: ['Listopad', 'sans-serif']
+      },
       colors: {
         background: {
           DEFAULT: 'var(--color-background-primary)',
@@ -34,7 +44,8 @@ const config: Config = {
       }
     }
   },
-  plugins: []
+  plugins: [],
+  darkMode: 'class'
 }
 
 export default config;
