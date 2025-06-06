@@ -1,0 +1,82 @@
+name: Debug Supabase Functions
+
+on:
+  workflow_dispatch: # Manual trigger for debugging
+
+jobs:
+  debug:
+    name: Debug Supabase Functions Access
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Debug Supabase CLI and Permissions
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+        run: |
+          echo "🔍 Debugging Supabase CLI and permissions..."
+          echo ""
+          
+          echo "📋 Supabase CLI Version:"
+          supabase --version
+          echo ""
+          
+          echo "🔑 Checking if access token is set:"
+          if [ -n "$SUPABASE_ACCESS_TOKEN" ]; then
+            echo "✅ SUPABASE_ACCESS_TOKEN is set (length: ${#SUPABASE_ACCESS_TOKEN})"
+          else
+            echo "❌ SUPABASE_ACCESS_TOKEN is not set"
+            exit 1
+          fi
+          echo ""
+          
+          echo "🏗️ Checking if project ID is set:"
+          if [ -n "$SUPABASE_PROJECT_ID" ]; then
+            echo "✅ SUPABASE_PROJECT_ID is set: $SUPABASE_PROJECT_ID"
+          else
+            echo "❌ SUPABASE_PROJECT_ID is not set"
+            exit 1
+          fi
+          echo ""
+          
+          echo "🔍 Testing basic Supabase CLI connectivity..."
+          if supabase projects list 2>/dev/null | grep -q "$SUPABASE_PROJECT_ID"; then
+            echo "✅ Can access project via CLI"
+          else
+            echo "⚠️ Cannot find project in projects list or access denied"
+            echo "Available projects:"
+            supabase projects list 2>/dev/null || echo "Failed to list projects"
+          fi
+          echo ""
+          
+          echo "📋 Attempting to list functions with verbose output..."
+          echo "Command: supabase functions list --project-ref $SUPABASE_PROJECT_ID"
+          
+          # Try with different output formats
+          echo ""
+          echo "--- Raw output ---"
+          supabase functions list --project-ref "$SUPABASE_PROJECT_ID" 2>&1 || echo "Command failed"
+          
+          echo ""
+          echo "--- JSON output ---"
+          supabase functions list --project-ref "$SUPABASE_PROJECT_ID" --output json 2>&1 || echo "JSON command failed"
+          
+          echo ""
+          echo "--- With debug flag ---"
+          supabase functions list --project-ref "$SUPABASE_PROJECT_ID" --debug 2>&1 || echo "Debug command failed"
+          
+          echo ""
+          echo "🔍 Checking if any functions exist by trying to get one specifically..."
+          supabase functions get test-function --project-ref "$SUPABASE_PROJECT_ID" 2>&1 || echo "test-function not found or command failed"
+          
+          echo ""
+          echo "🔍 Trying alternative approach - checking project status..."
+          supabase status --project-ref "$SUPABASE_PROJECT_ID" 2>&1 || echo "Status command failed"
