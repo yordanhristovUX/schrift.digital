@@ -35,7 +35,30 @@ jobs:
           echo "📋 Checking current migration status..."
           supabase migration list
           
-          echo "🚀 Deploying migrations..."
+          echo "🔍 Checking for migration sync issues..."
+          if supabase migration list 2>&1 | grep -q "Remote migration versions not found"; then
+            echo "⚠️ Migration sync issue detected. Attempting to resolve..."
+            
+            echo "📥 Pulling remote migration history..."
+            supabase db pull --schema public,auth,storage
+            
+            echo "📋 Updated migration status:"
+            supabase migration list
+            
+            echo "🔧 Repairing migration history if needed..."
+            # Get the list of remote migrations that aren't in local
+            remote_migrations=$(supabase migration list 2>&1 | grep -E "^\s+\|\s+[0-9]{14}" | awk -F'|' '{gsub(/^[ \t]+|[ \t]+$/, "", $3); print $3}' | tr '\n' ' ')
+            
+            if [ -n "$remote_migrations" ]; then
+              echo "🔧 Marking remote migrations as applied: $remote_migrations"
+              supabase migration repair --status applied $remote_migrations
+            fi
+          fi
+          
+          echo "🚀 Deploying new migrations..."
           supabase db push
           
           echo "✅ Migration deployment completed!"
+          
+          echo "📋 Final migration status:"
+          supabase migration list
