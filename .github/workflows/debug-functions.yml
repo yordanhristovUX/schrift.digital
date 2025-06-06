@@ -72,6 +72,12 @@ jobs:
           echo ""
           echo "--- With debug flag ---"
           supabase functions list --project-ref "$SUPABASE_PROJECT_ID" --debug 2>&1 || echo "Debug command failed"
+
+
+          echo ""
+          echo "--- With tail-n +4 ---"
+          supabase functions list --project-ref YOUR_PROJECT_ID | tail -n +4
+
           
           echo ""
           echo "🔍 Checking if any functions exist by trying to get one specifically..."
