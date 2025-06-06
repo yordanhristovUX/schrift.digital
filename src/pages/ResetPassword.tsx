@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '../lib/supabase';
 
 const ResetPassword: React.FC = () => {
@@ -10,6 +11,7 @@ const ResetPassword: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   useEffect(() => {
     const handlePasswordReset = async () => {
@@ -61,7 +63,21 @@ const ResetPassword: React.FC = () => {
 
       } catch (err: any) {
         console.error('Password reset initialization error:', err);
-        setError('Invalid or expired password reset link. Please request a new one.');
+        
+        // Handle specific error codes
+        let errorMessage = t('errors:auth.unknown');
+        
+        if (err?.code === 'over_email_send_rate_limit') {
+          errorMessage = t('errors:auth.over_email_send_rate_limit');
+        } else if (err?.code === 'expired_token') {
+          errorMessage = t('errors:auth.expired_token');
+        } else if (err?.code === 'invalid_token') {
+          errorMessage = t('errors:auth.invalid_token');
+        } else if (err?.message) {
+          errorMessage = err.message;
+        }
+        
+        setError(errorMessage);
         setTimeout(() => {
           navigate('/login');
         }, 3000);
@@ -71,18 +87,18 @@ const ResetPassword: React.FC = () => {
     };
 
     handlePasswordReset();
-  }, [navigate]);
+  }, [navigate, t]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError(t('errors:auth.passwords_not_match'));
       return;
     }
 
     if (password.length < 6) {
-      setError('Password must be at least 6 characters long');
+      setError(t('errors:auth.weak_password'));
       return;
     }
 
@@ -111,7 +127,25 @@ const ResetPassword: React.FC = () => {
       }, 2000);
     } catch (err: any) {
       console.error('Password update error:', err);
-      setError(err.message || 'Failed to update password');
+      
+      // Handle specific error codes
+      let errorMessage = t('errors:auth.unknown');
+      
+      if (err?.code === 'over_email_send_rate_limit') {
+        errorMessage = t('errors:auth.over_email_send_rate_limit');
+      } else if (err?.code === 'weak_password') {
+        errorMessage = t('errors:auth.weak_password');
+      } else if (err?.code === 'invalid_credentials') {
+        errorMessage = t('errors:auth.invalid_credentials');
+      } else if (err?.code === 'expired_token') {
+        errorMessage = t('errors:auth.expired_token');
+      } else if (err?.code === 'invalid_token') {
+        errorMessage = t('errors:auth.invalid_token');
+      } else if (err?.message) {
+        errorMessage = err.message;
+      }
+      
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
