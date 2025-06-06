@@ -1,0 +1,81 @@
+name: Deploy Supabase Edge Functions
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'supabase/functions/**'
+
+jobs:
+  deploy:
+    name: Deploy Supabase Edge Functions
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Check if functions directory exists
+        id: check-functions
+        run: |
+          if [ -d "supabase/functions" ] && [ "$(ls -A supabase/functions)" ]; then
+            echo "functions_exist=true" >> $GITHUB_OUTPUT
+            echo "Functions directory exists and is not empty"
+          else
+            echo "functions_exist=false" >> $GITHUB_OUTPUT
+            echo "Functions directory is empty or doesn't exist"
+          fi
+
+      - name: Deploy all Edge Functions
+        if: steps.check-functions.outputs.functions_exist == 'true'
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+        run: |
+          cd supabase
+          
+          # Check if functions directory exists and has subdirectories
+          if [ ! -d "functions" ] || [ ! "$(ls -A functions)" ]; then
+            echo "No functions to deploy"
+            exit 0
+          fi
+          
+          # Deploy each function
+          for dir in functions/*/; do
+            if [ -d "$dir" ]; then
+              func_name=$(basename "$dir")
+              echo "Deploying function: $func_name"
+              
+              # Check if the function has an index.ts file
+              if [ -f "$dir/index.ts" ]; then
+                supabase functions deploy "$func_name" --project-ref "$SUPABASE_PROJECT_ID"
+                
+                if [ $? -eq 0 ]; then
+                  echo "✅ Successfully deployed: $func_name"
+                else
+                  echo "❌ Failed to deploy: $func_name"
+                  exit 1
+                fi
+              else
+                echo "⚠️ Skipping $func_name: No index.ts file found"
+              fi
+            fi
+          done
+          
+          echo "🎉 All functions deployed successfully!"
+
+      - name: No functions to deploy
+        if: steps.check-functions.outputs.functions_exist == 'false'
+        run: |
+          echo "ℹ️ No functions found in supabase/functions directory. Skipping deployment."
