@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - 'supabase/functions/**'
+  workflow_dispatch: # Allow manual triggering
 
 jobs:
   deploy:
@@ -14,10 +15,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 18
 
@@ -26,15 +27,175 @@ jobs:
         with:
           version: latest
 
-      - name: Deploy all Edge Functions
+      - name: Check if functions directory exists
+        id: check-functions
+        run: |
+          if [ -d "supabase/functions" ] && [ "$(ls -A supabase/functions)" ]; then
+            echo "functions_exist=true" >> $GITHUB_OUTPUT
+            echo "Functions directory exists and is not empty"
+            ls -la supabase/functions/
+          else
+            echo "functions_exist=false" >> $GITHUB_OUTPUT
+            echo "Functions directory is empty or doesn't exist"
+          fi
+
+      - name: Sync Edge Functions (Deploy and Delete)
+        if: steps.check-functions.outputs.functions_exist == 'true'
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
         run: |
-          cd supabase
-          for dir in functions/*/ ; do
+          # Check if functions directory exists and has subdirectories
+          if [ ! -d "supabase/functions" ] || [ ! "$(ls -A supabase/functions)" ]; then
+            echo "No functions to deploy"
+            exit 0
+          fi
+          
+          echo "🔍 Getting list of deployed functions from Supabase..."
+          
+          # Get list of currently deployed functions using simple table parsing
+          deployed_functions=""
+          if deployed_output=$(supabase functions list --project-ref "$SUPABASE_PROJECT_ID" 2>/dev/null); then
+            # Skip first 3 lines (header and separator) and extract NAME column (second field)
+            # Also filter out separator lines that contain only dashes and pipes
+            deployed_functions=$(echo "$deployed_output" | tail -n +4 | awk -F'|' '{
+              gsub(/^[ \t]+|[ \t]+$/, "", $2); 
+              if($2 != "" && $2 != "NAME" && $2 !~ /^-+$/) print $2
+            }' | sort | uniq)
+          fi
+          
+          if [ -n "$deployed_functions" ]; then
+            echo "📋 Currently deployed functions:"
+            echo "$deployed_functions" | while read -r func; do
+              if [ -n "$func" ]; then
+                echo "  - $func"
+              fi
+            done
+          else
+            echo "⚠️ Could not retrieve deployed functions list (this is normal for first deployment)"
+          fi
+          
+          echo ""
+          echo "📁 Functions in repository:"
+          
+          # Get list of functions in repository (excluding _shared)
+          repo_functions=""
+          for dir in supabase/functions/*/; do
             if [ -d "$dir" ]; then
               func_name=$(basename "$dir")
-              echo "Deploying function: $func_name"
-              supabase functions deploy "$func_name" --project-ref ${{ secrets.SUPABASE_PROJECT_ID }}
+              
+              # Skip _shared directory
+              if [ "$func_name" = "_shared" ]; then
+                echo "  - $func_name (skipped - shared utilities)"
+                continue
+              fi
+              
+              # Check if the function has an index.ts file
+              if [ -f "$dir/index.ts" ]; then
+                echo "  - $func_name"
+                if [ -z "$repo_functions" ]; then
+                  repo_functions="$func_name"
+                else
+                  repo_functions="$repo_functions\n$func_name"
+                fi
+              else
+                echo "  - $func_name (skipped - no index.ts)"
+              fi
             fi
           done
+          
+          echo ""
+          
+          # Deploy functions that exist in repository
+          if [ -n "$repo_functions" ]; then
+            echo "🚀 Deploying functions..."
+            echo -e "$repo_functions" | while read -r func_name; do
+              if [ -n "$func_name" ]; then
+                echo "Deploying function: $func_name"
+                supabase functions deploy "$func_name" --project-ref "$SUPABASE_PROJECT_ID"
+                
+                if [ $? -eq 0 ]; then
+                  echo "✅ Successfully deployed: $func_name"
+                else
+                  echo "❌ Failed to deploy: $func_name"
+                  exit 1
+                fi
+              fi
+            done
+          else
+            echo "ℹ️ No functions to deploy"
+          fi
+          
+          echo ""
+          
+          # Delete functions that are deployed but not in repository
+          if [ -n "$deployed_functions" ]; then
+            echo "🗑️ Checking for functions to delete..."
+            
+            echo "$deployed_functions" | while read -r deployed_func; do
+              if [ -n "$deployed_func" ]; then
+                # Check if this deployed function exists in repository
+                should_delete=true
+                if [ -n "$repo_functions" ]; then
+                  if echo -e "$repo_functions" | grep -q "^$deployed_func$"; then
+                    should_delete=false
+                  fi
+                fi
+                
+                # If function doesn't exist in repo, delete it from Supabase
+                if [ "$should_delete" = true ]; then
+                  echo "🗑️ Deleting function not in repository: $deployed_func"
+                  supabase functions delete "$deployed_func" --project-ref "$SUPABASE_PROJECT_ID"
+                  
+                  if [ $? -eq 0 ]; then
+                    echo "✅ Successfully deleted: $deployed_func"
+                  else
+                    echo "⚠️ Failed to delete: $deployed_func (may not exist or permission issue)"
+                  fi
+                fi
+              fi
+            done
+          else
+            echo "ℹ️ No deployed functions to check for deletion"
+          fi
+          
+          echo ""
+          echo "🎉 Function synchronization completed!"
+
+      - name: No functions to deploy
+        if: steps.check-functions.outputs.functions_exist == 'false'
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+        run: |
+          echo "ℹ️ No functions found in supabase/functions directory."
+          echo "🗑️ This will delete ALL deployed functions to maintain sync..."
+          
+          # Get list of currently deployed functions using simple table parsing
+          deployed_functions=""
+          if deployed_output=$(supabase functions list --project-ref "$SUPABASE_PROJECT_ID" 2>/dev/null); then
+            # Skip first 3 lines (header and separator) and extract NAME column (second field)
+            # Also filter out separator lines that contain only dashes and pipes
+            deployed_functions=$(echo "$deployed_output" | tail -n +4 | awk -F'|' '{
+              gsub(/^[ \t]+|[ \t]+$/, "", $2); 
+              if($2 != "" && $2 != "NAME" && $2 !~ /^-+$/) print $2
+            }' | sort | uniq)
+          fi
+          
+          if [ -n "$deployed_functions" ]; then
+            echo "Deleting all deployed functions:"
+            echo "$deployed_functions" | while read -r func; do
+              if [ -n "$func" ]; then
+                echo "🗑️ Deleting: $func"
+                supabase functions delete "$func" --project-ref "$SUPABASE_PROJECT_ID"
+                
+                if [ $? -eq 0 ]; then
+                  echo "✅ Successfully deleted: $func"
+                else
+                  echo "⚠️ Failed to delete: $func"
+                fi
+              fi
+            done
+          else
+            echo "ℹ️ No functions deployed to delete"
+          fi

@@ -1,6 +1,0 @@
-# Auth configuration
-[auth]
-site_url = "https://schrift.digital"
-additional_redirect_urls = ["https://schrift.digital/*"]
-jwt_expiry = 3600
-enable_signup = true

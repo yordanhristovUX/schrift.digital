@@ -1,8 +1,19 @@
-/** @type {import('tailwindcss').Config} */
-export default {
-  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
+import type { Config } from 'tailwindcss'
+
+const config: Config = {
+  content: [
+    './index.html',
+    './src/**/*.{js,ts,jsx,tsx}',
+    './src/components/**/*.{js,ts,jsx,tsx}'
+  ],
+  future: {
+    hoverOnlyWhenSupported: true
+  },
   theme: {
     extend: {
+      fontFamily: {
+        listopad: ['Listopad', 'sans-serif']
+      },
       colors: {
         background: {
           DEFAULT: 'var(--color-background-primary)',
@@ -33,5 +44,8 @@ export default {
       }
     }
   },
-  plugins: []
-};
+  plugins: [],
+  darkMode: 'class'
+}
+
+export default config;

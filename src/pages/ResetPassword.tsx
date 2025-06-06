@@ -1,38 +1,104 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '../lib/supabase';
 
 const ResetPassword: React.FC = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [initializing, setInitializing] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const navigate = useNavigate();
-  const location = useLocation();
+  const { t } = useTranslation();
 
   useEffect(() => {
-    // Check if we have a valid access token in the URL
-    const hashParams = new URLSearchParams(window.location.hash.substring(1));
-    const type = hashParams.get('type');
-    
-    if (type !== 'recovery') {
-      navigate('/login', { 
-        state: { message: 'Invalid or expired password reset link. Please request a new one.' }
-      });
-    }
-  }, [navigate]);
+    const handlePasswordReset = async () => {
+      try {
+        // Check if we have hash parameters (from email link)
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const accessToken = hashParams.get('access_token');
+        const refreshToken = hashParams.get('refresh_token');
+        const type = hashParams.get('type');
+
+        console.log('Hash params:', { accessToken: !!accessToken, refreshToken: !!refreshToken, type });
+
+        if (accessToken && refreshToken) {
+          // Set the session using the tokens from the URL
+          const { data, error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          });
+
+          if (error) {
+            console.error('Session error:', error);
+            throw error;
+          }
+
+          console.log('Session set successfully:', data);
+
+          // Clear the hash from the URL for security
+          window.history.replaceState(null, '', window.location.pathname);
+          
+          setInitializing(false);
+          return;
+        }
+
+        // If no tokens in URL, check if we already have a valid session
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          console.error('Session check error:', sessionError);
+          throw sessionError;
+        }
+
+        if (!session) {
+          // No valid session and no tokens in URL
+          throw new Error('No valid password reset session found');
+        }
+
+        console.log('Existing session found:', session);
+        setInitializing(false);
+
+      } catch (err: any) {
+        console.error('Password reset initialization error:', err);
+        
+        // Handle specific error codes
+        let errorMessage = t('errors:auth.unknown');
+        
+        if (err?.code === 'over_email_send_rate_limit') {
+          errorMessage = t('errors:auth.over_email_send_rate_limit');
+        } else if (err?.code === 'expired_token') {
+          errorMessage = t('errors:auth.expired_token');
+        } else if (err?.code === 'invalid_token') {
+          errorMessage = t('errors:auth.invalid_token');
+        } else if (err?.message) {
+          errorMessage = err.message;
+        }
+        
+        setError(errorMessage);
+        setTimeout(() => {
+          navigate('/login');
+        }, 3000);
+      } finally {
+        setInitializing(false);
+      }
+    };
+
+    handlePasswordReset();
+  }, [navigate, t]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError(t('errors:auth.passwords_not_match'));
       return;
     }
 
     if (password.length < 6) {
-      setError('Password must be at least 6 characters long');
+      setError(t('errors:auth.weak_password'));
       return;
     }
 
@@ -40,6 +106,13 @@ const ResetPassword: React.FC = () => {
     setError(null);
 
     try {
+      // Check if we have a valid session before updating password
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        throw new Error('No valid session found. Please request a new password reset link.');
+      }
+
       const { error } = await supabase.auth.updateUser({
         password: password
       });
@@ -53,11 +126,43 @@ const ResetPassword: React.FC = () => {
         });
       }, 2000);
     } catch (err: any) {
-      setError(err.message || 'Failed to update password');
+      console.error('Password update error:', err);
+      
+      // Handle specific error codes
+      let errorMessage = t('errors:auth.unknown');
+      
+      if (err?.code === 'over_email_send_rate_limit') {
+        errorMessage = t('errors:auth.over_email_send_rate_limit');
+      } else if (err?.code === 'weak_password') {
+        errorMessage = t('errors:auth.weak_password');
+      } else if (err?.code === 'invalid_credentials') {
+        errorMessage = t('errors:auth.invalid_credentials');
+      } else if (err?.code === 'expired_token') {
+        errorMessage = t('errors:auth.expired_token');
+      } else if (err?.code === 'invalid_token') {
+        errorMessage = t('errors:auth.invalid_token');
+      } else if (err?.message) {
+        errorMessage = err.message;
+      }
+      
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
   };
+
+  if (initializing) {
+    return (
+      <div className="min-h-screen pt-32 pb-16 px-4 bg-[#141204]">
+        <div className="container mx-auto max-w-md">
+          <div className="bg-[#FFFFFC] rounded-sm shadow-lg p-8 text-center">
+            <div className="animate-spin rounded-sm h-8 w-8 border-b-2 border-[#141204] mx-auto mb-4"></div>
+            <p className="text-[#141204] font-['Listopad']">Initializing password reset...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen pt-32 pb-16 px-4 bg-[#141204]">
@@ -95,6 +200,7 @@ const ResetPassword: React.FC = () => {
                 className="w-full p-3 border border-[#D9D9D9] rounded-sm focus:ring-[#141204] focus:border-[#141204]"
                 required
                 minLength={6}
+                disabled={loading || !!error}
               />
             </div>
 
@@ -113,12 +219,13 @@ const ResetPassword: React.FC = () => {
                 className="w-full p-3 border border-[#D9D9D9] rounded-sm focus:ring-[#141204] focus:border-[#141204]"
                 required
                 minLength={6}
+                disabled={loading || !!error}
               />
             </div>
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || !!error}
               className="w-full py-3 px-4 bg-[#141204] text-[#FFFFFC] rounded-sm hover:bg-[#2D2B1F] disabled:opacity-50 font-['Listopad']"
             >
               {loading ? 'Обработка...' : 'Задай нова парола'}
