@@ -52,24 +52,20 @@ jobs:
           
           echo "🔍 Getting list of deployed functions from Supabase..."
           
-          # Get list of currently deployed functions with better error handling
+          # Get list of currently deployed functions using the correct syntax
           deployed_functions=""
-          if deployed_output=$(supabase functions list --project-ref "$SUPABASE_PROJECT_ID" --output json 2>/dev/null); then
-            if [ "$deployed_output" != "null" ] && [ -n "$deployed_output" ]; then
-              deployed_functions=$(echo "$deployed_output" | jq -r '.[].name' 2>/dev/null || echo "")
-            fi
+          if deployed_output=$(supabase functions list --project-ref "$SUPABASE_PROJECT_ID" 2>/dev/null); then
+            # Extract function names from the table output (skip header lines)
+            deployed_functions=$(echo "$deployed_output" | tail -n +4 | awk '{print $4}' | grep -v '^$' | sort)
           fi
           
-          if [ -z "$deployed_functions" ]; then
-            echo "⚠️ Could not retrieve deployed functions list - will attempt to delete known functions"
-            # Try to delete the test-function specifically since we know it might exist
-            echo "🗑️ Attempting to delete test-function if it exists..."
-            supabase functions delete "test-function" --project-ref "$SUPABASE_PROJECT_ID" 2>/dev/null || echo "test-function not found or already deleted"
-          else
+          if [ -n "$deployed_functions" ]; then
             echo "📋 Currently deployed functions:"
             echo "$deployed_functions" | while read -r func; do
               echo "  - $func"
             done
+          else
+            echo "⚠️ Could not retrieve deployed functions list (this is normal for first deployment)"
           fi
           
           echo ""
@@ -153,18 +149,7 @@ jobs:
               fi
             done
           else
-            echo "ℹ️ No deployed functions list available - attempting to delete known orphaned functions"
-            # List of functions that might exist but are no longer in repo
-            potential_orphans="test-function hello-world example-function"
-            
-            for orphan in $potential_orphans; do
-              echo "🗑️ Attempting to delete potential orphan: $orphan"
-              if supabase functions delete "$orphan" --project-ref "$SUPABASE_PROJECT_ID" 2>/dev/null; then
-                echo "✅ Successfully deleted orphaned function: $orphan"
-              else
-                echo "ℹ️ Function $orphan not found (already deleted or never existed)"
-              fi
-            done
+            echo "ℹ️ No deployed functions to check for deletion"
           fi
           
           echo ""
@@ -181,10 +166,9 @@ jobs:
           
           # Get list of currently deployed functions and delete them all
           deployed_functions=""
-          if deployed_output=$(supabase functions list --project-ref "$SUPABASE_PROJECT_ID" --output json 2>/dev/null); then
-            if [ "$deployed_output" != "null" ] && [ -n "$deployed_output" ]; then
-              deployed_functions=$(echo "$deployed_output" | jq -r '.[].name' 2>/dev/null || echo "")
-            fi
+          if deployed_output=$(supabase functions list --project-ref "$SUPABASE_PROJECT_ID" 2>/dev/null); then
+            # Extract function names from the table output (skip header lines)
+            deployed_functions=$(echo "$deployed_output" | tail -n +4 | awk '{print $4}' | grep -v '^$' | sort)
           fi
           
           if [ -n "$deployed_functions" ]; then
@@ -202,16 +186,5 @@ jobs:
               fi
             done
           else
-            echo "ℹ️ No functions deployed to delete (or unable to retrieve list)"
-            # Try to delete known functions that might exist
-            potential_functions="test-function hello-world example-function text-processor"
-            
-            for func in $potential_functions; do
-              echo "🗑️ Attempting to delete potential function: $func"
-              if supabase functions delete "$func" --project-ref "$SUPABASE_PROJECT_ID" 2>/dev/null; then
-                echo "✅ Successfully deleted: $func"
-              else
-                echo "ℹ️ Function $func not found (already deleted or never existed)"
-              fi
-            done
+            echo "ℹ️ No functions deployed to delete"
           fi
