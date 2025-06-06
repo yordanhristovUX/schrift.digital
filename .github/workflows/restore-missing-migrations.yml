@@ -1,0 +1,222 @@
+name: Restore Missing Migrations
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_restore:
+        description: 'Type "CONFIRM" to proceed with migration restore'
+        required: true
+        default: ''
+      migration_name:
+        description: 'Custom migration name (optional)'
+        required: false
+        default: ''
+
+jobs:
+  restore-migrations:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Validate confirmation
+        run: |
+          if [ "${{ github.event.inputs.confirm_restore }}" != "CONFIRM" ]; then
+            echo "❌ Migration restore not confirmed. Please type 'CONFIRM' to proceed."
+            exit 1
+          fi
+          echo "✅ Migration restore confirmed"
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Backup current migrations
+        run: |
+          echo "💾 Creating backup of current migrations..."
+          if [ -d "supabase/migrations" ] && [ "$(ls -A supabase/migrations)" ]; then
+            mkdir -p backup/migrations
+            cp -r supabase/migrations/* backup/migrations/ 2>/dev/null || true
+            echo "✅ Backup created in backup/migrations/"
+            ls -la backup/migrations/
+          else
+            echo "ℹ️ No existing migrations to backup"
+          fi
+
+      - name: Restore migration from current DB state
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: |
+          echo "🔗 Linking Supabase project..."
+          # Suppress credential warnings
+          supabase link --project-ref "$SUPABASE_PROJECT_ID" --password "$SUPABASE_DB_PASSWORD" 2>/dev/null || {
+            echo "❌ Failed to link to Supabase project"
+            exit 1
+          }
+          
+          echo "✅ Successfully linked to project: $SUPABASE_PROJECT_ID"
+
+          echo "📥 Pulling current DB schema..."
+          if ! supabase db pull; then
+            echo "❌ Failed to pull database schema"
+            exit 1
+          fi
+
+          echo "✅ Database schema pulled successfully"
+
+          # Determine migration name
+          timestamp=$(date +%Y%m%d%H%M%S)
+          if [ -n "${{ github.event.inputs.migration_name }}" ]; then
+            migration_name="${{ github.event.inputs.migration_name }}_$timestamp"
+          else
+            migration_name="restore_migration_$timestamp"
+          fi
+
+          echo "📦 Creating new migration: $migration_name"
+          if ! supabase migration new "$migration_name"; then
+            echo "❌ Failed to create new migration"
+            exit 1
+          fi
+
+          # Find the created migration file
+          MIGRATION_FILE=$(find supabase/migrations -type f -name "*$migration_name*.sql" | head -n 1)
+          if [ -z "$MIGRATION_FILE" ]; then
+            echo "❌ Could not find migration file!"
+            exit 1
+          fi
+
+          echo "📄 Migration file created: $MIGRATION_FILE"
+
+          # Check if schema.sql exists and has content
+          if [ ! -f "supabase/schema.sql" ]; then
+            echo "❌ schema.sql file not found!"
+            exit 1
+          fi
+
+          if [ ! -s "supabase/schema.sql" ]; then
+            echo "⚠️ schema.sql file is empty!"
+            echo "This might indicate no schema changes or an error during pull."
+            exit 1
+          fi
+
+          echo "🧼 Processing schema.sql content..."
+          
+          # Create a comprehensive migration from schema.sql
+          cat > "$MIGRATION_FILE" << 'EOF'
+/*
+  # Database Schema Restoration
+
+  This migration restores the current database schema state.
+  
+  ## What this migration does:
+  - Restores all tables, functions, policies, and other database objects
+  - Ensures the local migration state matches the remote database
+  - Provides a clean starting point for future migrations
+  
+  ## Generated from:
+  - Current remote database schema
+  - Timestamp: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+*/
+
+EOF
+
+          # Filter and add schema content, excluding problematic statements
+          echo "🔍 Filtering schema.sql content..."
+          
+          # Remove comments, empty lines, and problematic statements
+          grep -v '^--' supabase/schema.sql | \
+          grep -v '^\s*$' | \
+          grep -v 'SET ' | \
+          grep -v 'SELECT pg_catalog' | \
+          grep -v 'COMMENT ON EXTENSION' | \
+          sed '/^$/d' >> "$MIGRATION_FILE"
+
+          echo "📊 Migration file statistics:"
+          echo "  - Lines: $(wc -l < "$MIGRATION_FILE")"
+          echo "  - Size: $(du -h "$MIGRATION_FILE" | cut -f1)"
+          
+          echo "🧹 Cleaning up schema.sql..."
+          rm -f supabase/schema.sql
+
+          echo "🔍 Validating migration file..."
+          if [ ! -s "$MIGRATION_FILE" ]; then
+            echo "⚠️ Migration file is empty after processing!"
+            echo "This might indicate no schema changes or all statements were filtered out."
+            
+            # Create a minimal migration to mark the restore point
+            cat > "$MIGRATION_FILE" << EOF
+/*
+  # Database Schema Restoration Marker
+  
+  This migration marks a restoration point where the local migration state
+  was synchronized with the remote database state.
+  
+  Generated at: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+*/
+
+-- Migration restoration marker
+DO \$\$
+BEGIN
+  RAISE NOTICE 'Database schema restoration completed at %', NOW();
+END \$\$;
+EOF
+          fi
+
+          echo "🚀 Applying new migration..."
+          if ! supabase db push; then
+            echo "❌ Failed to push migration"
+            echo "📄 Migration file content:"
+            echo "--- START ---"
+            cat "$MIGRATION_FILE"
+            echo "--- END ---"
+            exit 1
+          fi
+
+          echo "✅ Migration restored and applied successfully!"
+          echo "📄 Migration file: $MIGRATION_FILE"
+          echo "📊 Final migration status:"
+          supabase migration list
+
+      - name: Commit restored migration
+        run: |
+          echo "📝 Committing restored migration to repository..."
+          
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          
+          # Add the new migration file
+          git add supabase/migrations/
+          
+          # Check if there are changes to commit
+          if git diff --staged --quiet; then
+            echo "ℹ️ No changes to commit"
+          else
+            git commit -m "feat: restore database migration from current state
+
+- Generated from current remote database schema
+- Synchronizes local migrations with remote state
+- Provides clean starting point for future migrations
+
+Generated by: restore-missing-migrations workflow"
+            
+            echo "✅ Migration committed to repository"
+            echo "🔄 Push this commit to apply the changes to your main branch"
+          fi
+
+      - name: Summary
+        run: |
+          echo "🎉 Migration restoration completed!"
+          echo ""
+          echo "📋 Summary:"
+          echo "  - Database schema pulled from remote"
+          echo "  - New migration created and applied"
+          echo "  - Local migration state synchronized"
+          echo ""
+          echo "🔄 Next steps:"
+          echo "  1. Review the generated migration file"
+          echo "  2. Push the commit to apply changes to main branch"
+          echo "  3. Future migrations will build on this restored state"
