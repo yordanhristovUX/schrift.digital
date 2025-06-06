@@ -1,4 +1,4 @@
-name: Deploy Supabase Migrations
+  name: Deploy Supabase Migrations
 
 on:
   push:
@@ -21,7 +21,7 @@ jobs:
         with:
           version: latest
 
-      - name: Deploy migrations
+      - name: Deploy migrations with sync repair
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
@@ -30,35 +30,58 @@ jobs:
           echo "🚀 Starting migration deployment..."
           
           echo "🔗 Linking to Supabase project..."
-          supabase link --project-ref "$SUPABASE_PROJECT_ID" --password "$SUPABASE_DB_PASSWORD"
+          # Suppress the credential storage warning and config diff
+          supabase link --project-ref "$SUPABASE_PROJECT_ID" --password "$SUPABASE_DB_PASSWORD" 2>/dev/null || true
           
           echo "📋 Checking current migration status..."
-          supabase migration list
+          migration_status=$(supabase migration list 2>&1)
+          echo "$migration_status"
           
           echo "🔍 Checking for migration sync issues..."
-          if supabase migration list 2>&1 | grep -q "Remote migration versions not found"; then
-            echo "⚠️ Migration sync issue detected. Attempting to resolve..."
+          if echo "$migration_status" | grep -q "Remote migration versions not found"; then
+            echo "⚠️ Migration sync issue detected. Repairing migration history..."
             
-            echo "📥 Pulling remote migration history..."
-            supabase db pull --schema public,auth,storage
-            
-            echo "📋 Updated migration status:"
-            supabase migration list
-            
-            echo "🔧 Repairing migration history if needed..."
-            # Get the list of remote migrations that aren't in local
-            remote_migrations=$(supabase migration list 2>&1 | grep -E "^\s+\|\s+[0-9]{14}" | awk -F'|' '{gsub(/^[ \t]+|[ \t]+$/, "", $3); print $3}' | tr '\n' ' ')
+            # Extract the list of remote migrations that need to be marked as reverted
+            remote_migrations=$(echo "$migration_status" | grep -A 100 "supabase migration repair" | grep -E "^[0-9]{14}" | tr '\n' ' ')
             
             if [ -n "$remote_migrations" ]; then
-              echo "🔧 Marking remote migrations as applied: $remote_migrations"
-              supabase migration repair --status applied $remote_migrations
+              echo "🔧 Marking old remote migrations as reverted: $remote_migrations"
+              supabase migration repair --status reverted $remote_migrations
+              
+              echo "📋 Migration status after repair:"
+              supabase migration list
+            else
+              echo "⚠️ Could not extract migration list for repair"
+              echo "Attempting manual extraction..."
+              
+              # Alternative extraction method
+              remote_migrations=$(echo "$migration_status" | sed -n '/supabase migration repair/,/supabase db pull/p' | grep -oE '[0-9]{14}' | tr '\n' ' ')
+              
+              if [ -n "$remote_migrations" ]; then
+                echo "🔧 Marking migrations as reverted: $remote_migrations"
+                supabase migration repair --status reverted $remote_migrations
+              else
+                echo "❌ Could not automatically repair migrations. Manual intervention may be required."
+                echo "Please run the suggested repair command manually:"
+                echo "$migration_status" | grep "supabase migration repair"
+                exit 1
+              fi
             fi
+          else
+            echo "✅ No migration sync issues detected"
           fi
           
           echo "🚀 Deploying new migrations..."
-          supabase db push
-          
-          echo "✅ Migration deployment completed!"
+          if supabase db push; then
+            echo "✅ Migration deployment completed successfully!"
+          else
+            echo "❌ Migration deployment failed"
+            echo "📋 Current migration status:"
+            supabase migration list
+            exit 1
+          fi
           
           echo "📋 Final migration status:"
           supabase migration list
+          
+          echo "🎉 All migrations deployed successfully!"
