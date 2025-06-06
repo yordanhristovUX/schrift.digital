@@ -76,7 +76,7 @@ jobs:
 
           echo ""
           echo "--- With tail-n +4 ---"
-          supabase functions list --project-ref $SUPABASE_PROJECT_ID" | tail -n +4
+          supabase functions list --project-ref "$SUPABASE_PROJECT_ID" | tail -n +4
 
           
           echo ""
