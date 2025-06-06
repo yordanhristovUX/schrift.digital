@@ -21,6 +21,7 @@ FUNCTIONS=(
     "get-price"
     "manage-subscription"
     "generate-sitemap"
+    "test-function"
 )
 
 echo "📋 Functions to delete: ${FUNCTIONS[*]}"
