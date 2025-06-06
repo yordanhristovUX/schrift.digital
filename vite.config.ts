@@ -17,7 +17,7 @@ export default defineConfig({
       output: {
         manualChunks: {
           vendor: ['react', 'react-dom', 'react-router-dom', 'i18next'],
-          supabase: ['@supabase/supabase-js', '@supabase/auth-helpers-react'],
+          supabase: ['@supabase/supabase-js'],
           utils: ['date-fns', 'file-saver', 'jszip']
         }
       }
