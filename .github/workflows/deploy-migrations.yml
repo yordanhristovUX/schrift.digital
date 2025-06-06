@@ -16,19 +16,26 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
         with:
-          node-version: 18
-
-      - name: Install Supabase CLI
-        run: npm install -g supabase
-
-      - name: Supabase login
-        run: supabase login --token ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-
-      - name: Link Supabase project
-        run: supabase link --project-ref ${{ secrets.SUPABASE_PROJECT_ID }} --password ${{ secrets.SUPABASE_DB_PASSWORD }}
+          version: latest
 
       - name: Deploy migrations
-        run: supabase db push
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: |
+          echo "🚀 Starting migration deployment..."
+          
+          echo "🔗 Linking to Supabase project..."
+          supabase link --project-ref "$SUPABASE_PROJECT_ID" --password "$SUPABASE_DB_PASSWORD"
+          
+          echo "📋 Checking current migration status..."
+          supabase migration list
+          
+          echo "🚀 Deploying migrations..."
+          supabase db push
+          
+          echo "✅ Migration deployment completed!"
