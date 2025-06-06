@@ -56,8 +56,12 @@ jobs:
           # Get list of currently deployed functions using simple table parsing
           deployed_functions=""
           if deployed_output=$(supabase functions list --project-ref "$SUPABASE_PROJECT_ID" 2>/dev/null); then
-            # Skip first 4 lines (header and separator) and extract first column (function name)
-            deployed_functions=$(echo "$deployed_output" | tail -n +5 | awk '{print $2}' | grep -v '^$' | sort | uniq)
+            # Skip first 3 lines (header and separator) and extract NAME column (second field)
+            # Also filter out separator lines that contain only dashes and pipes
+            deployed_functions=$(echo "$deployed_output" | tail -n +4 | awk -F'|' '{
+              gsub(/^[ \t]+|[ \t]+$/, "", $2); 
+              if($2 != "" && $2 != "NAME" && $2 !~ /^-+$/) print $2
+            }' | sort | uniq)
           fi
           
           if [ -n "$deployed_functions" ]; then
@@ -170,8 +174,12 @@ jobs:
           # Get list of currently deployed functions using simple table parsing
           deployed_functions=""
           if deployed_output=$(supabase functions list --project-ref "$SUPABASE_PROJECT_ID" 2>/dev/null); then
-            # Skip first 4 lines (header and separator) and extract NAME column (between first and second |)
-            deployed_functions=$(echo "$deployed_output" | tail -n +5 | awk -F'|' '{gsub(/^[ \t]+|[ \t]+$/, "", $2); if($2 != "") print $2}' | sort | uniq)
+            # Skip first 3 lines (header and separator) and extract NAME column (second field)
+            # Also filter out separator lines that contain only dashes and pipes
+            deployed_functions=$(echo "$deployed_output" | tail -n +4 | awk -F'|' '{
+              gsub(/^[ \t]+|[ \t]+$/, "", $2); 
+              if($2 != "" && $2 != "NAME" && $2 !~ /^-+$/) print $2
+            }' | sort | uniq)
           fi
           
           if [ -n "$deployed_functions" ]; then
