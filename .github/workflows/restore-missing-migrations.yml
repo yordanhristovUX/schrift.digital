@@ -52,7 +52,6 @@ jobs:
           SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
         run: |
           echo "🔗 Linking Supabase project..."
-          # Suppress credential warnings
           supabase link --project-ref "$SUPABASE_PROJECT_ID" --password "$SUPABASE_DB_PASSWORD" 2>/dev/null || {
             echo "❌ Failed to link to Supabase project"
             exit 1
@@ -68,7 +67,6 @@ jobs:
 
           echo "✅ Database schema pulled successfully"
 
-          # Determine migration name
           timestamp=$(date +%Y%m%d%H%M%S)
           if [ -n "${{ github.event.inputs.migration_name }}" ]; then
             migration_name="${{ github.event.inputs.migration_name }}_$timestamp"
@@ -82,7 +80,6 @@ jobs:
             exit 1
           fi
 
-          # Find the created migration file
           MIGRATION_FILE=$(find supabase/migrations -type f -name "*$migration_name*.sql" | head -n 1)
           if [ -z "$MIGRATION_FILE" ]; then
             echo "❌ Could not find migration file!"
@@ -91,7 +88,6 @@ jobs:
 
           echo "📄 Migration file created: $MIGRATION_FILE"
 
-          # Check if schema.sql exists and has content
           if [ ! -f "supabase/schema.sql" ]; then
             echo "❌ schema.sql file not found!"
             exit 1
@@ -105,30 +101,31 @@ jobs:
 
           echo "🧼 Processing schema.sql content..."
           
-          # Create a comprehensive migration from schema.sql
-          {
-            echo "/*"
-            echo "  # Database Schema Restoration"
-            echo ""
-            echo "  This migration restores the current database schema state."
-            echo "  "
-            echo "  ## What this migration does:"
-            echo "  - Restores all tables, functions, policies, and other database objects"
-            echo "  - Ensures the local migration state matches the remote database"
-            echo "  - Provides a clean starting point for future migrations"
-            echo "  "
-            echo "  ## Generated from:"
-            echo "  - Current remote database schema"
-            echo "  - Timestamp: $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
-            echo "*/"
-            echo ""
-          } > "$MIGRATION_FILE"
+          # Create migration header
+          cat > "$MIGRATION_FILE" << 'MIGRATION_HEADER'
+/*
+  # Database Schema Restoration
 
+  This migration restores the current database schema state.
+  
+  ## What this migration does:
+  - Restores all tables, functions, policies, and other database objects
+  - Ensures the local migration state matches the remote database
+  - Provides a clean starting point for future migrations
+  
+  ## Generated from:
+  - Current remote database schema
+*/
 
-          # Filter and add schema content, excluding problematic statements
+MIGRATION_HEADER
+
+          # Add timestamp comment
+          echo "-- Generated at: $(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> "$MIGRATION_FILE"
+          echo "" >> "$MIGRATION_FILE"
+
           echo "🔍 Filtering schema.sql content..."
           
-          # Remove comments, empty lines, and problematic statements
+          # Filter and add schema content, excluding problematic statements
           grep -v '^--' supabase/schema.sql | \
           grep -v '^\s*$' | \
           grep -v 'SET ' | \
@@ -149,22 +146,20 @@ jobs:
             echo "This might indicate no schema changes or all statements were filtered out."
             
             # Create a minimal migration to mark the restore point
-            {
-              echo "/*"
-              echo "  # Database Schema Restoration Marker"
-              echo "  "
-              echo "  This migration marks a restoration point where the local migration state"
-              echo "  was synchronized with the remote database state."
-              echo "  "
-              echo "  Generated at: $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
-              echo "*/"
-              echo ""
-              echo "-- Migration restoration marker"
-              echo "DO \$\$"
-              echo "BEGIN"
-              echo "  RAISE NOTICE 'Database schema restoration completed at %', NOW();"
-              echo "END \$\$;"
-            } > "$MIGRATION_FILE"
+            cat > "$MIGRATION_FILE" << 'MINIMAL_MIGRATION'
+/*
+  # Database Schema Restoration Marker
+  
+  This migration marks a restoration point where the local migration state
+  was synchronized with the remote database state.
+*/
+
+-- Migration restoration marker
+DO $$
+BEGIN
+  RAISE NOTICE 'Database schema restoration completed at %', NOW();
+END $$;
+MINIMAL_MIGRATION
           fi
 
           echo "🚀 Applying new migration..."
@@ -189,20 +184,20 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           
-          # Add the new migration file
           git add supabase/migrations/
           
-          # Check if there are changes to commit
           if git diff --staged --quiet; then
             echo "ℹ️ No changes to commit"
           else
-            git commit -m "feat: restore database migration from current state
+            commit_message="feat: restore database migration from current state
 
 - Generated from current remote database schema
 - Synchronizes local migrations with remote state
 - Provides clean starting point for future migrations
 
 Generated by: restore-missing-migrations workflow"
+            
+            git commit -m "$commit_message"
             
             echo "✅ Migration committed to repository"
             echo "🔄 Push this commit to apply the changes to your main branch"
