@@ -55,14 +55,16 @@ jobs:
           # Get list of currently deployed functions using the correct syntax
           deployed_functions=""
           if deployed_output=$(supabase functions list --project-ref "$SUPABASE_PROJECT_ID" 2>/dev/null); then
-            # Extract function names from the table output (skip header lines)
-            deployed_functions=$(echo "$deployed_output" | tail -n +4 | awk '{print $4}' | grep -v '^$' | sort)
+            # Extract function names from the table output (skip header lines and filter out empty/invalid names)
+            deployed_functions=$(echo "$deployed_output" | tail -n +4 | awk '{print $4}' | grep -v '^$' | grep -v '|' | grep -v '^-' | sort | uniq)
           fi
           
           if [ -n "$deployed_functions" ]; then
             echo "📋 Currently deployed functions:"
             echo "$deployed_functions" | while read -r func; do
-              echo "  - $func"
+              if [ -n "$func" ] && [ "$func" != "|" ] && [ "$func" != "-" ]; then
+                echo "  - $func"
+              fi
             done
           else
             echo "⚠️ Could not retrieve deployed functions list (this is normal for first deployment)"
@@ -103,7 +105,7 @@ jobs:
           if [ -n "$repo_functions" ]; then
             echo "🚀 Deploying functions..."
             echo -e "$repo_functions" | while read -r func_name; do
-              if [ -n "$func_name" ]; then
+              if [ -n "$func_name" ] && [ "$func_name" != "|" ] && [ "$func_name" != "-" ]; then
                 echo "Deploying function: $func_name"
                 supabase functions deploy "$func_name" --project-ref "$SUPABASE_PROJECT_ID"
                 
@@ -126,7 +128,7 @@ jobs:
             echo "🗑️ Checking for functions to delete..."
             
             echo "$deployed_functions" | while read -r deployed_func; do
-              if [ -n "$deployed_func" ]; then
+              if [ -n "$deployed_func" ] && [ "$deployed_func" != "|" ] && [ "$deployed_func" != "-" ]; then
                 # Check if this deployed function exists in repository
                 should_delete=true
                 if [ -n "$repo_functions" ]; then
@@ -167,14 +169,14 @@ jobs:
           # Get list of currently deployed functions and delete them all
           deployed_functions=""
           if deployed_output=$(supabase functions list --project-ref "$SUPABASE_PROJECT_ID" 2>/dev/null); then
-            # Extract function names from the table output (skip header lines)
-            deployed_functions=$(echo "$deployed_output" | tail -n +4 | awk '{print $4}' | grep -v '^$' | sort)
+            # Extract function names from the table output (skip header lines and filter out empty/invalid names)
+            deployed_functions=$(echo "$deployed_output" | tail -n +4 | awk '{print $4}' | grep -v '^$' | grep -v '|' | grep -v '^-' | sort | uniq)
           fi
           
           if [ -n "$deployed_functions" ]; then
             echo "Deleting all deployed functions:"
             echo "$deployed_functions" | while read -r func; do
-              if [ -n "$func" ]; then
+              if [ -n "$func" ] && [ "$func" != "|" ] && [ "$func" != "-" ] && [[ "$func" =~ ^[A-Za-z][A-Za-z0-9_-]*$ ]]; then
                 echo "🗑️ Deleting: $func"
                 supabase functions delete "$func" --project-ref "$SUPABASE_PROJECT_ID"
                 
@@ -183,6 +185,8 @@ jobs:
                 else
                   echo "⚠️ Failed to delete: $func"
                 fi
+              else
+                echo "⚠️ Skipping invalid function name: '$func'"
               fi
             done
           else
