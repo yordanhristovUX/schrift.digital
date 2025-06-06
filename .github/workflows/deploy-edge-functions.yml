@@ -190,8 +190,19 @@ jobs:
           if [ -z "$deployed_functions" ]; then
             echo "⚠️ JSON parsing failed, trying table format..."
             if deployed_output=$(supabase functions list --project-ref "$SUPABASE_PROJECT_ID" 2>/dev/null); then
-              # More robust table parsing
-              deployed_functions=$(echo "$deployed_output" | grep -v '^[+|-]' | grep -v '^ *Name *|' | awk -F'|' '{print $2}' | sed 's/^ *//;s/ *$//' | grep -v '^$' | grep -v '^Name$' | sort | uniq)
+              # More robust table parsing - exclude headers, separators, and empty lines
+              deployed_functions=$(echo "$deployed_output" | \
+                grep -v '^[+|-]' | \
+                grep -v '^ *Name *|' | \
+                grep -v '^[[:space:]]*Name[[:space:]]*$' | \
+                grep -v '^[[:space:]]*--*[[:space:]]*$' | \
+                awk -F'|' 'NF > 1 {print $2}' | \
+                sed 's/^ *//;s/ *$//' | \
+                grep -v '^$' | \
+                grep -v '^Name$' | \
+                grep -v '^NAME$' | \
+                grep '^[A-Za-z][A-Za-z0-9_-]*$' | \
+                sort | uniq)
             fi
           fi
           
