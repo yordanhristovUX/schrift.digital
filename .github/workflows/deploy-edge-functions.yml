@@ -5,13 +5,6 @@ branches:
 - main
 paths:
 - 'supabase/functions/**'
-workflow_dispatch: # Allow manual triggering
-inputs:
-force_sync:
-description: 'Force complete sync (delete functions not in repo)'
-required: false
-default: 'true'
-type: boolean
 
 jobs:
 deploy:
@@ -50,7 +43,6 @@ steps:
     env:
       SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
       SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
-      FORCE_SYNC: ${{ github.event.inputs.force_sync || 'true' }}
     run: |
       # Check if functions directory exists and has subdirectories
       if [ ! -d "supabase/functions" ] || [ ! "$(ls -A supabase/functions)" ]; then
@@ -60,20 +52,26 @@ steps:
       
       echo "🔍 Getting list of deployed functions from Supabase..."
       
-      # Get list of currently deployed functions
+      # Get list of currently deployed functions using JSON output for better parsing
       deployed_functions=""
       if deployed_output=$(supabase functions list --project-ref "$SUPABASE_PROJECT_ID" --output json 2>/dev/null); then
-        # Parse JSON output to get function names
-        deployed_functions=$(echo "$deployed_output" | jq -r '.[].name' 2>/dev/null | sort | uniq)
-      elif deployed_output=$(supabase functions list --project-ref "$SUPABASE_PROJECT_ID" 2>/dev/null); then
-        # Fallback to table parsing if JSON fails
-        deployed_functions=$(echo "$deployed_output" | tail -n +4 | awk '{print $4}' | grep -E '^[A-Za-z][A-Za-z0-9_-]*$' | sort | uniq)
+        # Parse JSON output to extract function names
+        deployed_functions=$(echo "$deployed_output" | jq -r '.[].name' 2>/dev/null | grep -v '^null$' | sort | uniq)
+      fi
+      
+      # Fallback to table parsing if JSON fails
+      if [ -z "$deployed_functions" ]; then
+        echo "⚠️ JSON parsing failed, trying table format..."
+        if deployed_output=$(supabase functions list --project-ref "$SUPABASE_PROJECT_ID" 2>/dev/null); then
+          # More robust table parsing - look for lines that don't contain table separators
+          deployed_functions=$(echo "$deployed_output" | grep -v '^[+|-]' | grep -v '^ *Name *|' | awk -F'|' '{print $2}' | sed 's/^ *//;s/ *$//' | grep -v '^$' | grep -v '^Name$' | sort | uniq)
+        fi
       fi
       
       if [ -n "$deployed_functions" ]; then
         echo "📋 Currently deployed functions:"
         echo "$deployed_functions" | while read -r func; do
-          if [ -n "$func" ]; then
+          if [ -n "$func" ] && [[ "$func" =~ ^[A-Za-z][A-Za-z0-9_-]*$ ]]; then
             echo "  - $func"
           fi
         done
@@ -93,12 +91,6 @@ steps:
           # Skip _shared directory
           if [ "$func_name" = "_shared" ]; then
             echo "  - $func_name (skipped - shared utilities)"
-            continue
-          fi
-          
-          # Validate function name format
-          if [[ ! "$func_name" =~ ^[A-Za-z][A-Za-z0-9_-]*$ ]]; then
-            echo "  - $func_name (skipped - invalid name format)"
             continue
           fi
           
@@ -122,9 +114,11 @@ steps:
       if [ -n "$repo_functions" ]; then
         echo "🚀 Deploying functions..."
         echo -e "$repo_functions" | while read -r func_name; do
-          if [ -n "$func_name" ]; then
+          if [ -n "$func_name" ] && [[ "$func_name" =~ ^[A-Za-z][A-Za-z0-9_-]*$ ]]; then
             echo "Deploying function: $func_name"
-            if supabase functions deploy "$func_name" --project-ref "$SUPABASE_PROJECT_ID"; then
+            supabase functions deploy "$func_name" --project-ref "$SUPABASE_PROJECT_ID"
+            
+            if [ $? -eq 0 ]; then
               echo "✅ Successfully deployed: $func_name"
             else
               echo "❌ Failed to deploy: $func_name"
@@ -138,12 +132,13 @@ steps:
       
       echo ""
       
-      # Delete functions that are deployed but not in repository (only if force sync is enabled)
-      if [ "$FORCE_SYNC" = "true" ] && [ -n "$deployed_functions" ]; then
-        echo "🗑️ Checking for functions to delete (force sync enabled)..."
+      # Delete functions that are deployed but not in repository
+      if [ -n "$deployed_functions" ]; then
+        echo "🗑️ Checking for functions to delete..."
         
         echo "$deployed_functions" | while read -r deployed_func; do
-          if [ -n "$deployed_func" ]; then
+          # Validate function name format before processing
+          if [ -n "$deployed_func" ] && [[ "$deployed_func" =~ ^[A-Za-z][A-Za-z0-9_-]*$ ]]; then
             # Check if this deployed function exists in repository
             should_delete=true
             if [ -n "$repo_functions" ]; then
@@ -155,16 +150,18 @@ steps:
             # If function doesn't exist in repo, delete it from Supabase
             if [ "$should_delete" = true ]; then
               echo "🗑️ Deleting function not in repository: $deployed_func"
-              if supabase functions delete "$deployed_func" --project-ref "$SUPABASE_PROJECT_ID"; then
+              supabase functions delete "$deployed_func" --project-ref "$SUPABASE_PROJECT_ID"
+              
+              if [ $? -eq 0 ]; then
                 echo "✅ Successfully deleted: $deployed_func"
               else
                 echo "⚠️ Failed to delete: $deployed_func (may not exist or permission issue)"
               fi
             fi
+          else
+            echo "⚠️ Skipping invalid function name: '$deployed_func'"
           fi
         done
-      elif [ "$FORCE_SYNC" != "true" ]; then
-        echo "ℹ️ Force sync disabled - skipping deletion of deployed functions not in repository"
       else
         echo "ℹ️ No deployed functions to check for deletion"
       fi
@@ -172,41 +169,46 @@ steps:
       echo ""
       echo "🎉 Function synchronization completed!"
 
-  - name: Clean up all deployed functions
+  - name: No functions to deploy
     if: steps.check-functions.outputs.functions_exist == 'false'
     env:
       SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
       SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
-      FORCE_SYNC: ${{ github.event.inputs.force_sync || 'true' }}
     run: |
-      if [ "$FORCE_SYNC" != "true" ]; then
-        echo "ℹ️ Force sync disabled - skipping cleanup of deployed functions"
-        exit 0
-      fi
-      
       echo "ℹ️ No functions found in supabase/functions directory."
       echo "🗑️ This will delete ALL deployed functions to maintain sync..."
       
-      # Get list of currently deployed functions and delete them all
+      # Get list of currently deployed functions using JSON output for better parsing
       deployed_functions=""
       if deployed_output=$(supabase functions list --project-ref "$SUPABASE_PROJECT_ID" --output json 2>/dev/null); then
-        # Parse JSON output to get function names
-        deployed_functions=$(echo "$deployed_output" | jq -r '.[].name' 2>/dev/null | sort | uniq)
-      elif deployed_output=$(supabase functions list --project-ref "$SUPABASE_PROJECT_ID" 2>/dev/null); then
-        # Fallback to table parsing if JSON fails
-        deployed_functions=$(echo "$deployed_output" | tail -n +4 | awk '{print $4}' | grep -E '^[A-Za-z][A-Za-z0-9_-]*$' | sort | uniq)
+        # Parse JSON output to extract function names
+        deployed_functions=$(echo "$deployed_output" | jq -r '.[].name' 2>/dev/null | grep -v '^null$' | sort | uniq)
+      fi
+      
+      # Fallback to table parsing if JSON fails
+      if [ -z "$deployed_functions" ]; then
+        echo "⚠️ JSON parsing failed, trying table format..."
+        if deployed_output=$(supabase functions list --project-ref "$SUPABASE_PROJECT_ID" 2>/dev/null); then
+          # More robust table parsing
+          deployed_functions=$(echo "$deployed_output" | grep -v '^[+|-]' | grep -v '^ *Name *|' | awk -F'|' '{print $2}' | sed 's/^ *//;s/ *$//' | grep -v '^$' | grep -v '^Name$' | sort | uniq)
+        fi
       fi
       
       if [ -n "$deployed_functions" ]; then
         echo "Deleting all deployed functions:"
         echo "$deployed_functions" | while read -r func; do
-          if [ -n "$func" ]; then
+          # Validate function name format before attempting deletion
+          if [ -n "$func" ] && [[ "$func" =~ ^[A-Za-z][A-Za-z0-9_-]*$ ]]; then
             echo "🗑️ Deleting: $func"
-            if supabase functions delete "$func" --project-ref "$SUPABASE_PROJECT_ID"; then
+            supabase functions delete "$func" --project-ref "$SUPABASE_PROJECT_ID"
+            
+            if [ $? -eq 0 ]; then
               echo "✅ Successfully deleted: $func"
             else
               echo "⚠️ Failed to delete: $func"
             fi
+          else
+            echo "⚠️ Skipping invalid function name: '$func'"
           fi
         done
       else
