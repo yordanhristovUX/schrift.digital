@@ -53,8 +53,17 @@ const Supporter: React.FC = () => {
 
     const fetchPrice = async () => {
       try {
-        // Set fallback price since edge function is removed
-        setPrice('2.00');
+        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-price`, {
+          headers: {
+            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          },
+        });
+        
+        if (!response.ok) throw new Error('Failed to fetch price');
+        
+        const data = await response.json();
+        const amount = (data.unit_amount / 100).toFixed(2);
+        setPrice(amount);
       } catch (err) {
         console.error('Error fetching price:', err);
         setPrice('2.00'); // Fallback price
@@ -76,8 +85,31 @@ const Supporter: React.FC = () => {
         return;
       }
 
-      // Redirect to external payment processor or show message
-      setError('Payment processing is currently unavailable. Please contact support.');
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/stripe-checkout`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          price_id: PRODUCTS.PREMIUM.priceId,
+          success_url: `${window.location.origin}/profile`,
+          cancel_url: `${window.location.origin}/supporter`,
+          mode: 'subscription'
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to create checkout session');
+      }
+
+      if (!data.url) {
+        throw new Error('No checkout URL received from Stripe');
+      }
+
+      window.location.href = data.url;
     } catch (err: any) {
       console.error('Checkout Error:', err);
       setError(err.message || 'Something went wrong while creating the checkout session');
