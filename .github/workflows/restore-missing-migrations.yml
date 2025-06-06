@@ -106,23 +106,23 @@ jobs:
           echo "🧼 Processing schema.sql content..."
           
           # Create a comprehensive migration from schema.sql
-          cat > "$MIGRATION_FILE" << EOF
-/*
-  # Database Schema Restoration
-
-  This migration restores the current database schema state.
-  
-  ## What this migration does:
-  - Restores all tables, functions, policies, and other database objects
-  - Ensures the local migration state matches the remote database
-  - Provides a clean starting point for future migrations
-  
-  ## Generated from:
-  - Current remote database schema
-  - Timestamp: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
-*/
-
-EOF
+          {
+            echo "/*"
+            echo "  # Database Schema Restoration"
+            echo ""
+            echo "  This migration restores the current database schema state."
+            echo "  "
+            echo "  ## What this migration does:"
+            echo "  - Restores all tables, functions, policies, and other database objects"
+            echo "  - Ensures the local migration state matches the remote database"
+            echo "  - Provides a clean starting point for future migrations"
+            echo "  "
+            echo "  ## Generated from:"
+            echo "  - Current remote database schema"
+            echo "  - Timestamp: $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
+            echo "*/"
+            echo ""
+          } > "$MIGRATION_FILE"
 
 
           # Filter and add schema content, excluding problematic statements
@@ -149,22 +149,22 @@ EOF
             echo "This might indicate no schema changes or all statements were filtered out."
             
             # Create a minimal migration to mark the restore point
-            cat > "$MIGRATION_FILE" << EOF
-/*
-  # Database Schema Restoration Marker
-  
-  This migration marks a restoration point where the local migration state
-  was synchronized with the remote database state.
-  
-  Generated at: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
-*/
-
--- Migration restoration marker
-DO \$\$
-BEGIN
-  RAISE NOTICE 'Database schema restoration completed at %', NOW();
-END \$\$;
-EOF
+            {
+              echo "/*"
+              echo "  # Database Schema Restoration Marker"
+              echo "  "
+              echo "  This migration marks a restoration point where the local migration state"
+              echo "  was synchronized with the remote database state."
+              echo "  "
+              echo "  Generated at: $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
+              echo "*/"
+              echo ""
+              echo "-- Migration restoration marker"
+              echo "DO \$\$"
+              echo "BEGIN"
+              echo "  RAISE NOTICE 'Database schema restoration completed at %', NOW();"
+              echo "END \$\$;"
+            } > "$MIGRATION_FILE"
           fi
 
           echo "🚀 Applying new migration..."
