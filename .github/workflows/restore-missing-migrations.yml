@@ -106,7 +106,7 @@ jobs:
           echo "🧼 Processing schema.sql content..."
           
           # Create a comprehensive migration from schema.sql
-          cat > "$MIGRATION_FILE" << 'EOF'
+          cat > "$MIGRATION_FILE" << EOF
 /*
   # Database Schema Restoration
 
@@ -123,6 +123,7 @@ jobs:
 */
 
 EOF
+
 
           # Filter and add schema content, excluding problematic statements
           echo "🔍 Filtering schema.sql content..."
