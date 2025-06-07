@@ -62,8 +62,13 @@ jobs:
           echo "Command: supabase functions list --project-ref $SUPABASE_PROJECT_ID"
           supabase functions list --project-ref "$SUPABASE_PROJECT_ID" || echo "⚠️ Failed to list functions"
 
-      - name: Pull schema and metadata
-        run: supabase db pull
+      - name: Pull latest DB schema from Supabase
+        env:
+        DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: |
+        echo "🔄 Pulling DB schema from remote..."
+        DB_URL="postgresql://postgres:${DB_PASSWORD}@db.yzvecafbqesrgzhcqalq.supabase.co:5432/postgres"
+        supabase db pull --db-url "$DB_URL"
 
       - name: Commit and push updated schema
         run: |
