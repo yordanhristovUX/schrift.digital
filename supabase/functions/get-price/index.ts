@@ -29,6 +29,7 @@ serve(async (req: Request) => {
     const priceResponse = await fetch(`https://api.stripe.com/v1/prices/${priceId}`, {
       headers: {
         'Authorization': `Bearer ${stripeSecretKey}`,
+        'Stripe-Version': '2023-10-16',
       },
     });
 

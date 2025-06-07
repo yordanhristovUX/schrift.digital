@@ -12,7 +12,7 @@ export interface SubscriptionManagementOptions {
   returnUrl: string;
 }
 
-export const createCheckoutSession = async (options: CheckoutOptions) => {
+export const createCheckoutSession = async (options: CheckoutOptions): Promise<string> => {
   const { data: { session } } = await supabase.auth.getSession();
   
   if (!session) {
@@ -39,7 +39,7 @@ export const createCheckoutSession = async (options: CheckoutOptions) => {
   }
 
   const data = await response.json();
-  return data.url;
+  return data.url || data.sessionId;
 };
 
 export const manageSubscription = async (options: SubscriptionManagementOptions) => {
