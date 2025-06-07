@@ -1,7 +1,7 @@
 name: Sync Supabase Schema
 
 on:
-  workflow_dispatch: # manual trigger
+  workflow_dispatch:
 
 jobs:
   sync-schema:
@@ -17,15 +17,54 @@ jobs:
         with:
           version: latest
 
-      - name: Login to Supabase
+      - name: Debug Supabase Access
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-        run: supabase login --access-token "$SUPABASE_ACCESS_TOKEN"
-
-      - name: Link project
-        env:
           SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
-        run: supabase link --project-ref "$SUPABASE_PROJECT_ID"
+        run: |
+          echo "🔑 Checking if access token is set:"
+          if [ -n "$SUPABASE_ACCESS_TOKEN" ]; then
+            echo "✅ SUPABASE_ACCESS_TOKEN is set (length: ${#SUPABASE_ACCESS_TOKEN})"
+          else
+            echo "❌ SUPABASE_ACCESS_TOKEN is not set"
+            exit 1
+          fi
+          echo ""
+          
+          echo "🏗️ Checking if project ID is set:"
+          if [ -n "$SUPABASE_PROJECT_ID" ]; then
+            echo "✅ SUPABASE_PROJECT_ID is set: $SUPABASE_PROJECT_ID"
+          else
+            echo "❌ SUPABASE_PROJECT_ID is not set"
+            exit 1
+          fi
+          echo ""
+
+          echo "📋 Supabase CLI Version:"
+          supabase --version
+          echo ""
+
+          echo "🔐 Logging into Supabase..."
+          supabase login --access-token "$SUPABASE_ACCESS_TOKEN"
+          echo ""
+
+          echo "🔗 Linking project..."
+          supabase link --project-ref "$SUPABASE_PROJECT_ID"
+          echo ""
+
+          echo "🔍 Testing basic Supabase CLI connectivity..."
+          if supabase projects list 2>/dev/null | grep -q "$SUPABASE_PROJECT_ID"; then
+            echo "✅ Can access project via CLI"
+          else
+            echo "⚠️ Cannot find project in projects list or access denied"
+            echo "Available projects:"
+            supabase projects list 2>/dev/null || echo "Failed to list projects"
+          fi
+          echo ""
+
+          echo "📋 Attempting to list functions with verbose output..."
+          echo "Command: supabase functions list --project-ref $SUPABASE_PROJECT_ID"
+          supabase functions list --project-ref "$SUPABASE_PROJECT_ID" || echo "⚠️ Failed to list functions"
 
       - name: Pull schema and metadata
         run: supabase db pull
