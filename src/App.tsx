@@ -13,6 +13,7 @@ import Profile from './pages/Profile';
 import Supporter from './pages/Supporter';
 import Dashboard from './pages/admin/Dashboard';
 import FontManager from './pages/admin/FontManager';
+import SubscriptionManager from './pages/admin/SubscriptionManager';
 import NotFound from './pages/NotFound';
 import AdminRoute from './components/AdminRoute';
 import { supabase } from './lib/supabase';
@@ -115,6 +116,7 @@ function App() {
             <Route path="/supporter" element={<ProtectedRoute><SEO title="Поддръжник | Български шрифтове с кирилица" description="Подкрепете проекта и получете достъп до всички премиум български шрифтове с кирилица." /><Supporter /></ProtectedRoute>} />
             <Route path="/admin" element={<AdminRoute><Dashboard /></AdminRoute>} />
             <Route path="/admin/fonts" element={<AdminRoute><FontManager /></AdminRoute>} />
+            <Route path="/admin/subscriptions" element={<AdminRoute><SubscriptionManager /></AdminRoute>} />
             <Route path="*" element={<><SEO title="404 | Български шрифтове с кирилица" description="Страницата не беше намерена." /><NotFound /></>} />
           </Routes>
         </Layout>

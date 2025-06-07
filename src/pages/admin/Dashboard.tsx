@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Type, Users, Settings, LogOut } from 'lucide-react';
+import { LayoutDashboard, Type, Users, Settings, LogOut, CreditCard } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 
 interface DashboardStats {
@@ -79,6 +79,13 @@ const Dashboard: React.FC = () => {
               >
                 <Type size={20} />
                 <span>Fonts</span>
+              </Link>
+              <Link
+                to="/admin/subscriptions"
+                className="flex items-center space-x-2 px-4 py-2.5 rounded-lg hover:bg-gray-50 text-gray-700"
+              >
+                <CreditCard size={20} />
+                <span>Subscriptions</span>
               </Link>
               <Link
                 to="/admin/users"
