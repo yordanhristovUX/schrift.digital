@@ -64,11 +64,13 @@ jobs:
 
       - name: Pull latest DB schema from Supabase
         env:
-        DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
         run: |
-        echo "🔄 Pulling DB schema from remote..."
-        DB_URL="postgresql://postgres:${DB_PASSWORD}@db.yzvecafbqesrgzhcqalq.supabase.co:5432/postgres"
-        supabase db pull --db-url "$DB_URL"
+          echo "🔄 Pulling DB schema from remote..."
+          
+          DB_URL="postgresql://postgres:${DB_PASSWORD}@db.yzvecafbqesrgzhcqalq.supabase.co:5432/postgres"
+          
+          supabase db pull --db-url "$DB_URL"
 
       - name: Commit and push updated schema
         run: |
