@@ -59,10 +59,11 @@ const Profile: React.FC = () => {
           const { data: subscriptionData } = await supabase
             .from('stripe_subscriptions')
             .select('*')
-            .eq('customer_id', customerData[0].customer_id)
-            .single();
+            .eq('customer_id', customerData[0].customer_id);
 
-          setSubscription(subscriptionData);
+          if (subscriptionData && subscriptionData.length > 0) {
+            setSubscription(subscriptionData[0]);
+          }
         }
 
         setUser(profile);
