@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { User, Crown } from 'lucide-react';
+import { User, Crown, CheckCircle } from 'lucide-react';
 import { format } from 'date-fns';
 
 const Profile: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [user, setUser] = useState<any>(null);
   const [subscription, setSubscription] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -13,6 +14,22 @@ const Profile: React.FC = () => {
   const [email, setEmail] = useState('');
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+
+  // Check for success parameter from Stripe redirect
+  const success = searchParams.get('success');
+
+  useEffect(() => {
+    if (success === 'true') {
+      setMessage({ 
+        type: 'success', 
+        text: 'Абонаментът е активиран успешно! Благодарим ви за подкрепата.' 
+      });
+      // Remove the success parameter from URL
+      const newSearchParams = new URLSearchParams(searchParams);
+      newSearchParams.delete('success');
+      navigate({ search: newSearchParams.toString() }, { replace: true });
+    }
+  }, [success, searchParams, navigate]);
 
   useEffect(() => {
     const getProfile = async () => {
@@ -80,7 +97,7 @@ const Profile: React.FC = () => {
 
       if (error) throw error;
 
-      setMessage({ type: 'success', text: 'Profile updated successfully' });
+      setMessage({ type: 'success', text: 'Профилът е обновен успешно' });
     } catch (error: any) {
       setMessage({ type: 'error', text: error.message });
     } finally {
@@ -137,11 +154,12 @@ const Profile: React.FC = () => {
         </div>
 
         {message && (
-          <div className={`mb-6 p-4 rounded-sm ${
+          <div className={`mb-6 p-4 rounded-sm flex items-center ${
             message.type === 'success' 
               ? 'bg-green-50 border border-green-200 text-green-700' 
               : 'bg-red-50 border border-red-200 text-red-700'
           } font-['Listopad']`}>
+            {message.type === 'success' && <CheckCircle className="w-5 h-5 mr-2 flex-shrink-0" />}
             {message.text}
           </div>
         )}
@@ -201,7 +219,7 @@ const Profile: React.FC = () => {
             <div className="space-y-4">
               <div className="flex justify-between items-center py-2 border-b border-[#D9D9D9]">
                 <span className="text-[#5E6572] font-['Listopad']">Статус</span>
-                <span className="text-[#141204] font-['Listopad']">Активен</span>
+                <span className="text-[#141204] font-['Listopad'] capitalize">{subscription.status}</span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-[#D9D9D9]">
                 <span className="text-[#5E6572] font-['Listopad']">Валиден до</span>
@@ -210,13 +228,28 @@ const Profile: React.FC = () => {
                 </span>
               </div>
               {subscription?.payment_method_last4 && (
-                <div className="flex justify-between items-center py-2">
+                <div className="flex justify-between items-center py-2 border-b border-[#D9D9D9]">
                   <span className="text-[#5E6572] font-['Listopad']">Метод на плащане</span>
                   <span className="text-[#141204] font-['Listopad']">
                     {subscription.payment_method_brand} •••• {subscription.payment_method_last4}
                   </span>
                 </div>
               )}
+              {subscription?.cancel_at_period_end && (
+                <div className="flex justify-between items-center py-2">
+                  <span className="text-[#5E6572] font-['Listopad']">Прекратяване</span>
+                  <span className="text-red-600 font-['Listopad']">Ще бъде прекратен в края на периода</span>
+                </div>
+              )}
+            </div>
+            
+            <div className="mt-6 pt-6 border-t border-[#D9D9D9]">
+              <button
+                onClick={() => navigate('/supporter')}
+                className="text-[#141204] hover:text-[#2D2B1F] font-['Listopad'] underline"
+              >
+                Управление на абонамента
+              </button>
             </div>
           </div>
         )}
@@ -226,5 +259,3 @@ const Profile: React.FC = () => {
 };
 
 export default Profile;
-
-export default Profile

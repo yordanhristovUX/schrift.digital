@@ -1,12 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Crown, Check } from 'lucide-react';
+import { Crown, Check, Settings } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { PRODUCTS } from '../stripe-config';
+import { createCheckoutSession, manageSubscription, getPrice, formatPrice } from '../lib/stripe';
 import { format } from 'date-fns';
 
 const benefits = [
-  'Достъп до всички шрифтове'
+  'Достъп до всички шрифтове',
+  'Приоритетна поддръжка',
+  'Ранен достъп до нови шрифтове',
+  'Без реклами',
 ];
 
 const Supporter: React.FC = () => {
@@ -15,7 +19,7 @@ const Supporter: React.FC = () => {
   const [user, setUser] = useState<any>(null);
   const [subscription, setSubscription] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
-  const [price, setPrice] = useState<string | null>(null);
+  const [priceData, setPriceData] = useState<any>(null);
 
   useEffect(() => {
     const getUser = async () => {
@@ -37,14 +41,13 @@ const Supporter: React.FC = () => {
       const { data: customerData } = await supabase
         .from('stripe_customers')
         .select('customer_id')
-        .eq('user_id', session.user.id)
-        .single();
+        .eq('user_id', session.user.id);
 
-      if (customerData?.customer_id) {
+      if (customerData?.[0]?.customer_id) {
         const { data: subscriptionData } = await supabase
           .from('stripe_subscriptions')
           .select('*')
-          .eq('customer_id', customerData.customer_id)
+          .eq('customer_id', customerData[0].customer_id)
           .single();
 
         setSubscription(subscriptionData);
@@ -53,20 +56,15 @@ const Supporter: React.FC = () => {
 
     const fetchPrice = async () => {
       try {
-        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-price`, {
-          headers: {
-            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          },
-        });
-        
-        if (!response.ok) throw new Error('Failed to fetch price');
-        
-        const data = await response.json();
-        const amount = (data.unit_amount / 100).toFixed(2);
-        setPrice(amount);
+        const data = await getPrice(PRODUCTS.PREMIUM.priceId);
+        setPriceData(data);
       } catch (err) {
         console.error('Error fetching price:', err);
-        setPrice('2.00'); // Fallback price
+        // Fallback price data
+        setPriceData({
+          unit_amount: 200, // 2.00 EUR in cents
+          currency: 'eur',
+        });
       }
     };
 
@@ -79,40 +77,36 @@ const Supporter: React.FC = () => {
     setError(null);
     
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        navigate('/login', { state: { from: '/supporter' } });
-        return;
-      }
-
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/stripe-checkout`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          price_id: PRODUCTS.PREMIUM.priceId,
-          success_url: `${window.location.origin}/profile`,
-          cancel_url: `${window.location.origin}/supporter`,
-          mode: 'subscription'
-        })
+      const checkoutUrl = await createCheckoutSession({
+        priceId: PRODUCTS.PREMIUM.priceId,
+        successUrl: `${window.location.origin}/profile?success=true`,
+        cancelUrl: `${window.location.origin}/supporter`,
+        mode: 'subscription',
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to create checkout session');
-      }
-
-      if (!data.url) {
-        throw new Error('No checkout URL received from Stripe');
-      }
-
-      window.location.href = data.url;
+      window.location.href = checkoutUrl;
     } catch (err: any) {
       console.error('Checkout Error:', err);
       setError(err.message || 'Something went wrong while creating the checkout session');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleManageSubscription = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const portalUrl = await manageSubscription({
+        action: 'portal',
+        returnUrl: `${window.location.origin}/profile`,
+      });
+
+      window.location.href = portalUrl;
+    } catch (err: any) {
+      console.error('Portal Error:', err);
+      setError(err.message || 'Something went wrong while opening the customer portal');
     } finally {
       setLoading(false);
     }
@@ -122,6 +116,8 @@ const Supporter: React.FC = () => {
   const subscriptionEnd = subscription?.current_period_end 
     ? new Date(subscription.current_period_end * 1000)
     : null;
+
+  const displayPrice = priceData ? formatPrice(priceData.unit_amount, priceData.currency) : '€2.00';
 
   return (
     <div className="min-h-screen pt-32 pb-16 bg-[#FFFFFC]">
@@ -151,31 +147,75 @@ const Supporter: React.FC = () => {
           </div>
         )}
 
-        {!isActiveSubscription && (
-          <div className="bg-white rounded-sm shadow-lg p-8 mb-12">
-            <div className="flex items-center justify-center mb-8">
-              <span className="text-4xl font-bold text-[#141204] font-['Listopad']">{price}€</span>
-              <span className="text-[#5E6572] ml-2 font-['Listopad']">/ месец</span>
-            </div>
+        <div className="bg-white rounded-sm shadow-lg p-8 mb-12">
+          {!isActiveSubscription ? (
+            <>
+              <div className="flex items-center justify-center mb-8">
+                <span className="text-4xl font-bold text-[#141204] font-['Listopad']">{displayPrice}</span>
+                <span className="text-[#5E6572] ml-2 font-['Listopad']">/ месец</span>
+              </div>
 
-            <ul className="space-y-4 mb-8">
-              {benefits.map((benefit, index) => (
-                <li key={index} className="flex items-center text-[#141204] font-['Listopad']">
-                  <Check className="w-5 h-5 text-[#C40000] mr-3 flex-shrink-0" />
-                  {benefit}
-                </li>
-              ))}
-            </ul>
+              <ul className="space-y-4 mb-8">
+                {benefits.map((benefit, index) => (
+                  <li key={index} className="flex items-center text-[#141204] font-['Listopad']">
+                    <Check className="w-5 h-5 text-[#C40000] mr-3 flex-shrink-0" />
+                    {benefit}
+                  </li>
+                ))}
+              </ul>
 
-            <button
-              onClick={handleSubscribe}
-              disabled={loading}
-              className="w-full py-3 px-6 bg-[#141204] text-[#FFFFFC] rounded-sm hover:bg-[#2D2B1F] disabled:opacity-50 transition-colors font-['Listopad']"
-            >
-              {loading ? 'Обработка...' : 'Абонирай се сега'}
-            </button>
-          </div>
-        )}
+              <button
+                onClick={handleSubscribe}
+                disabled={loading}
+                className="w-full py-3 px-6 bg-[#141204] text-[#FFFFFC] rounded-sm hover:bg-[#2D2B1F] disabled:opacity-50 transition-colors font-['Listopad']"
+              >
+                {loading ? 'Обработка...' : 'Абонирай се сега'}
+              </button>
+            </>
+          ) : (
+            <>
+              <div className="mb-8">
+                <div className="flex items-center justify-center mb-4">
+                  <Crown className="w-8 h-8 text-[#C40000] mr-2" />
+                  <span className="text-2xl font-bold text-[#141204] font-['Listopad']">Премиум абонамент</span>
+                </div>
+                <p className="text-[#5E6572] font-['Listopad']">
+                  Активен до {subscriptionEnd ? format(subscriptionEnd, 'dd.MM.yyyy') : 'N/A'}
+                </p>
+              </div>
+
+              <div className="space-y-4 mb-8">
+                <div className="flex justify-between items-center py-2 border-b border-[#D9D9D9]">
+                  <span className="text-[#5E6572] font-['Listopad']">Статус</span>
+                  <span className="text-[#141204] font-['Listopad'] capitalize">{subscription.status}</span>
+                </div>
+                {subscription?.payment_method_last4 && (
+                  <div className="flex justify-between items-center py-2 border-b border-[#D9D9D9]">
+                    <span className="text-[#5E6572] font-['Listopad']">Метод на плащане</span>
+                    <span className="text-[#141204] font-['Listopad']">
+                      {subscription.payment_method_brand} •••• {subscription.payment_method_last4}
+                    </span>
+                  </div>
+                )}
+                {subscription?.cancel_at_period_end && (
+                  <div className="flex justify-between items-center py-2">
+                    <span className="text-[#5E6572] font-['Listopad']">Прекратяване</span>
+                    <span className="text-red-600 font-['Listopad']">Ще бъде прекратен в края на периода</span>
+                  </div>
+                )}
+              </div>
+
+              <button
+                onClick={handleManageSubscription}
+                disabled={loading}
+                className="flex items-center justify-center w-full py-3 px-6 bg-[#141204] text-[#FFFFFC] rounded-sm hover:bg-[#2D2B1F] disabled:opacity-50 transition-colors font-['Listopad']"
+              >
+                <Settings className="w-5 h-5 mr-2" />
+                {loading ? 'Обработка...' : 'Управление на абонамента'}
+              </button>
+            </>
+          )}
+        </div>
 
         {!isActiveSubscription && (
           <p className="text-sm text-[#5E6572] max-w-lg mx-auto font-['Listopad']">
