@@ -44,10 +44,6 @@ jobs:
           supabase --version
           echo ""
 
-          echo "🔐 Logging into Supabase..."
-          supabase login --access-token "$SUPABASE_ACCESS_TOKEN"
-          echo ""
-
           echo "🔗 Linking project..."
           supabase link --project-ref "$SUPABASE_PROJECT_ID"
           echo ""
