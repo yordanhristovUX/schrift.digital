@@ -1,0 +1,283 @@
+name: Debug Supabase Database
+
+on:
+  workflow_dispatch: # Manual trigger for debugging
+
+jobs:
+  debug:
+    name: Debug Supabase Database Access
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Debug Supabase Database Connection
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: |
+          echo "🔍 Debugging Supabase Database connection and permissions..."
+          echo ""
+          
+          echo "📋 Supabase CLI Version:"
+          supabase --version
+          echo ""
+          
+          echo "🔑 Checking environment variables:"
+          if [ -n "$SUPABASE_ACCESS_TOKEN" ]; then
+            echo "✅ SUPABASE_ACCESS_TOKEN is set (length: ${#SUPABASE_ACCESS_TOKEN})"
+          else
+            echo "❌ SUPABASE_ACCESS_TOKEN is not set"
+            exit 1
+          fi
+          
+          if [ -n "$SUPABASE_PROJECT_ID" ]; then
+            echo "✅ SUPABASE_PROJECT_ID is set: $SUPABASE_PROJECT_ID"
+          else
+            echo "❌ SUPABASE_PROJECT_ID is not set"
+            exit 1
+          fi
+          
+          if [ -n "$SUPABASE_DB_PASSWORD" ]; then
+            echo "✅ SUPABASE_DB_PASSWORD is set (length: ${#SUPABASE_DB_PASSWORD})"
+          else
+            echo "❌ SUPABASE_DB_PASSWORD is not set"
+            exit 1
+          fi
+          echo ""
+          
+          echo "🔍 Testing basic Supabase CLI connectivity..."
+          if supabase projects list 2>/dev/null | grep -q "$SUPABASE_PROJECT_ID"; then
+            echo "✅ Can access project via CLI"
+          else
+            echo "⚠️ Cannot find project in projects list or access denied"
+            echo "Available projects:"
+            supabase projects list 2>/dev/null || echo "Failed to list projects"
+          fi
+          echo ""
+          
+          echo "🔗 Testing project linking..."
+          echo "Command: supabase link --project-ref $SUPABASE_PROJECT_ID --password [REDACTED]"
+          
+          if supabase link --project-ref "$SUPABASE_PROJECT_ID" --password "$SUPABASE_DB_PASSWORD" 2>/dev/null; then
+            echo "✅ Successfully linked to project"
+          else
+            echo "❌ Failed to link to project"
+            echo "Attempting with verbose output:"
+            supabase link --project-ref "$SUPABASE_PROJECT_ID" --password "$SUPABASE_DB_PASSWORD" --debug 2>&1 || echo "Link command failed"
+            exit 1
+          fi
+          echo ""
+          
+          echo "📋 Testing migration list command..."
+          echo "Command: supabase migration list"
+          
+          migration_output=$(supabase migration list 2>&1)
+          migration_exit_code=$?
+          
+          echo "Exit code: $migration_exit_code"
+          echo "--- Raw output ---"
+          echo "$migration_output"
+          echo "--- End output ---"
+          echo ""
+          
+          if [ $migration_exit_code -eq 0 ]; then
+            echo "✅ Migration list command succeeded"
+            
+            # Parse the output to understand the migration state
+            if echo "$migration_output" | grep -q "remote database's migration history does not match"; then
+              echo "⚠️ Migration history mismatch detected"
+              
+              # Extract repair commands
+              repair_commands=$(echo "$migration_output" | grep "supabase migration repair" || true)
+              if [ -n "$repair_commands" ]; then
+                echo "🔧 Suggested repair commands:"
+                echo "$repair_commands"
+              fi
+            elif echo "$migration_output" | grep -q "No migrations found"; then
+              echo "ℹ️ No migrations found in local directory"
+            else
+              echo "ℹ️ Migration list appears normal"
+            fi
+          else
+            echo "❌ Migration list command failed"
+            
+            # Try to understand why it failed
+            if echo "$migration_output" | grep -q "permission denied"; then
+              echo "🔍 Permission issue detected"
+            elif echo "$migration_output" | grep -q "connection"; then
+              echo "🔍 Connection issue detected"
+            elif echo "$migration_output" | grep -q "authentication"; then
+              echo "🔍 Authentication issue detected"
+            fi
+          fi
+          echo ""
+          
+          echo "📥 Testing database pull command..."
+          echo "Command: supabase db pull"
+          
+          pull_output=$(supabase db pull 2>&1)
+          pull_exit_code=$?
+          
+          echo "Exit code: $pull_exit_code"
+          echo "--- Pull output ---"
+          echo "$pull_output"
+          echo "--- End pull output ---"
+          echo ""
+          
+          if [ $pull_exit_code -eq 0 ]; then
+            echo "✅ Database pull succeeded"
+            
+            if [ -f "supabase/schema.sql" ]; then
+              echo "📊 Schema file created:"
+              echo "  - Size: $(du -h supabase/schema.sql | cut -f1)"
+              echo "  - Lines: $(wc -l < supabase/schema.sql)"
+              
+              # Show first few lines of schema
+              echo "📄 First 10 lines of schema.sql:"
+              head -10 supabase/schema.sql || echo "Could not read schema file"
+            else
+              echo "⚠️ No schema.sql file was created"
+            fi
+          else
+            echo "❌ Database pull failed"
+          fi
+          echo ""
+          
+          echo "🔍 Testing database push (dry run)..."
+          echo "Command: supabase db push --dry-run"
+          
+          push_output=$(supabase db push --dry-run 2>&1)
+          push_exit_code=$?
+          
+          echo "Exit code: $push_exit_code"
+          echo "--- Push output ---"
+          echo "$push_output"
+          echo "--- End push output ---"
+          echo ""
+          
+          echo "🔍 Checking local migration files..."
+          if [ -d "supabase/migrations" ]; then
+            echo "📁 Migration directory exists"
+            migration_count=$(find supabase/migrations -name "*.sql" | wc -l)
+            echo "📊 Local migration files: $migration_count"
+            
+            if [ $migration_count -gt 0 ]; then
+              echo "📋 Local migration files:"
+              find supabase/migrations -name "*.sql" | sort | while read -r file; do
+                echo "  - $(basename "$file") ($(du -h "$file" | cut -f1))"
+              done
+            fi
+          else
+            echo "❌ No migration directory found"
+          fi
+          echo ""
+          
+          echo "🔍 Testing direct database connection..."
+          echo "Command: supabase db status"
+          
+          status_output=$(supabase db status 2>&1)
+          status_exit_code=$?
+          
+          echo "Exit code: $status_exit_code"
+          echo "--- Status output ---"
+          echo "$status_output"
+          echo "--- End status output ---"
+          echo ""
+          
+          echo "🔍 Testing project status..."
+          echo "Command: supabase status --project-ref $SUPABASE_PROJECT_ID"
+          
+          project_status_output=$(supabase status --project-ref "$SUPABASE_PROJECT_ID" 2>&1)
+          project_status_exit_code=$?
+          
+          echo "Exit code: $project_status_exit_code"
+          echo "--- Project status output ---"
+          echo "$project_status_output"
+          echo "--- End project status output ---"
+          echo ""
+          
+          echo "🔍 Checking Supabase configuration..."
+          if [ -f "supabase/config.toml" ]; then
+            echo "📄 Supabase config exists"
+            echo "Project ID in config:"
+            grep -E "project_id|project-id" supabase/config.toml || echo "No project ID found in config"
+          else
+            echo "⚠️ No supabase/config.toml found"
+          fi
+          echo ""
+          
+          echo "📋 Summary of findings:"
+          echo "  - CLI Version: $(supabase --version)"
+          echo "  - Project Link: $([ $? -eq 0 ] && echo "✅ Success" || echo "❌ Failed")"
+          echo "  - Migration List: $([ $migration_exit_code -eq 0 ] && echo "✅ Success" || echo "❌ Failed")"
+          echo "  - Database Pull: $([ $pull_exit_code -eq 0 ] && echo "✅ Success" || echo "❌ Failed")"
+          echo "  - Database Push (dry): $([ $push_exit_code -eq 0 ] && echo "✅ Success" || echo "❌ Failed")"
+          echo "  - Database Status: $([ $status_exit_code -eq 0 ] && echo "✅ Success" || echo "❌ Failed")"
+          echo "  - Project Status: $([ $project_status_exit_code -eq 0 ] && echo "✅ Success" || echo "❌ Failed")"
+          echo ""
+          
+          if [ $migration_exit_code -ne 0 ] || [ $pull_exit_code -ne 0 ]; then
+            echo "❌ Critical database operations are failing"
+            echo "🔍 This indicates a fundamental issue with database access"
+            echo ""
+            echo "🛠️ Possible solutions:"
+            echo "  1. Verify SUPABASE_DB_PASSWORD is correct"
+            echo "  2. Check if database is accessible from GitHub Actions IP"
+            echo "  3. Verify project permissions for the access token"
+            echo "  4. Check if project is paused or has billing issues"
+            exit 1
+          else
+            echo "✅ Basic database operations are working"
+          fi
+
+      - name: Test Migration Repair Process
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: |
+          echo "🔧 Testing migration repair process..."
+          echo ""
+          
+          # Get migration list again to see if we need repairs
+          migration_output=$(supabase migration list 2>&1)
+          
+          if echo "$migration_output" | grep -q "supabase migration repair"; then
+            echo "🔍 Migration repair needed. Testing repair commands..."
+            
+            # Extract one repair command to test
+            test_repair_cmd=$(echo "$migration_output" | grep "supabase migration repair" | head -1)
+            
+            if [ -n "$test_repair_cmd" ]; then
+              echo "🧪 Testing repair command: $test_repair_cmd"
+              
+              # Execute the repair command
+              if eval "$test_repair_cmd"; then
+                echo "✅ Test repair command succeeded"
+                
+                # Check migration list again
+                echo "📋 Migration list after test repair:"
+                supabase migration list 2>&1 || echo "Migration list failed after repair"
+              else
+                echo "❌ Test repair command failed"
+              fi
+            else
+              echo "⚠️ Could not extract repair command for testing"
+            fi
+          else
+            echo "ℹ️ No migration repairs needed"
+          fi
+
+      - name: Cleanup
+        run: |
+          echo "🧹 Cleaning up debug artifacts..."
+          rm -f supabase/schema.sql
+          echo "✅ Cleanup completed"  
