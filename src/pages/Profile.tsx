@@ -36,14 +36,13 @@ const Profile: React.FC = () => {
         const { data: customerData } = await supabase
           .from('stripe_customers')
           .select('customer_id')
-          .eq('user_id', session.user.id)
-          .single();
+          .eq('user_id', session.user.id);
 
-        if (customerData?.customer_id) {
+        if (customerData?.[0]?.customer_id) {
           const { data: subscriptionData } = await supabase
             .from('stripe_subscriptions')
             .select('*')
-            .eq('customer_id', customerData.customer_id)
+            .eq('customer_id', customerData[0].customer_id)
             .single();
 
           setSubscription(subscriptionData);
@@ -227,3 +226,5 @@ const Profile: React.FC = () => {
 };
 
 export default Profile;
+
+export default Profile
