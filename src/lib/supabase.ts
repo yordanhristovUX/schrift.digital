@@ -3,19 +3,8 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-// Validate environment variables
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables. Please check your .env file.');
-}
-
-// Validate URL format
-if (!supabaseUrl.startsWith('https://') || !supabaseUrl.includes('.supabase.co')) {
-  throw new Error('Invalid Supabase URL format. Expected format: https://your-project-id.supabase.co');
-}
-
-// Validate anon key format (basic check)
-if (supabaseAnonKey === 'your_supabase_anon_key' || supabaseAnonKey.length < 100) {
-  throw new Error('Invalid Supabase anon key. Please replace with your actual Supabase anon key.');
+  throw new Error('Missing Supabase environment variables');
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
