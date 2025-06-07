@@ -46,15 +46,16 @@ serve(async (req: Request) => {
       throw new Error('Missing required parameters');
     }
 
-    // Get customer ID
+    // Get customer ID - filter out deleted records and use maybeSingle
     const { data: customer } = await supabase
       .from('stripe_customers')
       .select('customer_id')
       .eq('user_id', user.id)
-      .single();
+      .is('deleted_at', null)
+      .maybeSingle();
 
     if (!customer?.customer_id) {
-      throw new Error('No customer found');
+      throw new Error('No active customer found');
     }
 
     let url: string;
@@ -66,7 +67,7 @@ serve(async (req: Request) => {
           .from('stripe_subscriptions')
           .select('subscription_id')
           .eq('customer_id', customer.customer_id)
-          .single();
+          .maybeSingle();
 
         if (!subscription?.subscription_id) {
           throw new Error('No active subscription found');
