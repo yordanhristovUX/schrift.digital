@@ -201,7 +201,9 @@ const Login: React.FC = () => {
   };
 
   const isInvalidCredentialsError = error?.includes('Invalid email or password');
-  const isEmailNotConfirmedError = rawError?.code === 'email_not_confirmed';
+  const isEmailNotConfirmedError = rawError?.code === 'email_not_confirmed' || 
+    error?.toLowerCase().includes('email not confirmed') ||
+    error?.toLowerCase().includes('имейлът не е потвърден');
 
   return (
     <div className="min-h-screen pt-32 pb-16 px-4 bg-[#141204]">
