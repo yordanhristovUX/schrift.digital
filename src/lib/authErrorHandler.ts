@@ -38,12 +38,30 @@ export function getAuthErrorMessage(error: AuthError | Error | null): string {
   let parsedErrorCode = null;
   try {
     const message = error.message;
-    // Look for JSON-like content in the error message
-    const jsonMatch = message.match(/\{[^}]*"code"[^}]*\}/);
-    if (jsonMatch) {
-      const parsedJson = JSON.parse(jsonMatch[0]);
-      if (parsedJson.code) {
-        parsedErrorCode = parsedJson.code;
+    
+    // First, try to parse the entire message as JSON (for structured error objects)
+    try {
+      const parsedMessage = JSON.parse(message);
+      
+      // Check if there's a 'body' field containing stringified JSON
+      if (parsedMessage.body && typeof parsedMessage.body === 'string') {
+        const bodyJson = JSON.parse(parsedMessage.body);
+        if (bodyJson.code) {
+          parsedErrorCode = bodyJson.code;
+        }
+      }
+      // Check if the parsed message itself has a code
+      else if (parsedMessage.code) {
+        parsedErrorCode = parsedMessage.code;
+      }
+    } catch (e) {
+      // If full JSON parsing fails, try to find JSON-like content in the message
+      const jsonMatch = message.match(/\{[^}]*"code"[^}]*\}/);
+      if (jsonMatch) {
+        const parsedJson = JSON.parse(jsonMatch[0]);
+        if (parsedJson.code) {
+          parsedErrorCode = parsedJson.code;
+        }
       }
     }
   } catch (e) {
