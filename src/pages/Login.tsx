@@ -34,21 +34,11 @@ const Login: React.FC = () => {
           const type = hashParams.get('type');
 
           if (type === 'signup' && accessToken && refreshToken) {
-            const { error } = await supabase.auth.setSession({
-              access_token: accessToken,
-              refresh_token: refreshToken,
+            // Redirect to email confirmation page instead of handling here
+            navigate('/email-confirmed', {
+              replace: true
             });
-
-            if (error) throw error;
-
-            // Clear the hash from the URL
-            window.history.replaceState(null, '', window.location.pathname);
-            
-            // Show success message and redirect
-            navigate('/login', {
-              replace: true,
-              state: { message: 'Email confirmed successfully! You can now log in.' }
-            });
+            return;
           }
         } catch (err: any) {
           console.error('Error confirming email:', err);
@@ -62,27 +52,11 @@ const Login: React.FC = () => {
       const type = searchParams.get('type');
       
       if (token && type === 'signup') {
-        try {
-          const { error } = await supabase.auth.verifyOtp({
-            token_hash: token,
-            type: 'signup'
-          });
-
-          if (error) throw error;
-
-          // Clear the search params from the URL
-          window.history.replaceState(null, '', window.location.pathname);
-          
-          // Show success message
-          navigate('/login', {
-            replace: true,
-            state: { message: 'Email confirmed successfully! You can now log in.' }
-          });
-        } catch (err: any) {
-          console.error('Error confirming email with token:', err);
-          setError(getAuthErrorMessage(err));
-          setRawError(err);
-        }
+        // Redirect to email confirmation page
+        navigate('/email-confirmed', {
+          replace: true
+        });
+        return;
       }
     };
 

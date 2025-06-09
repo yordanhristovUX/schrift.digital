@@ -8,6 +8,7 @@ import About from './pages/About';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ResetPassword from './pages/ResetPassword';
+import EmailConfirmed from './pages/EmailConfirmed';
 import FontDetail from './pages/FontDetail';
 import Profile from './pages/Profile';
 import Supporter from './pages/Supporter';
@@ -110,6 +111,7 @@ function App() {
             <Route path="/login" element={<><SEO title="Вход | Български шрифтове с кирилица\" description="Влезте в профила си за достъп до всички български шрифтове с кирилица." /><Login /></>} />
             <Route path="/register" element={<><SEO title="Регистрация | Български шрифтове с кирилица\" description="Създайте профил за достъп до всички български шрифтове с кирилица и italic стилове." /><Register /></>} />
             <Route path="/reset-password" element={<><SEO title="Възстановяване на парола | Български шрифтове с кирилица\" description="Задайте нова парола за вашия профил." /><ResetPassword /></>} />
+            <Route path="/email-confirmed" element={<><SEO title="Имейл потвърден | Български шрифтове с кирилица\" description="Вашият имейл е потвърден успешно." /><EmailConfirmed /></>} />
             <Route path="/fonts/:id" element={<FontDetail />} />
             <Route path="/profile" element={<ProtectedRoute><SEO title="Профил | Български шрифтове с кирилица\" description="Управлявайте профила си и достъпа до български шрифтове с кирилица." /><Profile /></ProtectedRoute>} />
             <Route path="/supporter" element={<ProtectedRoute><SEO title="Поддръжник | Български шрифтове с кирилица\" description="Подкрепете проекта и получете достъп до всички премиум български шрифтове с кирилица." /><Supporter /></ProtectedRoute>} />

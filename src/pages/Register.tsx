@@ -29,7 +29,7 @@ const Register: React.FC = () => {
           data: {
             full_name: fullName
           },
-          emailRedirectTo: `${window.location.origin}/login`
+          emailRedirectTo: `${window.location.origin}/email-confirmed`
         }
       });
 
