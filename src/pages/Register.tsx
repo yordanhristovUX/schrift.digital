@@ -48,18 +48,22 @@ const Register: React.FC = () => {
 
   if (confirmationSent) {
     return (
-      <div className="min-h-screen pt-32 pb-16 px-4 bg-[#141204]">
-        <div className="container mx-auto max-w-md">
-          <div className="bg-[#FFFFFC] rounded-sm shadow-lg p-8">
-            <h2 className="text-2xl font-bold mb-6 text-[#141204] font-['Listopad']">
-              {t('auth:register.confirmation_sent')}
-            </h2>
-            <p className="text-[#5E6572] mb-6 font-['Listopad']">
-              {t('auth:register.check_email', { email })}
-            </p>
-            <p className="text-[#5E6572] font-['Listopad']">
-              {t('auth:register.spam_notice')}
-            </p>
+      <div className="min-h-screen section bg-[#141204]">
+        <div className="container max-w-md">
+          <div className="card">
+            <div className="card-header">
+              <h2 className="card-title text-center">
+                {t('auth:register.confirmation_sent')}
+              </h2>
+            </div>
+            <div className="card-content">
+              <p className="text-[#5E6572] mb-6 font-['Listopad'] text-center">
+                {t('auth:register.check_email', { email })}
+              </p>
+              <p className="text-[#5E6572] font-['Listopad'] text-center">
+                {t('auth:register.spam_notice')}
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -67,88 +71,92 @@ const Register: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen pt-32 pb-16 px-4 bg-[#141204]">
-      <div className="container mx-auto max-w-md">
-        <div className="bg-[#FFFFFC] rounded-sm shadow-lg p-8">
-          <h2 className="text-2xl font-bold mb-6 text-[#141204] font-['Listopad']">
-            {t('auth:register.title')}
-          </h2>
+    <div className="min-h-screen section bg-[#141204]">
+      <div className="container max-w-md">
+        <div className="card">
+          <div className="card-header">
+            <h2 className="card-title text-center">
+              {t('auth:register.title')}
+            </h2>
+          </div>
           
           {error && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-sm font-['Listopad']">
+            <div className="alert alert-error mb-6">
               {error}
             </div>
           )}
           
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label 
-                htmlFor="fullName" 
-                className="block text-sm font-medium text-[#141204] mb-1 font-['Listopad']"
+          <form onSubmit={handleSubmit}>
+            <div className="card-content space-y-6">
+              <div className="form-group">
+                <label htmlFor="fullName" className="form-label">
+                  {t('auth:register.fullName')}
+                </label>
+                <input
+                  id="fullName"
+                  type="text"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  className="form-input"
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="email" className="form-label">
+                  {t('auth:register.email')}
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="form-input"
+                  required
+                />
+              </div>
+              
+              <div className="form-group">
+                <label htmlFor="password" className="form-label">
+                  {t('auth:register.password')}
+                </label>
+                <input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="form-input"
+                  required
+                  minLength={6}
+                />
+                <p className="form-help">
+                  {t('auth:register.minLength')}
+                </p>
+              </div>
+              
+              <button
+                type="submit"
+                disabled={loading}
+                className="btn btn-primary btn-md btn-full"
               >
-                {t('auth:register.fullName')}
-              </label>
-              <input
-                id="fullName"
-                type="text"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                className="w-full p-3 border border-[#D9D9D9] rounded-sm focus:ring-[#141204] focus:border-[#141204]"
-                required
-              />
+                {loading ? (
+                  <>
+                    <div className="spinner mr-2"></div>
+                    {t('auth:register.processing')}
+                  </>
+                ) : (
+                  t('auth:register.submit')
+                )}
+              </button>
             </div>
 
-            <div>
-              <label 
-                htmlFor="email" 
-                className="block text-sm font-medium text-[#141204] mb-1 font-['Listopad']"
-              >
-                {t('auth:register.email')}
-              </label>
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full p-3 border border-[#D9D9D9] rounded-sm focus:ring-[#141204] focus:border-[#141204]"
-                required
-              />
-            </div>
-            
-            <div>
-              <label 
-                htmlFor="password" 
-                className="block text-sm font-medium text-[#141204] mb-1 font-['Listopad']"
-              >
-                {t('auth:register.password')}
-              </label>
-              <input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full p-3 border border-[#D9D9D9] rounded-sm focus:ring-[#141204] focus:border-[#141204]"
-                required
-                minLength={6}
-              />
-              <p className="mt-1 text-sm text-[#5E6572] font-['Listopad']">
-                {t('auth:register.minLength')}
-              </p>
-            </div>
-            
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-3 px-4 bg-[#141204] text-[#FFFFFC] rounded-sm hover:bg-[#2D2B1F] disabled:opacity-50 font-['Listopad']"
-            >
-              {loading ? t('auth:register.processing') : t('auth:register.submit')}
-            </button>
-
-            <div className="text-center text-sm text-[#5E6572] font-['Listopad']">
-              {t('auth:register.hasAccount')}{' '}
-              <Link to="/login" className="text-[#141204] hover:text-[#2D2B1F]">
-                {t('auth:register.login')}
-              </Link>
+            <div className="card-footer">
+              <div className="text-center text-sm text-[#5E6572] font-['Listopad']">
+                {t('auth:register.hasAccount')}{' '}
+                <Link to="/login" className="btn btn-link">
+                  {t('auth:register.login')}
+                </Link>
+              </div>
             </div>
           </form>
         </div>

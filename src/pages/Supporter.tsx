@@ -121,8 +121,8 @@ const Supporter: React.FC = () => {
   const displayPrice = priceData ? formatPrice(priceData.unit_amount, priceData.currency) : '€2.00';
 
   return (
-    <div className="min-h-screen pt-32 pb-16 bg-[#FFFFFC]">
-      <div className="container mx-auto px-4 max-w-4xl text-center">
+    <div className="min-h-screen section bg-[#FFFFFC]">
+      <div className="container max-w-4xl text-center">
         <div className="flex justify-center mb-8">
           <Crown className="w-16 h-16 text-[#C40000]" />
         </div>
@@ -143,39 +143,52 @@ const Supporter: React.FC = () => {
         )}
 
         {error && (
-          <div className="mb-8 p-4 bg-red-50 border border-red-200 text-red-700 rounded-sm font-['Listopad']">
+          <div className="alert alert-error mb-8">
             {error}
           </div>
         )}
 
-        <div className="bg-white rounded-sm shadow-lg p-8 mb-12">
+        <div className="card max-w-lg mx-auto mb-12">
           {!isActiveSubscription ? (
             <>
-              <div className="flex items-center justify-center mb-8">
-                <span className="text-4xl font-bold text-[#141204] font-['Listopad']">{displayPrice}</span>
-                <span className="text-[#5E6572] ml-2 font-['Listopad']">/ месец</span>
+              <div className="card-header">
+                <div className="flex items-center justify-center mb-4">
+                  <span className="text-4xl font-bold text-[#141204] font-['Listopad']">{displayPrice}</span>
+                  <span className="text-[#5E6572] ml-2 font-['Listopad']">/ месец</span>
+                </div>
               </div>
 
-              <ul className="space-y-4 mb-8">
-                {benefits.map((benefit, index) => (
-                  <li key={index} className="flex items-center text-[#141204] font-['Listopad']">
-                    <Check className="w-5 h-5 text-[#C40000] mr-3 flex-shrink-0" />
-                    {benefit}
-                  </li>
-                ))}
-              </ul>
+              <div className="card-content">
+                <ul className="space-y-4 mb-8">
+                  {benefits.map((benefit, index) => (
+                    <li key={index} className="flex items-center text-[#141204] font-['Listopad']">
+                      <Check className="w-5 h-5 text-[#C40000] mr-3 flex-shrink-0" />
+                      {benefit}
+                    </li>
+                  ))}
+                </ul>
+              </div>
 
-              <button
-                onClick={handleSubscribe}
-                disabled={loading}
-                className="w-full py-3 px-6 bg-[#141204] text-[#FFFFFC] rounded-sm hover:bg-[#2D2B1F] disabled:opacity-50 transition-colors font-['Listopad']"
-              >
-                {loading ? 'Обработка...' : 'Абонирай се сега'}
-              </button>
+              <div className="card-footer">
+                <button
+                  onClick={handleSubscribe}
+                  disabled={loading}
+                  className="btn btn-primary btn-lg btn-full"
+                >
+                  {loading ? (
+                    <>
+                      <div className="spinner mr-2"></div>
+                      Обработка...
+                    </>
+                  ) : (
+                    'Абонирай се сега'
+                  )}
+                </button>
+              </div>
             </>
           ) : (
             <>
-              <div className="mb-8">
+              <div className="card-header">
                 <div className="flex items-center justify-center mb-4">
                   <Crown className="w-8 h-8 text-[#C40000] mr-2" />
                   <span className="text-2xl font-bold text-[#141204] font-['Listopad']">Премиум абонамент</span>
@@ -185,35 +198,48 @@ const Supporter: React.FC = () => {
                 </p>
               </div>
 
-              <div className="space-y-4 mb-8">
-                <div className="flex justify-between items-center py-2 border-b border-[#D9D9D9]">
-                  <span className="text-[#5E6572] font-['Listopad']">Статус</span>
-                  <span className="text-[#141204] font-['Listopad'] capitalize">{subscription.status}</span>
+              <div className="card-content">
+                <div className="space-y-4 mb-8">
+                  <div className="flex justify-between items-center py-3 border-b border-[#D9D9D9]">
+                    <span className="text-[#5E6572] font-['Listopad']">Статус</span>
+                    <span className="text-[#141204] font-['Listopad'] capitalize">{subscription.status}</span>
+                  </div>
+                  {subscription?.payment_method_last4 && (
+                    <div className="flex justify-between items-center py-3 border-b border-[#D9D9D9]">
+                      <span className="text-[#5E6572] font-['Listopad']">Метод на плащане</span>
+                      <span className="text-[#141204] font-['Listopad']">
+                        {subscription.payment_method_brand} •••• {subscription.payment_method_last4}
+                      </span>
+                    </div>
+                  )}
+                  {subscription?.cancel_at_period_end && (
+                    <div className="flex justify-between items-center py-3">
+                      <span className="text-[#5E6572] font-['Listopad']">Прекратяване</span>
+                      <span className="text-red-600 font-['Listopad']">Ще бъде прекратен в края на периода</span>
+                    </div>
+                  )}
                 </div>
-                {subscription?.payment_method_last4 && (
-                  <div className="flex justify-between items-center py-2 border-b border-[#D9D9D9]">
-                    <span className="text-[#5E6572] font-['Listopad']">Метод на плащане</span>
-                    <span className="text-[#141204] font-['Listopad']">
-                      {subscription.payment_method_brand} •••• {subscription.payment_method_last4}
-                    </span>
-                  </div>
-                )}
-                {subscription?.cancel_at_period_end && (
-                  <div className="flex justify-between items-center py-2">
-                    <span className="text-[#5E6572] font-['Listopad']">Прекратяване</span>
-                    <span className="text-red-600 font-['Listopad']">Ще бъде прекратен в края на периода</span>
-                  </div>
-                )}
               </div>
 
-              <button
-                onClick={handleManageSubscription}
-                disabled={loading}
-                className="flex items-center justify-center w-full py-3 px-6 bg-[#141204] text-[#FFFFFC] rounded-sm hover:bg-[#2D2B1F] disabled:opacity-50 transition-colors font-['Listopad']"
-              >
-                <Settings className="w-5 h-5 mr-2" />
-                {loading ? 'Обработка...' : 'Управление на абонамента'}
-              </button>
+              <div className="card-footer">
+                <button
+                  onClick={handleManageSubscription}
+                  disabled={loading}
+                  className="btn btn-primary btn-lg btn-full"
+                >
+                  {loading ? (
+                    <>
+                      <div className="spinner mr-2"></div>
+                      Обработка...
+                    </>
+                  ) : (
+                    <>
+                      <Settings className="w-5 h-5 mr-2" />
+                      Управление на абонамента
+                    </>
+                  )}
+                </button>
+              </div>
             </>
           )}
         </div>

@@ -166,9 +166,9 @@ const Profile: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen pt-32 pb-16 bg-[#FFFFFC]">
-        <div className="container mx-auto px-4">
-          <div className="animate-pulse">
+      <div className="min-h-screen section bg-[#FFFFFC]">
+        <div className="container">
+          <div className="loading">
             <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
             <div className="h-4 bg-gray-200 rounded w-1/2 mb-8"></div>
             <div className="space-y-4">
@@ -189,10 +189,11 @@ const Profile: React.FC = () => {
   const deleteConfirmationText = t('profile:delete_confirmation.placeholder') === 'Type DELETE' ? 'DELETE' : 'ИЗТРИЙ';
 
   return (
-    <div className="min-h-screen pt-32 pb-16 bg-[#FFFFFC]">
-      <div className="container mx-auto px-4 max-w-3xl">
-        <div className="flex items-center justify-between mb-8">
-          <div>
+    <div className="min-h-screen section bg-[#FFFFFC]">
+      <div className="container max-w-4xl">
+        {/* Page Header */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+          <div className="mb-6 md:mb-0">
             <h1 className="text-3xl font-bold text-[#141204] mb-2 font-['Listopad']">{t('profile:title')}</h1>
             <p className="text-[#5E6572] font-['Listopad']">{t('profile:subtitle')}</p>
           </div>
@@ -205,7 +206,7 @@ const Profile: React.FC = () => {
             ) : (
               <button
                 onClick={() => navigate('/supporter')}
-                className="flex items-center px-4 py-2 bg-[#141204] text-[#FFFFFC] rounded-sm hover:bg-[#2D2B1F] transition-colors font-['Listopad']"
+                className="btn btn-primary btn-md"
               >
                 <Crown className="w-5 h-5 mr-2" />
                 {t('profile:become_supporter')}
@@ -214,100 +215,111 @@ const Profile: React.FC = () => {
           </div>
         </div>
 
+        {/* Success/Error Messages */}
         {message && (
-          <div className={`mb-6 p-4 rounded-sm flex items-center ${
-            message.type === 'success' 
-              ? 'bg-green-50 border border-green-200 text-green-700' 
-              : 'bg-red-50 border border-red-200 text-red-700'
-          } font-['Listopad']`}>
+          <div className={`alert ${message.type === 'success' ? 'alert-success' : 'alert-error'} flex items-center`}>
             {message.type === 'success' && <CheckCircle className="w-5 h-5 mr-2 flex-shrink-0" />}
             {message.text}
           </div>
         )}
 
-        <div className="bg-white rounded-sm shadow-md p-6 mb-8">
-          <h2 className="text-xl font-bold mb-6 text-[#141204] font-['Listopad']">{t('profile:personal_data')}</h2>
+        {/* Personal Data Card */}
+        <div className="card mb-8">
+          <div className="card-header">
+            <h2 className="card-title">{t('profile:personal_data')}</h2>
+          </div>
           
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label 
-                htmlFor="fullName" 
-                className="block text-sm font-medium text-[#141204] mb-1 font-['Listopad']"
-              >
-                {t('profile:full_name')}
-              </label>
-              <input
-                id="fullName"
-                type="text"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                className="w-full p-3 border border-[#D9D9D9] rounded-sm focus:ring-[#141204] focus:border-[#141204] font-['Listopad']"
-                required
-              />
+          <form onSubmit={handleSubmit}>
+            <div className="card-content space-y-6">
+              <div className="form-group">
+                <label htmlFor="fullName" className="form-label">
+                  {t('profile:full_name')}
+                </label>
+                <input
+                  id="fullName"
+                  type="text"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  className="form-input"
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="email" className="form-label">
+                  {t('profile:email')}
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  value={email}
+                  disabled
+                  className="form-input"
+                />
+              </div>
             </div>
 
-            <div>
-              <label 
-                htmlFor="email" 
-                className="block text-sm font-medium text-[#141204] mb-1 font-['Listopad']"
-              >
-                {t('profile:email')}
-              </label>
-              <input
-                id="email"
-                type="email"
-                value={email}
-                disabled
-                className="w-full p-3 border border-[#D9D9D9] rounded-sm bg-gray-50 text-gray-500 font-['Listopad']"
-              />
-            </div>
-
-            <div className="flex justify-end">
-              <button
-                type="submit"
-                disabled={saving}
-                className="px-6 py-2 bg-[#141204] text-[#FFFFFC] rounded-sm hover:bg-[#2D2B1F] disabled:opacity-50 transition-colors font-['Listopad']"
-              >
-                {saving ? t('profile:saving') : t('profile:save_changes')}
-              </button>
+            <div className="card-footer">
+              <div className="flex justify-end">
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="btn btn-primary btn-md"
+                >
+                  {saving ? (
+                    <>
+                      <div className="spinner mr-2"></div>
+                      {t('profile:saving')}
+                    </>
+                  ) : (
+                    t('profile:save_changes')
+                  )}
+                </button>
+              </div>
             </div>
           </form>
         </div>
 
+        {/* Subscription Card */}
         {isActiveSubscription && (
-          <div className="bg-white rounded-sm shadow-md p-6 mb-8">
-            <h2 className="text-xl font-bold mb-6 text-[#141204] font-['Listopad']">{t('profile:subscription')}</h2>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center py-2 border-b border-[#D9D9D9]">
-                <span className="text-[#5E6572] font-['Listopad']">{t('profile:status')}</span>
-                <span className="text-[#141204] font-['Listopad'] capitalize">{subscription.status}</span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-[#D9D9D9]">
-                <span className="text-[#5E6572] font-['Listopad']">{t('profile:valid_until')}</span>
-                <span className="text-[#141204] font-['Listopad']">
-                  {subscriptionEnd ? format(subscriptionEnd, 'dd.MM.yyyy') : 'N/A'}
-                </span>
-              </div>
-              {subscription?.payment_method_last4 && (
-                <div className="flex justify-between items-center py-2 border-b border-[#D9D9D9]">
-                  <span className="text-[#5E6572] font-['Listopad']">{t('profile:payment_method')}</span>
-                  <span className="text-[#141204] font-['Listopad']">
-                    {subscription.payment_method_brand} •••• {subscription.payment_method_last4}
-                  </span>
-                </div>
-              )}
-              {subscription?.cancel_at_period_end && (
-                <div className="flex justify-between items-center py-2">
-                  <span className="text-[#5E6572] font-['Listopad']">{t('profile:cancellation')}</span>
-                  <span className="text-red-600 font-['Listopad']">{t('profile:will_be_cancelled')}</span>
-                </div>
-              )}
+          <div className="card mb-8">
+            <div className="card-header">
+              <h2 className="card-title">{t('profile:subscription')}</h2>
             </div>
             
-            <div className="mt-6 pt-6 border-t border-[#D9D9D9]">
+            <div className="card-content">
+              <div className="space-y-4">
+                <div className="flex justify-between items-center py-3 border-b border-[#D9D9D9]">
+                  <span className="text-[#5E6572] font-['Listopad']">{t('profile:status')}</span>
+                  <span className="text-[#141204] font-['Listopad'] capitalize">{subscription.status}</span>
+                </div>
+                <div className="flex justify-between items-center py-3 border-b border-[#D9D9D9]">
+                  <span className="text-[#5E6572] font-['Listopad']">{t('profile:valid_until')}</span>
+                  <span className="text-[#141204] font-['Listopad']">
+                    {subscriptionEnd ? format(subscriptionEnd, 'dd.MM.yyyy') : 'N/A'}
+                  </span>
+                </div>
+                {subscription?.payment_method_last4 && (
+                  <div className="flex justify-between items-center py-3 border-b border-[#D9D9D9]">
+                    <span className="text-[#5E6572] font-['Listopad']">{t('profile:payment_method')}</span>
+                    <span className="text-[#141204] font-['Listopad']">
+                      {subscription.payment_method_brand} •••• {subscription.payment_method_last4}
+                    </span>
+                  </div>
+                )}
+                {subscription?.cancel_at_period_end && (
+                  <div className="flex justify-between items-center py-3">
+                    <span className="text-[#5E6572] font-['Listopad']">{t('profile:cancellation')}</span>
+                    <span className="text-red-600 font-['Listopad']">{t('profile:will_be_cancelled')}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            <div className="card-footer">
               <button
                 onClick={() => navigate('/supporter')}
-                className="text-[#141204] hover:text-[#2D2B1F] font-['Listopad'] underline"
+                className="btn btn-link"
               >
                 {t('profile:manage_subscription')}
               </button>
@@ -316,36 +328,47 @@ const Profile: React.FC = () => {
         )}
 
         {/* Danger Zone */}
-        <div className="bg-white rounded-sm shadow-md p-6 border-l-4 border-red-500">
-          <h2 className="text-xl font-bold mb-4 text-red-600 font-['Listopad'] flex items-center">
-            <AlertTriangle className="w-5 h-5 mr-2" />
-            {t('profile:danger_zone')}
-          </h2>
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-lg font-semibold text-[#141204] font-['Listopad']">{t('profile:delete_account')}</h3>
-              <p className="text-[#5E6572] font-['Listopad']">{t('profile:delete_account_description')}</p>
+        <div className="card card-danger">
+          <div className="card-header">
+            <h2 className="card-title flex items-center">
+              <AlertTriangle className="w-5 h-5 mr-2" />
+              {t('profile:danger_zone')}
+            </h2>
+          </div>
+          
+          <div className="card-content">
+            <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-[#141204] font-['Listopad'] mb-2">
+                  {t('profile:delete_account')}
+                </h3>
+                <p className="text-[#5E6572] font-['Listopad'] leading-relaxed">
+                  {t('profile:delete_account_description')}
+                </p>
+              </div>
+              <div className="flex-shrink-0">
+                <button
+                  onClick={() => setShowDeleteModal(true)}
+                  className="btn btn-danger btn-md"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  {t('profile:delete_account')}
+                </button>
+              </div>
             </div>
-            <button
-              onClick={() => setShowDeleteModal(true)}
-              className="flex items-center px-4 py-2 bg-red-600 text-white rounded-sm hover:bg-red-700 transition-colors font-['Listopad']"
-            >
-              <Trash2 className="w-4 h-4 mr-2" />
-              {t('profile:delete_account')}
-            </button>
           </div>
         </div>
       </div>
 
       {/* Delete Confirmation Modal */}
       <Modal isOpen={showDeleteModal} onClose={() => !deleting && setShowDeleteModal(false)}>
-        <div className="p-6">
-          <div className="flex items-center mb-4">
-            <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mr-4">
+        <div className="p-8">
+          <div className="flex items-start mb-6">
+            <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
               <AlertTriangle className="w-6 h-6 text-red-600" />
             </div>
             <div>
-              <h3 className="text-xl font-bold text-[#141204] font-['Listopad']">
+              <h3 className="text-xl font-bold text-[#141204] font-['Listopad'] mb-1">
                 {t('profile:delete_confirmation.title')}
               </h3>
               <p className="text-red-600 font-['Listopad'] font-semibold">
@@ -354,11 +377,11 @@ const Profile: React.FC = () => {
             </div>
           </div>
 
-          <div className="mb-6">
-            <p className="text-[#141204] font-['Listopad'] mb-3">
+          <div className="mb-8">
+            <p className="text-[#141204] font-['Listopad'] mb-4 leading-relaxed">
               {t('profile:delete_confirmation.consequences')}
             </p>
-            <ul className="list-disc list-inside space-y-2 text-[#5E6572] font-['Listopad']">
+            <ul className="list-disc list-inside space-y-2 text-[#5E6572] font-['Listopad'] pl-4">
               <li>{t('profile:delete_confirmation.data_loss')}</li>
               <li>{t('profile:delete_confirmation.subscription_loss')}</li>
               <li>{t('profile:delete_confirmation.payment_loss')}</li>
@@ -366,8 +389,8 @@ const Profile: React.FC = () => {
             </ul>
           </div>
 
-          <div className="mb-6">
-            <p className="text-[#141204] font-['Listopad'] mb-2">
+          <div className="mb-8">
+            <p className="text-[#141204] font-['Listopad'] mb-3 font-medium">
               {t('profile:delete_confirmation.type_delete')}
             </p>
             <input
@@ -375,27 +398,27 @@ const Profile: React.FC = () => {
               value={deleteConfirmation}
               onChange={(e) => setDeleteConfirmation(e.target.value)}
               placeholder={t('profile:delete_confirmation.placeholder')}
-              className="w-full p-3 border border-[#D9D9D9] rounded-sm focus:ring-red-500 focus:border-red-500 font-['Listopad']"
+              className="form-input"
               disabled={deleting}
             />
           </div>
 
-          <div className="flex justify-end space-x-4">
+          <div className="flex flex-col-reverse sm:flex-row justify-end gap-3">
             <button
               onClick={() => setShowDeleteModal(false)}
               disabled={deleting}
-              className="px-4 py-2 text-[#141204] hover:text-[#2D2B1F] font-['Listopad'] disabled:opacity-50"
+              className="btn btn-secondary btn-md"
             >
               {t('profile:delete_confirmation.cancel')}
             </button>
             <button
               onClick={handleDeleteAccount}
               disabled={deleteConfirmation !== deleteConfirmationText || deleting}
-              className="px-4 py-2 bg-red-600 text-white rounded-sm hover:bg-red-700 disabled:opacity-50 transition-colors font-['Listopad'] flex items-center"
+              className="btn btn-danger btn-md"
             >
               {deleting ? (
                 <>
-                  <div className="animate-spin rounded-sm h-4 w-4 border-b-2 border-white mr-2"></div>
+                  <div className="spinner mr-2"></div>
                   {t('profile:delete_confirmation.deleting')}
                 </>
               ) : (

@@ -180,25 +180,27 @@ const Login: React.FC = () => {
     error?.toLowerCase().includes('имейлът не е потвърден');
 
   return (
-    <div className="min-h-screen pt-32 pb-16 px-4 bg-[#141204]">
-      <div className="container mx-auto max-w-md">
-        <div className="bg-[#FFFFFC] rounded-sm shadow-lg p-8">
-          <h2 className="text-2xl font-bold mb-6 text-[#141204] font-['Listopad']">
-            {resetPassword ? 'Възстановяване на парола' : 'Вход'}
-          </h2>
+    <div className="min-h-screen section bg-[#141204]">
+      <div className="container max-w-md">
+        <div className="card">
+          <div className="card-header">
+            <h2 className="card-title text-center">
+              {resetPassword ? 'Възстановяване на парола' : 'Вход'}
+            </h2>
+          </div>
           
           {message && (
-            <div className="mb-6 p-4 bg-green-50 border border-green-200 text-green-700 rounded-sm font-['Listopad']">
+            <div className="alert alert-success mb-6">
               {message}
             </div>
           )}
 
           {error && (
             <div className="mb-6">
-              <div className={`p-4 rounded-sm font-['Listopad'] ${
+              <div className={`alert ${
                 isEmailNotConfirmedError 
-                  ? 'bg-blue-50 border border-blue-200 text-blue-700' 
-                  : 'bg-red-50 border border-red-200 text-red-700'
+                  ? 'alert-info' 
+                  : 'alert-error'
               }`}>
                 {error}
                 {isEmailNotConfirmedError && (
@@ -209,12 +211,12 @@ const Login: React.FC = () => {
                     <button
                       onClick={handleResendConfirmation}
                       disabled={resendingEmail || emailResent || !email}
-                      className="text-blue-700 underline hover:no-underline disabled:opacity-50 font-['Listopad'] text-sm"
+                      className="btn btn-link text-sm"
                     >
                       {resendingEmail ? 'Изпращане...' : emailResent ? 'Имейлът е изпратен!' : 'Изпрати отново имейл за потвърждение'}
                     </button>
                     {!email && (
-                      <p className="text-xs text-blue-600">
+                      <p className="text-xs">
                         Въведете имейл адреса си по-горе, за да можете да изпратите отново потвърждението.
                       </p>
                     )}
@@ -222,9 +224,9 @@ const Login: React.FC = () => {
                 )}
               </div>
               {isInvalidCredentialsError && (
-                <div className="mt-2 text-sm text-gray-600 font-['Listopad']">
+                <div className="mt-4 text-sm text-gray-600 font-['Listopad']">
                   <p>Възможни причини:</p>
-                  <ul className="list-disc ml-5 mt-1">
+                  <ul className="list-disc ml-5 mt-2 space-y-1">
                     <li>Грешно въведен имейл или парола</li>
                     <li>Все още нямате регистрация</li>
                     <li>Имейлът не е потвърден</li>
@@ -235,87 +237,92 @@ const Login: React.FC = () => {
           )}
 
           {emailResent && (
-            <div className="mb-6 p-4 bg-green-50 border border-green-200 text-green-700 rounded-sm font-['Listopad']">
+            <div className="alert alert-success mb-6">
               Нов имейл за потвърждение беше изпратен на {email}. Моля, проверете входящата си поща и папката със спам.
             </div>
           )}
 
           {resetSent && (
-            <div className="mb-6 p-4 bg-green-50 border border-green-200 text-green-700 rounded-sm font-['Listopad']">
+            <div className="alert alert-success mb-6">
               Инструкции за възстановяване на паролата бяха изпратени на {email}. Моля, проверете входящата си поща.
             </div>
           )}
           
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label 
-                htmlFor="email" 
-                className="block text-sm font-medium text-[#141204] mb-1 font-['Listopad']"
-              >
-                Имейл
-              </label>
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full p-3 border border-[#D9D9D9] rounded-sm focus:ring-[#141204] focus:border-[#141204]"
-                required
-              />
-            </div>
-            
-            {!resetPassword && (
-              <div>
-                <label 
-                  htmlFor="password" 
-                  className="block text-sm font-medium text-[#141204] mb-1 font-['Listopad']"
-                >
-                  Парола
+          <form onSubmit={handleSubmit}>
+            <div className="card-content space-y-6">
+              <div className="form-group">
+                <label htmlFor="email" className="form-label">
+                  Имейл
                 </label>
                 <input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full p-3 border border-[#D9D9D9] rounded-sm focus:ring-[#141204] focus:border-[#141204]"
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="form-input"
                   required
                 />
               </div>
-            )}
-            
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-3 px-4 bg-[#141204] text-[#FFFFFC] rounded-sm hover:bg-[#2D2B1F] disabled:opacity-50 font-['Listopad']"
-            >
-              {loading ? 'Обработка...' : resetPassword ? 'Изпрати инструкции' : 'Влез'}
-            </button>
-
-            <div className="text-center space-y-2">
-              <div className="text-sm text-[#5E6572] font-['Listopad']">
-                {resetPassword ? (
-                  <button 
-                    type="button"
-                    onClick={() => setResetPassword(false)}
-                    className="text-[#141204] hover:text-[#2D2B1F]"
-                  >
-                    Обратно към вход
-                  </button>
-                ) : (
+              
+              {!resetPassword && (
+                <div className="form-group">
+                  <label htmlFor="password" className="form-label">
+                    Парола
+                  </label>
+                  <input
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="form-input"
+                    required
+                  />
+                </div>
+              )}
+              
+              <button
+                type="submit"
+                disabled={loading}
+                className="btn btn-primary btn-md btn-full"
+              >
+                {loading ? (
                   <>
+                    <div className="spinner mr-2"></div>
+                    Обработка...
+                  </>
+                ) : (
+                  resetPassword ? 'Изпрати инструкции' : 'Влез'
+                )}
+              </button>
+            </div>
+
+            <div className="card-footer">
+              <div className="text-center space-y-3">
+                <div className="text-sm text-[#5E6572] font-['Listopad']">
+                  {resetPassword ? (
                     <button 
                       type="button"
-                      onClick={() => setResetPassword(true)}
-                      className="text-[#141204] hover:text-[#2D2B1F]"
+                      onClick={() => setResetPassword(false)}
+                      className="btn btn-link"
                     >
-                      Забравена парола?
+                      Обратно към вход
                     </button>
-                    <span className="mx-2">•</span>
-                    <Link to="/register" className="text-[#141204] hover:text-[#2D2B1F]">
-                      Регистрирайте се
-                    </Link>
-                  </>
-                )}
+                  ) : (
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-2">
+                      <button 
+                        type="button"
+                        onClick={() => setResetPassword(true)}
+                        className="btn btn-link"
+                      >
+                        Забравена парола?
+                      </button>
+                      <span className="hidden sm:inline text-[#5E6572]">•</span>
+                      <Link to="/register" className="btn btn-link">
+                        Регистрирайте се
+                      </Link>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </form>
@@ -330,16 +337,16 @@ const Login: React.FC = () => {
           <p className="mb-6 text-[#5E6572] font-['Listopad']">
             Как искате да продължите?
           </p>
-          <div className="flex justify-end space-x-4">
+          <div className="flex flex-col-reverse sm:flex-row justify-end gap-3">
             <button
               onClick={() => handleAdminChoice(false)}
-              className="px-4 py-2 text-[#141204] hover:text-[#2D2B1F] font-['Listopad']"
+              className="btn btn-secondary btn-md"
             >
               Влез като потребител
             </button>
             <button
               onClick={() => handleAdminChoice(true)}
-              className="px-4 py-2 bg-[#141204] text-[#FFFFFC] rounded-sm hover:bg-[#2D2B1F] font-['Listopad']"
+              className="btn btn-primary btn-md"
             >
               Отвори админ панел
             </button>

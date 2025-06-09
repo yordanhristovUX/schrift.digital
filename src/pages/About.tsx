@@ -14,8 +14,8 @@ const About: React.FC = () => {
       </Helmet>
 
       {/* Hero section */}
-      <section className="pt-32 pb-16 px-4 bg-[#141204]">
-        <div className="container mx-auto max-w-6xl">
+      <section className="section bg-[#141204]">
+        <div className="container max-w-6xl">
           <h1 className="text-5xl md:text-6xl text-[#FFFFFC] font-bold mb-4 font-['Listopad']">
             {t('about.title')}
           </h1>
@@ -26,8 +26,8 @@ const About: React.FC = () => {
       </section>
 
       {/* Main content */}
-      <section className="py-16 bg-[#FFFFFC]">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl">
+      <section className="section bg-[#FFFFFC]">
+        <div className="container max-w-4xl">
           <div className="prose prose-lg max-w-none space-y-8 text-[#141204] font-['Listopad']">
             <p className="text-lg leading-relaxed">
               {t('about.content.intro')}
@@ -41,13 +41,17 @@ const About: React.FC = () => {
               {t('about.content.consequence')}
             </p>
 
-            <div className="bg-[#FFFFFC] rounded-sm shadow-md p-8 my-12 border border-[#D9D9D9]">
-              <h2 className="text-2xl font-bold mb-4 font-['Listopad'] text-[#141204]">
-                {t('about.mission.title')}
-              </h2>
-              <p className="text-lg leading-relaxed mb-0 text-[#141204]">
-                {t('about.mission.description')}
-              </p>
+            <div className="card my-12">
+              <div className="card-header">
+                <h2 className="card-title">
+                  {t('about.mission.title')}
+                </h2>
+              </div>
+              <div className="card-content">
+                <p className="text-lg leading-relaxed mb-0 text-[#141204]">
+                  {t('about.mission.description')}
+                </p>
+              </div>
             </div>
 
             <p className="text-lg leading-relaxed">
@@ -63,7 +67,7 @@ const About: React.FC = () => {
           <div className="mt-16 text-center">
             <a 
               href="mailto:contact@schrift.digital" 
-              className="inline-flex items-center px-6 py-3 bg-[#C40000] text-[#FFFFFC] rounded-sm hover:bg-[#A30000] transition-colors font-['Listopad']"
+              className="btn btn-danger btn-lg"
             >
               <Mail size={20} className="mr-2" />
               {t('about.contact_us')}
