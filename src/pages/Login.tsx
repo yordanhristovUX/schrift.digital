@@ -221,7 +221,11 @@ const Login: React.FC = () => {
 
           {error && (
             <div className="mb-6">
-              <div className="p-4 bg-red-50 border border-red-200 text-red-700 rounded-sm font-['Listopad']">
+              <div className={`p-4 rounded-sm font-['Listopad'] ${
+                isEmailNotConfirmedError 
+                  ? 'bg-blue-50 border border-blue-200 text-blue-700' 
+                  : 'bg-red-50 border border-red-200 text-red-700'
+              }`}>
                 {error}
                 {isEmailNotConfirmedError && (
                   <div className="mt-3 space-y-2">
@@ -231,12 +235,12 @@ const Login: React.FC = () => {
                     <button
                       onClick={handleResendConfirmation}
                       disabled={resendingEmail || emailResent || !email}
-                      className="text-red-700 underline hover:no-underline disabled:opacity-50 font-['Listopad'] text-sm"
+                      className="text-blue-700 underline hover:no-underline disabled:opacity-50 font-['Listopad'] text-sm"
                     >
                       {resendingEmail ? 'Изпращане...' : emailResent ? 'Имейлът е изпратен!' : 'Изпрати отново имейл за потвърждение'}
                     </button>
                     {!email && (
-                      <p className="text-xs text-red-600">
+                      <p className="text-xs text-blue-600">
                         Въведете имейл адреса си по-горе, за да можете да изпратите отново потвърждението.
                       </p>
                     )}
