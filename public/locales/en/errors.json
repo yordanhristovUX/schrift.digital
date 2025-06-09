@@ -1,7 +1,7 @@
 {
   "auth": {
     "invalid_credentials": "Invalid email or password. Please double-check your credentials or reset your password if you've forgotten it",
-    "email_not_confirmed": "Email not confirmed. Please check your inbox",
+    "email_not_confirmed": "Email not confirmed.",
     "user_not_found": "User not found",
     "email_taken": "Email already registered",
     "weak_password": "Password is too weak",
