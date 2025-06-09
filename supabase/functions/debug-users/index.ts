@@ -131,9 +131,9 @@ serve(async (req: Request) => {
       }
     }
 
-    // Check trigger function status
+    // Check trigger function status - removed PostgreSQL type cast
     const { data: triggerInfo, error: triggerError } = await supabase
-      .rpc('pg_get_functiondef', { funcid: 'handle_new_user'::regproc });
+      .rpc('pg_get_functiondef', { funcid: 'handle_new_user' });
 
     const debugInfo = {
       summary: {
