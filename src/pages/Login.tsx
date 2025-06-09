@@ -9,6 +9,7 @@ const Login: React.FC = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [rawError, setRawError] = useState<any>(null);
   const [showAdminModal, setShowAdminModal] = useState(false);
   const [resendingEmail, setResendingEmail] = useState(false);
   const [emailResent, setEmailResent] = useState(false);
@@ -49,6 +50,7 @@ const Login: React.FC = () => {
         } catch (err: any) {
           console.error('Error confirming email:', err);
           setError(getAuthErrorMessage(err));
+          setRawError(err);
         }
       }
     };
@@ -59,6 +61,7 @@ const Login: React.FC = () => {
   const handleResendConfirmation = async () => {
     setResendingEmail(true);
     setError(null);
+    setRawError(null);
     try {
       const { error } = await supabase.auth.resend({
         type: 'signup',
@@ -73,6 +76,7 @@ const Login: React.FC = () => {
       setEmailResent(true);
     } catch (err: any) {
       setError(getAuthErrorMessage(err));
+      setRawError(err);
     } finally {
       setResendingEmail(false);
     }
@@ -89,8 +93,10 @@ const Login: React.FC = () => {
       
       setResetSent(true);
       setError(null);
+      setRawError(null);
     } catch (err: any) {
       setError(getAuthErrorMessage(err));
+      setRawError(err);
     } finally {
       setLoading(false);
     }
@@ -105,6 +111,7 @@ const Login: React.FC = () => {
 
     setLoading(true);
     setError(null);
+    setRawError(null);
     setEmailResent(false);
 
     try {
@@ -115,6 +122,7 @@ const Login: React.FC = () => {
 
       if (authError) {
         setError(getAuthErrorMessage(authError));
+        setRawError(authError);
         return;
       }
 
@@ -135,6 +143,7 @@ const Login: React.FC = () => {
       navigate(from, { replace: true });
     } catch (err: any) {
       setError(getAuthErrorMessage(err));
+      setRawError(err);
     } finally {
       setLoading(false);
     }
@@ -151,6 +160,7 @@ const Login: React.FC = () => {
   };
 
   const isInvalidCredentialsError = error?.includes('Invalid email or password');
+  const isEmailNotConfirmedError = rawError?.code === 'email_not_confirmed';
 
   return (
     <div className="min-h-screen pt-32 pb-16 px-4 bg-[#141204]">
@@ -170,7 +180,7 @@ const Login: React.FC = () => {
             <div className="mb-6">
               <div className="p-4 bg-red-50 border border-red-200 text-red-700 rounded-sm font-['Listopad']">
                 {error}
-                {error.includes('not been confirmed') && (
+                {isEmailNotConfirmedError && (
                   <div className="mt-2">
                     <button
                       onClick={handleResendConfirmation}
