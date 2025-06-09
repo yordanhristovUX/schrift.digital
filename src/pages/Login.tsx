@@ -23,6 +23,9 @@ const Login: React.FC = () => {
   useEffect(() => {
     const handleEmailConfirmation = async () => {
       const hash = window.location.hash;
+      const searchParams = new URLSearchParams(window.location.search);
+      
+      // Check for confirmation tokens in both hash and search params
       if (hash && hash.includes('access_token')) {
         try {
           const hashParams = new URLSearchParams(hash.substring(1));
@@ -53,12 +56,45 @@ const Login: React.FC = () => {
           setRawError(err);
         }
       }
+      
+      // Also check for confirmation in search params (alternative flow)
+      const token = searchParams.get('token');
+      const type = searchParams.get('type');
+      
+      if (token && type === 'signup') {
+        try {
+          const { error } = await supabase.auth.verifyOtp({
+            token_hash: token,
+            type: 'signup'
+          });
+
+          if (error) throw error;
+
+          // Clear the search params from the URL
+          window.history.replaceState(null, '', window.location.pathname);
+          
+          // Show success message
+          navigate('/login', {
+            replace: true,
+            state: { message: 'Email confirmed successfully! You can now log in.' }
+          });
+        } catch (err: any) {
+          console.error('Error confirming email with token:', err);
+          setError(getAuthErrorMessage(err));
+          setRawError(err);
+        }
+      }
     };
 
     handleEmailConfirmation();
   }, [navigate]);
 
   const handleResendConfirmation = async () => {
+    if (!email) {
+      setError('Please enter your email address first');
+      return;
+    }
+
     setResendingEmail(true);
     setError(null);
     setRawError(null);
@@ -67,7 +103,7 @@ const Login: React.FC = () => {
         type: 'signup',
         email: email,
         options: {
-          emailRedirectTo: window.location.origin
+          emailRedirectTo: `${window.location.origin}/login`
         }
       });
       
@@ -83,6 +119,11 @@ const Login: React.FC = () => {
   };
 
   const handleResetPassword = async () => {
+    if (!email) {
+      setError('Please enter your email address first');
+      return;
+    }
+
     setLoading(true);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
@@ -181,14 +222,22 @@ const Login: React.FC = () => {
               <div className="p-4 bg-red-50 border border-red-200 text-red-700 rounded-sm font-['Listopad']">
                 {error}
                 {isEmailNotConfirmedError && (
-                  <div className="mt-2">
+                  <div className="mt-3 space-y-2">
+                    <p className="text-sm">
+                      Моля, проверете входящата си поща (включително папката със спам) за имейл за потвърждение.
+                    </p>
                     <button
                       onClick={handleResendConfirmation}
-                      disabled={resendingEmail || emailResent}
-                      className="text-red-700 underline hover:no-underline disabled:opacity-50 font-['Listopad']"
+                      disabled={resendingEmail || emailResent || !email}
+                      className="text-red-700 underline hover:no-underline disabled:opacity-50 font-['Listopad'] text-sm"
                     >
                       {resendingEmail ? 'Изпращане...' : emailResent ? 'Имейлът е изпратен!' : 'Изпрати отново имейл за потвърждение'}
                     </button>
+                    {!email && (
+                      <p className="text-xs text-red-600">
+                        Въведете имейл адреса си по-горе, за да можете да изпратите отново потвърждението.
+                      </p>
+                    )}
                   </div>
                 )}
               </div>
@@ -198,6 +247,7 @@ const Login: React.FC = () => {
                   <ul className="list-disc ml-5 mt-1">
                     <li>Грешно въведен имейл или парола</li>
                     <li>Все още нямате регистрация</li>
+                    <li>Имейлът не е потвърден</li>
                   </ul>
                 </div>
               )}
