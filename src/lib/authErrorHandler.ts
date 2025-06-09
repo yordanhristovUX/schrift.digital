@@ -34,6 +34,47 @@ export function getAuthErrorMessage(error: AuthError | Error | null): string {
     }
   }
 
+  // Try to parse JSON from error message if it contains stringified JSON
+  let parsedErrorCode = null;
+  try {
+    const message = error.message;
+    // Look for JSON-like content in the error message
+    const jsonMatch = message.match(/\{[^}]*"code"[^}]*\}/);
+    if (jsonMatch) {
+      const parsedJson = JSON.parse(jsonMatch[0]);
+      if (parsedJson.code) {
+        parsedErrorCode = parsedJson.code;
+      }
+    }
+  } catch (e) {
+    // If JSON parsing fails, continue with string-based parsing
+  }
+
+  // Handle parsed error code
+  if (parsedErrorCode) {
+    switch (parsedErrorCode) {
+      case 'invalid_credentials':
+        return i18next.t('errors:auth.invalid_credentials');
+      case 'email_not_confirmed':
+        return i18next.t('errors:auth.email_not_confirmed');
+      case 'user_not_found':
+        return i18next.t('errors:auth.user_not_found');
+      case 'signup_disabled':
+        return i18next.t('errors:auth.email_taken');
+      case 'weak_password':
+        return i18next.t('errors:auth.weak_password');
+      case 'invalid_email':
+        return i18next.t('errors:auth.invalid_email');
+      case 'token_expired':
+      case 'expired_token':
+        return i18next.t('errors:auth.expired_token');
+      case 'invalid_token':
+        return i18next.t('errors:auth.invalid_token');
+      case 'network_error':
+        return i18next.t('errors:auth.network_error');
+    }
+  }
+
   // Fallback to message string parsing if code is not available or recognized
   const message = error.message.toLowerCase();
 
