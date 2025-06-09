@@ -19,6 +19,18 @@ const Home: React.FC = () => {
   useEffect(() => {
     const fetchFonts = async () => {
       try {
+        // Debug environment variables
+        console.log('Supabase URL:', import.meta.env.VITE_SUPABASE_URL);
+        console.log('Supabase Anon Key exists:', !!import.meta.env.VITE_SUPABASE_ANON_KEY);
+        
+        // Check if environment variables are properly loaded
+        if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) {
+          throw new Error('Supabase configuration is missing. Please check your .env file and restart the development server.');
+        }
+
+        // Test basic connectivity first
+        console.log('Testing Supabase connection...');
+        
         // Test direct Supabase query first
         const { data: directData, error: directError } = await supabase
           .from('fonts')
@@ -27,7 +39,8 @@ const Home: React.FC = () => {
           .limit(3);
 
         if (directError) {
-          throw directError;
+          console.error('Direct Supabase query error:', directError);
+          throw new Error(`Database query failed: ${directError.message}`);
         }
 
         console.log('Direct query result:', directData);
@@ -52,7 +65,19 @@ const Home: React.FC = () => {
         loadFontFaces(data);
       } catch (err: any) {
         console.error('Error fetching fonts:', err);
-        setError(err.message || 'Failed to fetch fonts');
+        
+        // Provide more specific error messages
+        let errorMessage = 'Failed to fetch fonts';
+        
+        if (err.message?.includes('Failed to fetch')) {
+          errorMessage = 'Cannot connect to the database. Please check your internet connection and try again.';
+        } else if (err.message?.includes('configuration is missing')) {
+          errorMessage = err.message;
+        } else if (err.message) {
+          errorMessage = err.message;
+        }
+        
+        setError(errorMessage);
       } finally {
         setLoading(false);
       }
@@ -87,6 +112,13 @@ const Home: React.FC = () => {
     }
   };
 
+  const handleRetry = () => {
+    setError(null);
+    setLoading(true);
+    // Trigger re-fetch by updating a state that will cause useEffect to run
+    window.location.reload();
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -98,8 +130,25 @@ const Home: React.FC = () => {
   if (error) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-red-600 p-4 bg-red-50 rounded-sm">
-          Error: {error}
+        <div className="text-center max-w-md mx-auto p-6">
+          <div className="text-red-600 p-4 bg-red-50 rounded-sm mb-4">
+            <h3 className="font-semibold mb-2">Connection Error</h3>
+            <p>{error}</p>
+          </div>
+          <button
+            onClick={handleRetry}
+            className="px-4 py-2 bg-[#141204] text-white rounded-sm hover:bg-[#2D2B1F] transition-colors"
+          >
+            Try Again
+          </button>
+          <div className="mt-4 text-sm text-gray-600">
+            <p>If the problem persists:</p>
+            <ul className="list-disc list-inside mt-2 space-y-1">
+              <li>Check your internet connection</li>
+              <li>Restart the development server</li>
+              <li>Verify Supabase configuration</li>
+            </ul>
+          </div>
         </div>
       </div>
     );
