@@ -163,7 +163,7 @@ const Home: React.FC = () => {
 
       <div className="min-h-screen">
         {/* Header */}
-        <header className="pt-32 pb-16 px-4 bg-background-inverse">
+        <header className="section bg-background-inverse">
           <div className="container mx-auto max-w-6xl">
             <h1 className="text-5xl md:text-6xl text-text-inverse font-bold mb-4 font-['Listopad']">
               {t('home.title')}
@@ -175,7 +175,7 @@ const Home: React.FC = () => {
         </header>
 
         {/* Font Preview Section */}
-        <section className="py-16 px-4 bg-background-primary">
+        <section className="section bg-background-primary">
           <div className="container mx-auto max-w-5xl">
             {/* Library count */}
             <p className="text-lg text-[#5E6572] mb-8 font-['Listopad']">

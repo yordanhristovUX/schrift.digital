@@ -65,7 +65,7 @@ const FontDetail: React.FC = () => {
 
   return (
     <>
-      <section className="pt-24 pb-8">
+      <section className="section-sm">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <button 
             onClick={handleBack}
@@ -96,7 +96,7 @@ const FontDetail: React.FC = () => {
         </div>
       </section>
       
-      <section className="pb-16">
+      <section className="section">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <FontPreview font={font} requireAuth={true} />
           

@@ -99,7 +99,7 @@ const EmailConfirmed: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen pt-32 pb-16 px-4 bg-[#141204]">
+      <div className="min-h-screen section bg-[#141204]">
         <div className="container mx-auto max-w-md">
           <div className="bg-[#FFFFFC] rounded-sm shadow-lg p-8 text-center">
             <div className="animate-spin rounded-sm h-8 w-8 border-b-2 border-[#141204] mx-auto mb-4"></div>
@@ -112,7 +112,7 @@ const EmailConfirmed: React.FC = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen pt-32 pb-16 px-4 bg-[#141204]">
+      <div className="min-h-screen section bg-[#141204]">
         <div className="container mx-auto max-w-md">
           <div className="bg-[#FFFFFC] rounded-sm shadow-lg p-8 text-center">
             <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -139,7 +139,7 @@ const EmailConfirmed: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen pt-32 pb-16 px-4 bg-[#141204]">
+    <div className="min-h-screen section bg-[#141204]">
       <div className="container mx-auto max-w-md">
         <div className="bg-[#FFFFFC] rounded-sm shadow-lg p-8 text-center">
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">

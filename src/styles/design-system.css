@@ -315,18 +315,24 @@
 }
 
 /* === SECTION SYSTEM === */
+/* Navigation height compensation */
+:root {
+  --navbar-height: 5rem; /* Approximate navbar height including margins */
+}
+
+/* Page sections that need to account for fixed navbar */
 .section {
-  padding-top: var(--section-padding);
+  padding-top: calc(var(--navbar-height) + var(--section-padding));
   padding-bottom: var(--section-padding);
 }
 
 .section-sm {
-  padding-top: var(--space-12);
+  padding-top: calc(var(--navbar-height) + var(--space-12));
   padding-bottom: var(--space-12);
 }
 
 .section-lg {
-  padding-top: var(--space-24);
+  padding-top: calc(var(--navbar-height) + var(--space-24));
   padding-bottom: var(--space-24);
 }
 

@@ -165,7 +165,7 @@ const ResetPassword: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen pt-32 pb-16 px-4 bg-[#141204]">
+    <div className="min-h-screen section bg-[#141204]">
       <div className="container mx-auto max-w-md">
         <div className="bg-[#FFFFFC] rounded-sm shadow-lg p-8">
           <h2 className="text-2xl font-bold mb-6 text-[#141204] font-['Listopad']">
