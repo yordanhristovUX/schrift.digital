@@ -41,8 +41,11 @@ const Navbar: React.FC = () => {
           .from('users')
           .select('full_name, email, role')
           .eq('id', session.user.id)
-          .single();
-        setUser(userData);
+          .maybeSingle();
+        
+        if (userData) {
+          setUser(userData);
+        }
       }
     };
 

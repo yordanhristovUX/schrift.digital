@@ -171,11 +171,11 @@ const Login: React.FC = () => {
         .from('users')
         .select('role')
         .eq('id', authData.user?.id)
-        .single();
+        .maybeSingle();
 
       if (userError) throw userError;
 
-      if (userData.role === 'admin') {
+      if (userData && userData.role === 'admin') {
         setShowAdminModal(true);
         return;
       }

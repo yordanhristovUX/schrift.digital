@@ -45,9 +45,15 @@ const Profile: React.FC = () => {
           .from('users')
           .select('*')
           .eq('id', session.user.id)
-          .single();
+          .maybeSingle();
 
         if (error) throw error;
+
+        if (!profile) {
+          console.error('User profile not found');
+          navigate('/login');
+          return;
+        }
 
         // Get subscription info
         const { data: customerData } = await supabase

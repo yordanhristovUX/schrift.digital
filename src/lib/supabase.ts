@@ -22,7 +22,7 @@ export const testEmailConfig = async () => {
     const { data: settings, error: settingsError } = await supabase
       .from('_email_settings')
       .select('*')
-      .single();
+      .maybeSingle();
 
     if (settingsError) {
       console.error('Failed to fetch email settings:', settingsError);
@@ -57,7 +57,7 @@ export const checkAdminRole = async () => {
     .from('users')
     .select('role')
     .eq('id', session.user.id)
-    .single();
+    .maybeSingle();
     
   if (error || !data) return false;
   return data.role === 'admin';
