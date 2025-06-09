@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ChevronDown, Globe } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 
 interface LanguageSwitcherProps {
   isScrolled: boolean;
@@ -13,8 +13,8 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ isScrolled, isWhite
   const dropdownRef = useRef<HTMLDivElement>(null);
   
   const languages = [
-    { code: 'bg', name: 'Български', flag: '🇧🇬' },
-    { code: 'en', name: 'English', flag: '🇺🇸' }
+    { code: 'bg', name: 'БГ' },
+    { code: 'en', name: 'EN' }
   ];
 
   const currentLanguage = languages.find(lang => lang.code === i18n.language) || languages[0];
@@ -40,42 +40,29 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ isScrolled, isWhite
   // Determine button styling based on header state
   const getButtonClasses = () => {
     const baseClasses = `
-      flex items-center gap-2 px-3 py-2 rounded-sm transition-all duration-200 
-      font-['Listopad'] text-sm font-medium border cursor-pointer
+      flex items-center gap-1 px-4 transition-colors font-['Listopad'] cursor-pointer
       ${isScrolled ? 'py-1.5' : 'py-2'}
     `;
 
     if (isWhiteHeader) {
-      return `${baseClasses} 
-        bg-white text-[#141204] border-[#D9D9D9] 
-        hover:bg-[#F5F5F5] hover:border-[#141204]
-        ${isOpen ? 'bg-[#F5F5F5] border-[#141204]' : ''}
-      `;
+      return `${baseClasses} text-[#141204] hover:text-[#5E6572]`;
     } else {
-      return `${baseClasses} 
-        bg-white text-[#141204] border-[#D9D9D9] 
-        hover:bg-[#F5F5F5] hover:border-[#141204]
-        ${isOpen ? 'bg-[#F5F5F5] border-[#141204]' : ''}
-      `;
+      return `${baseClasses} text-[#FFFFFC] hover:text-[#BCBDC0]`;
     }
   };
 
   const getDropdownClasses = () => {
     return `
-      absolute top-full right-0 mt-1 min-w-[140px] 
-      bg-white border border-[#D9D9D9] rounded-sm shadow-lg 
+      absolute top-full right-0 mt-2 w-32
+      bg-[#FFFFFC] rounded-sm shadow-lg py-1
       z-50 overflow-hidden
     `;
   };
 
-  const getOptionClasses = (isSelected: boolean) => {
+  const getOptionClasses = () => {
     return `
-      flex items-center gap-3 px-4 py-3 text-sm font-['Listopad'] 
-      transition-colors duration-150 cursor-pointer
-      ${isSelected 
-        ? 'bg-[#141204] text-white' 
-        : 'text-[#141204] hover:bg-[#F5F5F5]'
-      }
+      block px-4 py-2 text-[#141204] hover:bg-[#D9D9D9] font-['Listopad'] 
+      transition-colors cursor-pointer text-center
     `;
   };
 
@@ -88,10 +75,9 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ isScrolled, isWhite
         aria-expanded={isOpen}
         aria-haspopup="true"
       >
-        <Globe size={16} />
         <span>{currentLanguage.name}</span>
         <ChevronDown 
-          size={14} 
+          size={16} 
           className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} 
         />
       </button>
@@ -102,15 +88,11 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ isScrolled, isWhite
             <button
               key={language.code}
               onClick={() => setLanguage(language.code as 'bg' | 'en')}
-              className={getOptionClasses(language.code === currentLanguage.code)}
+              className={getOptionClasses()}
               role="option"
               aria-selected={language.code === currentLanguage.code}
             >
-              <span className="text-lg">{language.flag}</span>
-              <span className="flex-1 text-left">{language.name}</span>
-              {language.code === currentLanguage.code && (
-                <span className="text-xs">✓</span>
-              )}
+              {language.name}
             </button>
           ))}
         </div>
