@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Crown, Check, Settings } from 'lucide-react';
+import { Crown, Check } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { PRODUCTS } from '../stripe-config';
-import { createCheckoutSession, manageSubscription, getPrice, formatPrice } from '../lib/stripe';
+import { createCheckoutSession, getPrice, formatPrice } from '../lib/stripe';
 import { format } from 'date-fns';
 
 const benefits = [
@@ -89,25 +89,6 @@ const Supporter: React.FC = () => {
     } catch (err: any) {
       console.error('Checkout Error:', err);
       setError(err.message || 'Something went wrong while creating the checkout session');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleManageSubscription = async () => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const portalUrl = await manageSubscription({
-        action: 'portal',
-        returnUrl: `${window.location.origin}/profile`,
-      });
-
-      window.location.href = portalUrl;
-    } catch (err: any) {
-      console.error('Portal Error:', err);
-      setError(err.message || 'Something went wrong while opening the customer portal');
     } finally {
       setLoading(false);
     }
@@ -199,7 +180,7 @@ const Supporter: React.FC = () => {
               </div>
 
               <div className="card-content">
-                <div className="space-y-4 mb-8">
+                <div className="space-y-4">
                   <div className="flex justify-between items-center py-3 border-b border-[#D9D9D9]">
                     <span className="text-[#5E6572] font-['Listopad']">Статус</span>
                     <span className="text-[#141204] font-['Listopad'] capitalize">{subscription.status}</span>
@@ -219,26 +200,6 @@ const Supporter: React.FC = () => {
                     </div>
                   )}
                 </div>
-              </div>
-
-              <div className="card-footer">
-                <button
-                  onClick={handleManageSubscription}
-                  disabled={loading}
-                  className="btn btn-primary btn-lg btn-full"
-                >
-                  {loading ? (
-                    <>
-                      <div className="spinner mr-2"></div>
-                      Обработка...
-                    </>
-                  ) : (
-                    <>
-                      <Settings className="w-5 h-5 mr-2" />
-                      Управление на абонамента
-                    </>
-                  )}
-                </button>
               </div>
             </>
           )}
