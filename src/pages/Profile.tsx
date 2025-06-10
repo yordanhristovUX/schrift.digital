@@ -129,7 +129,7 @@ const Profile: React.FC = () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error('No session');
 
-      // Call the delete-user edge function
+      // Call the delete-user edge function - it handles all data cleanup
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-user`, {
         method: 'POST',
         headers: {
