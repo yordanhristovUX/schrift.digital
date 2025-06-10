@@ -138,14 +138,24 @@ serve(async (req: Request) => {
       .delete()
       .eq('user_id', user_id);
 
-    // Delete font comparisons
-    await supabase
-      .from('comparison_fonts')
-      .delete()
-      .using('font_comparisons')
-      .eq('font_comparisons.user_id', user_id)
-      .eq('comparison_fonts.comparison_id', 'font_comparisons.id');
+    // Delete font comparisons (two-step process to handle foreign keys correctly)
+    // First, get all comparison IDs for this user
+    const { data: userComparisons } = await supabase
+      .from('font_comparisons')
+      .select('id')
+      .eq('user_id', user_id);
 
+    // Delete comparison_fonts entries for all user's comparisons
+    if (userComparisons && userComparisons.length > 0) {
+      const comparisonIds = userComparisons.map(comp => comp.id);
+      
+      await supabase
+        .from('comparison_fonts')
+        .delete()
+        .in('comparison_id', comparisonIds);
+    }
+
+    // Then delete the font_comparisons entries
     await supabase
       .from('font_comparisons')
       .delete()
