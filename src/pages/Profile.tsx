@@ -315,15 +315,6 @@ const Profile: React.FC = () => {
                 )}
               </div>
             </div>
-            
-            <div className="card-footer">
-              <button
-                onClick={() => navigate('/supporter')}
-                className="btn btn-link"
-              >
-                {t('profile:manage_subscription')}
-              </button>
-            </div>
           </div>
         )}
 
