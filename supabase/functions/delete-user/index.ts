@@ -1,4 +1,3 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'npm:@supabase/supabase-js@2.39.3';
 
 const corsHeaders = {
@@ -7,7 +6,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
 
-serve(async (req: Request) => {
+Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, {
       status: 200,
@@ -20,7 +19,16 @@ serve(async (req: Request) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const stripeSecretKey = Deno.env.get('STRIPE_SECRET_KEY');
 
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    if (!supabaseUrl || !supabaseServiceKey) {
+      throw new Error('Missing required environment variables');
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    });
 
     // Get the authorization header
     const authHeader = req.headers.get('Authorization');
@@ -173,11 +181,13 @@ serve(async (req: Request) => {
     }
 
     // Step 4: Delete from auth.users (this should be done last)
+    // Use the service role client for admin operations
     const { error: authUserError } = await supabase.auth.admin.deleteUser(user_id);
 
     if (authUserError) {
       console.error('Error deleting from auth.users:', authUserError);
-      throw new Error('Failed to delete user authentication data');
+      // Provide more specific error information
+      throw new Error(`Failed to delete user authentication data: ${authUserError.message}`);
     }
 
     console.log(`Successfully deleted user: ${user_id}`);
