@@ -54,7 +54,6 @@ export const getFeaturedFonts = async (limit = 10) => {
     const { data, error } = await supabase
       .from('fonts')
       .select('*')
-      .eq('featured', true)
       .limit(limit);
       
     if (error) {
@@ -65,7 +64,7 @@ export const getFeaturedFonts = async (limit = 10) => {
     console.log('Fetched fonts:', data);
     
     if (!data || data.length === 0) {
-      console.log('No fonts found');
+      console.log('No fonts found, this might be expected if the database is empty');
       return [];
     }
     
