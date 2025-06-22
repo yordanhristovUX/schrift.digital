@@ -218,7 +218,7 @@ const Navbar: React.FC = () => {
         
         {/* Mobile Navigation */}
         {isOpen && (
-          <div className="md:hidden fixed inset-0 top-[calc(100%-1px)] bg-[#141204] z-40 pt-4 pb-8">
+          <div className="md:hidden fixed inset-x-0 top-0 bottom-0 bg-[#141204] z-40 pt-20 pb-8">
             <div className="flex flex-col h-full">
               <Link 
                 to="/" 
