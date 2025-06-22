@@ -218,14 +218,14 @@ const Navbar: React.FC = () => {
         
         {/* Mobile Navigation */}
         {isOpen && (
-          <div className="md:hidden py-4">
-            <div className="flex flex-col space-y-2">
+          <div className="md:hidden fixed inset-0 top-[calc(100%-1px)] bg-[#141204] z-40 pt-4 pb-8">
+            <div className="flex flex-col h-full">
               <Link 
                 to="/" 
-                className={`px-4 py-2 rounded-sm transition-colors text-center font-['Listopad'] ${
+                className={`px-6 py-4 transition-colors text-center font-['Listopad'] font-bold text-lg border-b border-[#5E6572] ${
                   isHomePage
-                    ? 'bg-[#D9D9D9] text-[#141204] cursor-default'
-                    : 'bg-[#FFFFFC] text-[#141204] hover:bg-[#D9D9D9]'
+                    ? 'bg-[#FFFFFC] text-[#141204] cursor-default'
+                    : 'text-[#FFFFFC] hover:bg-[#2D2B1F] active:bg-[#5E6572]'
                 }`}
                 onClick={() => setIsOpen(false)}
               >
@@ -233,25 +233,28 @@ const Navbar: React.FC = () => {
               </Link>
               <Link 
                 to="/about" 
-                className={`px-4 py-2 rounded-sm transition-colors text-center font-['Listopad'] ${
+                className={`px-6 py-4 transition-colors text-center font-['Listopad'] font-bold text-lg border-b border-[#5E6572] ${
                   isAboutPage
-                    ? 'bg-[#D9D9D9] text-[#141204] cursor-default'
-                    : 'bg-[#FFFFFC] text-[#141204] hover:bg-[#D9D9D9]'
+                    ? 'bg-[#FFFFFC] text-[#141204] cursor-default'
+                    : 'text-[#FFFFFC] hover:bg-[#2D2B1F] active:bg-[#5E6572]'
                 }`}
                 onClick={() => setIsOpen(false)}
               >
                 {t('nav:about')}
               </Link>
+              
+              <div className="flex-1"></div>
+              
               {user ? (
-                <div className="border-t border-[#5E6572] pt-2 mt-2">
-                  <div className="px-4 py-2 text-[#FFFFFC] text-center font-['Listopad'] flex items-center justify-center">
+                <div className="border-t border-[#5E6572] pt-4">
+                  <div className="px-6 py-4 text-[#FFFFFC] text-center font-['Listopad'] font-bold text-lg flex items-center justify-center border-b border-[#5E6572]">
                     <User size={20} className="mr-2" />
                     {user.full_name}
                   </div>
                   {user.role === 'admin' && (
                     <Link
                       to="/admin"
-                      className="block px-4 py-2 text-[#FFFFFC] hover:text-[#BCBDC0] text-center font-['Listopad']"
+                      className="block px-6 py-4 text-[#FFFFFC] hover:bg-[#2D2B1F] active:bg-[#5E6572] text-center font-['Listopad'] font-bold text-lg border-b border-[#5E6572] transition-colors"
                       onClick={() => setIsOpen(false)}
                     >
                       {t('nav:admin_panel')}
@@ -259,14 +262,14 @@ const Navbar: React.FC = () => {
                   )}
                   <Link
                     to="/profile"
-                    className="block px-4 py-2 text-[#FFFFFC] hover:text-[#BCBDC0] text-center font-['Listopad']"
+                    className="block px-6 py-4 text-[#FFFFFC] hover:bg-[#2D2B1F] active:bg-[#5E6572] text-center font-['Listopad'] font-bold text-lg border-b border-[#5E6572] transition-colors"
                     onClick={() => setIsOpen(false)}
                   >
                     {t('nav:profile')}
                   </Link>
                   <Link
                     to="/supporter"
-                    className="block px-4 py-2 text-[#FFFFFC] hover:text-[#BCBDC0] text-center font-['Listopad']"
+                    className="block px-6 py-4 text-[#FFFFFC] hover:bg-[#2D2B1F] active:bg-[#5E6572] text-center font-['Listopad'] font-bold text-lg border-b border-[#5E6572] transition-colors"
                     onClick={() => setIsOpen(false)}
                   >
                     {t('nav:become_supporter')}
@@ -276,7 +279,7 @@ const Navbar: React.FC = () => {
                       handleLogout();
                       setIsOpen(false);
                     }}
-                    className="w-full px-4 py-2 text-[#FFFFFC] hover:text-[#BCBDC0] text-center font-['Listopad']"
+                    className="w-full px-6 py-4 text-[#FFFFFC] hover:bg-[#2D2B1F] active:bg-[#5E6572] text-center font-['Listopad'] font-bold text-lg transition-colors"
                   >
                     {t('nav:logout')}
                   </button>
@@ -284,7 +287,7 @@ const Navbar: React.FC = () => {
               ) : (
                 <Link 
                   to="/login" 
-                  className="px-4 py-2 text-[#FFFFFC] hover:text-[#BCBDC0] transition-colors text-center font-['Listopad']"
+                  className="px-6 py-4 text-[#FFFFFC] hover:bg-[#2D2B1F] active:bg-[#5E6572] transition-colors text-center font-['Listopad'] font-bold text-lg border-t border-[#5E6572]"
                   onClick={() => setIsOpen(false)}
                 >
                   {t('nav:login')}
