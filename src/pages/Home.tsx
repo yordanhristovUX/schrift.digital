@@ -12,7 +12,7 @@ const Home: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [previewText, setPreviewText] = useState('Щурецът свири, а жабите скачат върху дъбови листа.');
   const [fontSizes, setFontSizes] = useState<Record<string, number>>({});
-  const [fontWeights, setFontWeights] = useState<Record<string, number>>({});
+  const [selectedWeights, setSelectedWeights] = useState<Record<string, string>>({});
   const navigate = useNavigate();
   const { t, i18n } = useTranslation(['common']);
   
@@ -51,14 +51,16 @@ const Home: React.FC = () => {
         
         // Initialize font sizes and weights
         const sizes: Record<string, number> = {};
-        const weights: Record<string, number> = {};
+        const weights: Record<string, string> = {};
         data.forEach(font => {
           sizes[font.id] = 32;
-          weights[font.id] = 400;
+          // Set default weight to Regular if available, otherwise first available weight
+          const availableWeights = font.weight_files ? Object.values(font.weight_files).map(f => f.weight) : ['Regular'];
+          weights[font.id] = availableWeights.includes('Regular') ? 'Regular' : availableWeights[0];
         });
         
         setFontSizes(sizes);
-        setFontWeights(weights);
+        setSelectedWeights(weights);
         setFonts(data);
 
         // Load fonts dynamically
@@ -99,8 +101,8 @@ const Home: React.FC = () => {
     setFontSizes(prev => ({ ...prev, [fontId]: size }));
   };
 
-  const handleWeightChange = (fontId: string, weight: number) => {
-    setFontWeights(prev => ({ ...prev, [fontId]: weight }));
+  const handleWeightChange = (fontId: string, weight: string) => {
+    setSelectedWeights(prev => ({ ...prev, [fontId]: weight }));
   };
 
   const handleFontClick = async (fontId: string) => {
@@ -197,6 +199,12 @@ const Home: React.FC = () => {
             <div className="space-y-12">
               {fonts.map(font => {
                 const { normal, italic } = getGroupedWeights(font);
+                const availableWeights = font.weight_files ? 
+                  [...new Set(Object.values(font.weight_files).map(f => f.weight))]
+                    .sort((a, b) => getWeightValue(a) - getWeightValue(b)) : 
+                  ['Regular'];
+                const currentWeight = selectedWeights[font.id] || 'Regular';
+                const currentWeightValue = getWeightValue(currentWeight);
                 
                 return (
                   <div 
@@ -221,9 +229,9 @@ const Home: React.FC = () => {
                     <div 
                       className="mb-8 text-text-primary"
                       style={{ 
-                        fontFamily: font.name,
+                        fontFamily: `"${font.name}", sans-serif`,
                         fontSize: `${fontSizes[font.id]}px`,
-                        fontWeight: fontWeights[font.id],
+                        fontWeight: currentWeightValue,
                         lineHeight: '1.3'
                       }}
                     >
@@ -253,17 +261,23 @@ const Home: React.FC = () => {
                           <label className="text-sm font-medium text-text-primary font-['Listopad']">
                             {t('home.font_weight')}
                           </label>
-                          <span className="text-sm text-text-secondary font-['Listopad']">{fontWeights[font.id]}</span>
+                          <span className="text-sm text-text-secondary font-['Listopad']">{currentWeight}</span>
                         </div>
-                        <input
-                          type="range"
-                          min="100"
-                          max="900"
-                          step="100"
-                          value={fontWeights[font.id]}
-                          onChange={(e) => handleWeightChange(font.id, parseInt(e.target.value))}
-                          className="w-full h-1 bg-background-secondary rounded-sm appearance-none cursor-pointer"
-                        />
+                        <div className="flex flex-wrap gap-2">
+                          {availableWeights.map((weight) => (
+                            <button
+                              key={weight}
+                              onClick={() => handleWeightChange(font.id, weight)}
+                              className={`px-3 py-1 text-sm rounded-sm font-['Listopad'] transition-colors ${
+                                currentWeight === weight
+                                  ? 'bg-[#141204] text-[#FFFFFC]'
+                                  : 'bg-[#D9D9D9] text-[#141204] hover:bg-[#BCBDC0]'
+                              }`}
+                            >
+                              {weight}
+                            </button>
+                          ))}
+                        </div>
                       </div>
                     </div>
 
@@ -279,7 +293,7 @@ const Home: React.FC = () => {
                               <div
                                 className="text-4xl text-text-primary mb-2"
                                 style={{ 
-                                  fontFamily: font.name,
+                                  fontFamily: `"${font.name}", sans-serif`,
                                   fontWeight: getWeightValue(file.weight),
                                   fontStyle: 'normal'
                                 }}
@@ -303,7 +317,7 @@ const Home: React.FC = () => {
                               <div
                                 className="text-4xl text-text-primary mb-2"
                                 style={{ 
-                                  fontFamily: font.name,
+                                  fontFamily: `"${font.name}", sans-serif`,
                                   fontWeight: getWeightValue(file.weight),
                                   fontStyle: 'italic'
                                 }}
