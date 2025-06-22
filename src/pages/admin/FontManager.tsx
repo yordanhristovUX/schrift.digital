@@ -401,7 +401,7 @@ const FontManager: React.FC = () => {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Language Support (comma-separated)
+                      Language Support
                     </label>
                     <input
                       type="text"
@@ -414,7 +414,7 @@ const FontManager: React.FC = () => {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      OpenType Features (comma-separated)
+                      OpenType Features
                     </label>
                     <input
                       type="text"
@@ -427,7 +427,7 @@ const FontManager: React.FC = () => {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Character Set (comma-separated)
+                      Character Set
                     </label>
                     <input
                       type="text"
@@ -438,31 +438,7 @@ const FontManager: React.FC = () => {
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Sample Text
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.sample_text || ''}
-                      onChange={(e) => setFormData({ ...formData, sample_text: e.target.value })}
-                      className="w-full p-2 border rounded-md"
-                      placeholder="Enter sample text for font preview"
-                    />
-                  </div>
 
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Tags (comma-separated)
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.tags.join(', ')}
-                      onChange={(e) => setFormData({ ...formData, tags: e.target.value.split(',').map(t => t.trim()) })}
-                      className="w-full p-2 border rounded-md"
-                      placeholder="modern, geometric, minimalist"
-                    />
-                  </div>
                 </div>
 
                 <div className="mt-6 flex justify-end">

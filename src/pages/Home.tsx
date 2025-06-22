@@ -36,7 +36,7 @@ const Home: React.FC = () => {
           .from('fonts')
           .select('*')
           .eq('featured', true)
-          .limit(3);
+          .limit(10);
 
         if (directError) {
           console.error('Direct Supabase query error:', directError);

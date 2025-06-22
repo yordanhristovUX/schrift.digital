@@ -48,12 +48,13 @@ const cacheResponse = async (url: string, response: Response) => {
   }
 };
 
-export const getFeaturedFonts = async (limit = 3) => {
+export const getFeaturedFonts = async (limit = 10) => {
   try {
     console.log('Fetching fonts...');
     const { data, error } = await supabase
       .from('fonts')
       .select('*')
+      .eq('featured', true)
       .limit(limit);
       
     if (error) {
@@ -95,35 +96,6 @@ export const getFontById = async (id: string): Promise<Font | null> => {
   }
 };
 
-export const incrementDownloads = async (fontId: string) => {
-  try {
-    const { data: font, error: fetchError } = await supabase
-      .from('fonts')
-      .select('downloads')
-      .eq('id', fontId)
-      .single();
-
-    if (fetchError) {
-      console.error('Supabase error:', fetchError);
-      throw fetchError;
-    }
-
-    const newDownloads = (font?.downloads || 0) + 1;
-
-    const { error: updateError } = await supabase
-      .from('fonts')
-      .update({ downloads: newDownloads })
-      .eq('id', fontId);
-
-    if (updateError) {
-      console.error('Supabase error:', updateError);
-      throw updateError;
-    }
-  } catch (err) {
-    console.error('Error incrementing downloads:', err);
-    throw err;
-  }
-};
 
 export const downloadFont = async (font: Font, selectedWeight?: string, selectedStyle?: string) => {
   try {
@@ -136,7 +108,17 @@ export const downloadFont = async (font: Font, selectedWeight?: string, selected
       throw new Error('No font files available');
     }
 
-    await incrementDownloads(font.id);
+    // Simple download count increment without analytics
+    try {
+      const { error } = await supabase
+        .from('fonts')
+        .update({ downloads: (font.downloads || 0) + 1 })
+        .eq('id', font.id);
+      
+      if (error) console.error('Error updating download count:', error);
+    } catch (err) {
+      console.error('Error updating download count:', err);
+    }
 
     if (selectedWeight && selectedStyle) {
       const fontFile = Object.values(font.weight_files).find(
