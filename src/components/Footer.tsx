@@ -75,7 +75,7 @@ const Footer: React.FC = () => {
         
         <div className="border-t border-[#5E6572] mt-12 pt-8 text-center sm:text-left sm:flex sm:justify-between font-['Listopad']">
           <p className="text-[#BCBDC0] text-sm">
-            {t('footer.copyright', { year: currentYear })}
+            {t('footer.copyright', { year: currentYear })}  Used font: Listopad by Stefan Peev
           </p>
         </div>
       </div>
