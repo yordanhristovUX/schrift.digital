@@ -34,6 +34,15 @@ const SEO: React.FC<{ title?: string; description?: string }> = ({
       <title>{title}</title>
       <meta name="description" content={description} />
       <link rel="canonical" href={canonicalUrl} />
+      <meta name="keywords" content="български шрифтове, българска кирилица, italic шрифтове, типография, Figma шрифтове, уеб дизайн, безплатни шрифтове, премиум шрифтове, българска типография, дизайн, уеб шрифтове" />
+      <meta name="author" content="Schrift.Digital" />
+      <meta name="robots" content="index, follow" />
+      <meta name="googlebot" content="index, follow" />
+      <meta property="og:type" content="website" />
+      <meta property="og:site_name" content="Schrift.Digital" />
+      <meta property="og:locale" content="bg_BG" />
+      <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:site" content="@schriftdigital" />
       <meta property="og:title" content={title} />
       <meta property="og:description" content={description} />
       <meta property="og:url" content={canonicalUrl} />
@@ -109,7 +118,7 @@ function App() {
       <BrowserRouter>
         <Layout>
           <Routes>
-            <Route path="/" element={<><SEO /><Home /></>} />
+            <Route path="/" element={<><SEO title="Български шрифтове с кирилица | Schrift.Digital - Професионални шрифтове за Figma" description="Открийте колекция от професионални български шрифтове с автентична кирилица, включително italic стилове. Изтеглете безплатни и премиум шрифтове с поддръжка на българска кирилица за Figma." /><Home /></>} />
             <Route path="/about" element={<><SEO title="За българската кирилица | Schrift.Digital\" description="Научете повече за мисията ни да върнем българската кирилица в съвременния дизайн с нашите професионални шрифтове." /><About /></>} />
             <Route path="/login" element={<><SEO title="Вход | Български шрифтове с кирилица\" description="Влезте в профила си за достъп до всички български шрифтове с кирилица." /><Login /></>} />
             <Route path="/register" element={<><SEO title="Регистрация | Български шрифтове с кирилица\" description="Създайте профил за достъп до всички български шрифтове с кирилица и italic стилове." /><Register /></>} />

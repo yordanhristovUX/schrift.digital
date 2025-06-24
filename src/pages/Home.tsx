@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Crown } from 'lucide-react';
+import { Crown, Palette, Type } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Helmet } from 'react-helmet-async';
 import { supabase } from '../lib/supabase';
@@ -16,6 +16,8 @@ const Home: React.FC = () => {
   const [selectedWeights, setSelectedWeights] = useState<Record<string, string>>({});
   const [selectedStyles, setSelectedStyles] = useState<Record<string, string>>({});
   const [hasSubscription, setHasSubscription] = useState(false);
+  const [backgroundColor, setBackgroundColor] = useState('#FFFFFC');
+  const [textColor, setTextColor] = useState('#141204');
   const navigate = useNavigate();
   const { t, i18n } = useTranslation(['common']);
   
@@ -158,6 +160,22 @@ const Home: React.FC = () => {
     window.location.reload();
   };
 
+  const toggleBackgroundColor = () => {
+    setBackgroundColor(prev => {
+      const colors = ['#FFFFFC', '#F5F5F5', '#E8E8E8', '#D9D9D9'];
+      const currentIndex = colors.indexOf(prev);
+      return colors[(currentIndex + 1) % colors.length];
+    });
+  };
+
+  const toggleTextColor = () => {
+    setTextColor(prev => {
+      const colors = ['#141204', '#2D2B1F', '#5E6572', '#000000'];
+      const currentIndex = colors.indexOf(prev);
+      return colors[(currentIndex + 1) % colors.length];
+    });
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -196,8 +214,8 @@ const Home: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>{t('meta.title')}</title>
-        <meta name="description" content={t('meta.description')} />
+        <title>Български шрифтове с кирилица | Schrift.Digital - Професионални шрифтове за Figma</title>
+        <meta name="description" content="Открийте колекция от професионални български шрифтове с автентична кирилица, включително italic стилове. Изтеглете безплатни и премиум шрифтове с поддръжка на българска кирилица за Figma." />
       </Helmet>
 
       <div className="min-h-screen">
@@ -217,6 +235,30 @@ const Home: React.FC = () => {
         <section className="section bg-background-primary">
           <div className="container mx-auto max-w-5xl">
             {/* Library count */}
+            <div className="flex justify-between items-center mb-8">
+              <p className="text-lg text-[#5E6572] font-['Listopad']">
+                {t('home.library_count', { count: fonts.length })}
+              </p>
+              
+              {/* Color toggle controls */}
+              <div className="flex items-center space-x-3">
+                <button
+                  onClick={toggleBackgroundColor}
+                  className="p-2 rounded-full bg-white border border-gray-300 hover:bg-gray-50 transition-colors"
+                  title="Change background color"
+                >
+                  <Palette size={16} style={{ color: backgroundColor }} />
+                </button>
+                <button
+                  onClick={toggleTextColor}
+                  className="p-2 rounded-full bg-white border border-gray-300 hover:bg-gray-50 transition-colors"
+                  title="Change text color"
+                >
+                  <Type size={16} style={{ color: textColor }} />
+                </button>
+              </div>
+            </div>
+
             <p className="text-lg text-[#5E6572] mb-8 font-['Listopad']">
               {t('home.library_count', { count: fonts.length })}
             </p>
@@ -251,7 +293,11 @@ const Home: React.FC = () => {
                 return (
                   <div 
                     key={font.id} 
-                    className="border border-border-primary rounded-sm p-6 bg-background-primary transition-all duration-300 hover:shadow-lg space-y-4"
+                    className="border border-border-primary rounded-sm p-6 transition-all duration-300 hover:shadow-lg space-y-4"
+                    style={{ 
+                      backgroundColor: backgroundColor,
+                      color: textColor
+                    }}
                   >
                     {font.subscriber_only && (
                       <div className="flex justify-start">
@@ -263,8 +309,8 @@ const Home: React.FC = () => {
                     )}
                     <div className="flex justify-between items-start">
                       <div>
-                        <h3 className="text-xl font-semibold text-text-primary">{font.name}</h3>
-                        <p className="text-sm text-text-secondary">
+                        <h3 className="text-xl font-semibold" style={{ color: textColor }}>{font.name}</h3>
+                        <p className="text-sm opacity-70">
                           <span className="font-['Listopad']">{t('home.font_info.designer')}:</span> {font.designer}
                         </p>
                       </div>
@@ -281,13 +327,14 @@ const Home: React.FC = () => {
                     </div>
 
                     <div 
-                      className="mb-8 text-text-primary"
+                      className="mb-8"
                       style={{ 
                         fontFamily: `"${font.name}", sans-serif`,
                         fontSize: `${fontSizes[font.id]}px`,
                         fontWeight: getWeightValue(currentWeight),
                         fontStyle: currentStyle.toLowerCase(),
-                        lineHeight: '1.3'
+                        lineHeight: '1.3',
+                        color: textColor
                       }}
                     >
                       {previewText}
@@ -296,10 +343,10 @@ const Home: React.FC = () => {
                     <div className="space-y-6 mb-8">
                       <div>
                         <div className="flex justify-between mb-2">
-                          <label className="text-sm font-medium text-text-primary font-['Listopad']">
+                          <label className="text-sm font-medium font-['Listopad']" style={{ color: textColor }}>
                             {t('home.font_size')}
                           </label>
-                          <span className="text-sm text-text-secondary font-['Listopad']">{fontSizes[font.id]}px</span>
+                          <span className="text-sm opacity-70 font-['Listopad']">{fontSizes[font.id]}px</span>
                         </div>
                         <input
                           type="range"
@@ -336,10 +383,10 @@ const Home: React.FC = () => {
                         
                         <div>
                           <div className="flex justify-between mb-2">
-                            <label className="text-sm font-medium text-text-primary font-['Listopad']">
-                              {t('home.font_weight')}
+                            <label className="text-sm font-medium font-['Listopad']" style={{ color: textColor }}>
+                              <label className="text-sm font-medium font-['Listopad']" style={{ color: textColor }}>
                             </label>
-                            <span className="text-sm text-text-secondary font-['Listopad']">{currentWeight}</span>
+                            <span className="text-sm opacity-70 font-['Listopad']">{currentWeight}</span>
                           </div>
                           <div className="flex flex-wrap gap-2">
                             {availableWeights
@@ -377,16 +424,17 @@ const Home: React.FC = () => {
                               className="text-center"
                             >
                               <div
-                                className="text-4xl text-text-primary mb-2"
+                                className="text-4xl mb-2"
                                 style={{ 
                                   fontFamily: `"${font.name}", sans-serif`,
                                   fontWeight: getWeightValue(file.weight),
-                                  fontStyle: 'normal'
+                                  fontStyle: 'normal',
+                                  color: textColor
                                 }}
                               >
                                 Aa
                               </div>
-                              <div className="text-sm text-text-secondary font-['Listopad']">{file.weight}</div>
+                              <div className="text-sm opacity-70 font-['Listopad']">{file.weight}</div>
                             </div>
                           ))}
                         </div>
