@@ -29,7 +29,9 @@ const Register: React.FC = () => {
           data: {
             full_name: fullName
           },
-          emailRedirectTo: `${window.location.origin}/email-confirmed`
+          emailRedirectTo: `${window.location.origin}/email-confirmed`,
+          // Add this to handle cases where email confirmation might be disabled
+          captchaToken: undefined
         }
       });
 
@@ -37,7 +39,14 @@ const Register: React.FC = () => {
 
       if (signUpError) throw signUpError;
 
-      setConfirmationSent(true);
+      // Check if the user is immediately confirmed (email confirmation disabled)
+      if (authData.user && authData.session) {
+        console.log('User immediately confirmed, redirecting to home');
+        navigate('/', { replace: true });
+      } else {
+        console.log('Email confirmation required');
+        setConfirmationSent(true);
+      }
     } catch (err: any) {
       console.error('Registration error:', err);
       setError(getAuthErrorMessage(err));

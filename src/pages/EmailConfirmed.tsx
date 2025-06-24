@@ -14,6 +14,16 @@ const EmailConfirmed: React.FC = () => {
   useEffect(() => {
     const handleEmailConfirmation = async () => {
       try {
+        // Check if email confirmation is actually required
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        // If user is already logged in, they don't need confirmation
+        if (session) {
+          console.log('User already has active session, skipping confirmation');
+          setLoading(false);
+          return;
+        }
+        
         const hash = window.location.hash;
         
         if (hash && hash.includes('access_token')) {
@@ -57,7 +67,17 @@ const EmailConfirmed: React.FC = () => {
           return;
         }
 
-        // If we get here, there's no valid confirmation token
+        // If we get here, check if the user just registered successfully
+        // and email confirmation might be disabled
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (user && user.email_confirmed_at) {
+          console.log('User email already confirmed');
+          setLoading(false);
+          return;
+        }
+        
+        // If no valid confirmation token and no confirmed user, show error
         throw new Error('No valid confirmation token found');
 
       } catch (err: any) {

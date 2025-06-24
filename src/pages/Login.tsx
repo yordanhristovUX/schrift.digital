@@ -34,10 +34,17 @@ const Login: React.FC = () => {
           const type = hashParams.get('type');
 
           if (type === 'signup' && accessToken && refreshToken) {
-            // Redirect to email confirmation page instead of handling here
-            navigate('/email-confirmed', {
-              replace: true
+            // Handle confirmation directly here
+            const { error } = await supabase.auth.setSession({
+              access_token: accessToken,
+              refresh_token: refreshToken,
             });
+
+            if (error) throw error;
+
+            // Clear the hash and redirect to home
+            window.history.replaceState(null, '', window.location.pathname);
+            navigate('/', { replace: true });
             return;
           }
         } catch (err: any) {
@@ -52,10 +59,22 @@ const Login: React.FC = () => {
       const type = searchParams.get('type');
       
       if (token && type === 'signup') {
-        // Redirect to email confirmation page
-        navigate('/email-confirmed', {
-          replace: true
-        });
+        try {
+          const { error } = await supabase.auth.verifyOtp({
+            token_hash: token,
+            type: 'signup'
+          });
+          
+          if (error) throw error;
+          
+          // Clear params and redirect to home
+          window.history.replaceState(null, '', window.location.pathname);
+          navigate('/', { replace: true });
+        } catch (err: any) {
+          console.error('Error confirming email:', err);
+          setError(getAuthErrorMessage(err));
+          setRawError(err);
+        }
         return;
       }
     };
