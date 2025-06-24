@@ -373,8 +373,8 @@ const Home: React.FC = () => {
                       <div>
                         <div className="flex justify-between mb-2">
                           <div className="flex items-center space-x-4">
-                            <label className="text-sm font-medium text-text-primary font-['Listopad']">
-                              Style
+                            <label className="text-sm font-medium font-['Listopad']" style={{ color: textColor }}>
+                              Стил
                             </label>
                             <div className="flex space-x-2">
                               {availableStyles.map((style) => (
@@ -397,7 +397,7 @@ const Home: React.FC = () => {
                         <div>
                           <div className="flex justify-between mb-2">
                             <label className="text-sm font-medium font-['Listopad']" style={{ color: textColor }}>
-                              Weight
+                              Тежина
                             </label>
                             <span className="text-sm opacity-70 font-['Listopad']">{currentWeight}</span>
                           </div>
