@@ -310,7 +310,7 @@ const Home: React.FC = () => {
                     key={font.id} 
                     className="border border-border-primary rounded-sm p-6 transition-all duration-300 hover:shadow-lg space-y-4"
                     style={{ 
-                      backgroundColor: backgroundColor || 'var(--color-background-primary)',
+                      backgroundColor: backgroundColor === 'var(--color-background-primary)' ? '#F5F5F5' : backgroundColor,
                       color: textColor
                     }}
                   >
@@ -324,7 +324,10 @@ const Home: React.FC = () => {
                     )}
                     <div className="flex justify-between items-start">
                       <div>
-                        <h3 className="text-xl font-semibold" style={{ color: textColor }}>{font.name}</h3>
+                        <h3 
+                          className="text-xl font-semibold" 
+                          style={{ color: textColor === 'var(--color-text-primary)' ? '#141204' : textColor }}
+                        >{font.name}</h3>
                         <p className="text-sm opacity-70">
                           <span className="font-['Listopad']">{t('home.font_info.designer')}:</span> {font.designer}
                         </p>
@@ -349,7 +352,7 @@ const Home: React.FC = () => {
                         fontWeight: getWeightValue(currentWeight),
                         fontStyle: currentStyle.toLowerCase(),
                         lineHeight: '1.3',
-                        color: textColor
+                        color: textColor === 'var(--color-text-primary)' ? '#141204' : textColor
                       }}
                     >
                       {previewText}
@@ -358,7 +361,7 @@ const Home: React.FC = () => {
                     <div className="space-y-6 mb-8">
                       <div>
                         <div className="flex justify-between mb-2">
-                          <label className="text-sm font-medium font-['Listopad']" style={{ color: textColor }}>
+                          <label className="text-sm font-medium font-['Listopad']" style={{ color: textColor === 'var(--color-text-primary)' ? '#141204' : textColor }}>
                             {t('home.font_size')}
                           </label>
                           <span className="text-sm opacity-70 font-['Listopad']">{fontSizes[font.id]}px</span>
@@ -375,7 +378,7 @@ const Home: React.FC = () => {
                       <div>
                         <div className="flex justify-between mb-2">
                           <div className="flex items-center space-x-4">
-                            <label className="text-sm font-medium font-['Listopad']" style={{ color: textColor }}>
+                            <label className="text-sm font-medium font-['Listopad']" style={{ color: textColor === 'var(--color-text-primary)' ? '#141204' : textColor }}>
                               Стил
                             </label>
                             <div className="flex space-x-2">
@@ -398,7 +401,7 @@ const Home: React.FC = () => {
                         
                         <div>
                           <div className="flex justify-between mb-2">
-                            <label className="text-sm font-medium font-['Listopad']" style={{ color: textColor }}>
+                            <label className="text-sm font-medium font-['Listopad']" style={{ color: textColor === 'var(--color-text-primary)' ? '#141204' : textColor }}>
                               Тежина
                             </label>
                             <span className="text-sm opacity-70 font-['Listopad']">{currentWeight}</span>
@@ -444,7 +447,7 @@ const Home: React.FC = () => {
                                   fontFamily: `"${font.name}", sans-serif`,
                                   fontWeight: getWeightValue(file.weight),
                                   fontStyle: 'normal',
-                                  color: textColor
+                                  color: textColor === 'var(--color-text-primary)' ? '#141204' : textColor
                                 }}
                               >
                                 Aa
@@ -469,7 +472,7 @@ const Home: React.FC = () => {
                                   fontFamily: `"${font.name}", sans-serif`,
                                   fontWeight: getWeightValue(file.weight),
                                   fontStyle: 'italic',
-                                  color: textColor
+                                  color: textColor === 'var(--color-text-primary)' ? '#141204' : textColor
                                 }}
                               >
                                 Aa
