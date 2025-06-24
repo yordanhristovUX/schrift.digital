@@ -286,7 +286,8 @@ const SubscriptionManager: React.FC = () => {
                 </div>
                 <div className="ml-4">
                   <h3 className="text-lg font-semibold">Total Revenue</h3>
-                  <p className="text-3xl font-bold text-blue-700">€{stats.revenue}</p>
+                  <p className="text-3xl font-bold text-green-700">€{stats.revenue}</p>
+                  <p className="text-sm text-gray-500 mt-1">Paid subscriptions only</p>
                 </div>
               </div>
             </div>
