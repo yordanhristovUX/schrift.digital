@@ -68,6 +68,26 @@ export const isAuthenticated = async () => {
   return !!session;
 };
 
+// Helper function to check if user has active premium
+export const hasActivePremium = async () => {
+  const { data, error } = await supabase.rpc('has_active_premium');
+  if (error) {
+    console.error('Error checking premium status:', error);
+    return false;
+  }
+  return data;
+};
+
+// Helper function to get user's premium info
+export const getUserPremiumInfo = async () => {
+  const { data, error } = await supabase.rpc('get_user_premium_info');
+  if (error) {
+    console.error('Error getting premium info:', error);
+    return null;
+  }
+  return data?.[0] || null;
+};
+
 export const getSession = async () => {
   const { data: { session } } = await supabase.auth.getSession();
   return session;

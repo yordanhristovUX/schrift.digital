@@ -59,13 +59,10 @@ const UserManager: React.FC = () => {
             
             // Check if user has subscription
             const { data: customerData } = await supabase
-              .from('stripe_customers')
-              .select(`
-                customer_id,
-                stripe_subscriptions!inner(status)
-              `)
+              .from('user_subscriptions')
+              .select('expires_at')
               .eq('user_id', user.id)
-              .eq('stripe_subscriptions.status', 'active')
+              .gt('expires_at', new Date().toISOString())
               .maybeSingle();
 
             return {
@@ -133,51 +130,13 @@ const UserManager: React.FC = () => {
 
     setGranting(true);
     try {
-      // Calculate subscription period
-      const now = new Date();
-      const endDate = new Date(now);
-      endDate.setMonth(endDate.getMonth() + grantMonths);
+      // Use the new grant_premium_access function
+      const { error } = await supabase.rpc('grant_premium_access', {
+        target_user_id: selectedUser.id,
+        months: grantMonths
+      });
 
-      const currentPeriodStart = Math.floor(now.getTime() / 1000);
-      const currentPeriodEnd = Math.floor(endDate.getTime() / 1000);
-
-      // Create a manual customer ID
-      const customerId = `manual_${selectedUser.id}_${Date.now()}`;
-
-      // Insert or update stripe_customers record
-      const { error: customerError } = await supabase
-        .from('stripe_customers')
-        .upsert({
-          user_id: selectedUser.id,
-          customer_id: customerId,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        }, {
-          onConflict: 'user_id'
-        });
-
-      if (customerError) throw customerError;
-
-      // Insert or update stripe_subscriptions record
-      const { error: subscriptionError } = await supabase
-        .from('stripe_subscriptions')
-        .upsert({
-          customer_id: customerId,
-          subscription_id: `manual_sub_${selectedUser.id}_${Date.now()}`,
-          price_id: 'manual_grant',
-          current_period_start: currentPeriodStart,
-          current_period_end: currentPeriodEnd,
-          cancel_at_period_end: false,
-          payment_method_brand: 'manual',
-          payment_method_last4: 'grant',
-          status: 'active',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        }, {
-          onConflict: 'customer_id'
-        });
-
-      if (subscriptionError) throw subscriptionError;
+      if (error) throw error;
 
       // Refresh users data
       await fetchUsers();

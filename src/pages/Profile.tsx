@@ -62,20 +62,14 @@ const Profile: React.FC = () => {
         }
 
         // Get subscription info
-        const { data: customerData } = await supabase
-          .from('stripe_customers')
-          .select('customer_id')
-          .eq('user_id', session.user.id);
+        const { data: subscriptionData } = await supabase
+          .from('user_subscriptions')
+          .select('*')
+          .eq('user_id', session.user.id)
+          .maybeSingle();
 
-        if (customerData?.[0]?.customer_id) {
-          const { data: subscriptionData } = await supabase
-            .from('stripe_subscriptions')
-            .select('*')
-            .eq('customer_id', customerData[0].customer_id);
-
-          if (subscriptionData && subscriptionData.length > 0) {
-            setSubscription(subscriptionData[0]);
-          }
+        if (subscriptionData) {
+          setSubscription(subscriptionData);
         }
 
         setUser(profile);
@@ -181,9 +175,9 @@ const Profile: React.FC = () => {
     );
   }
 
-  const isActiveSubscription = subscription?.status === 'active';
-  const subscriptionEnd = subscription?.current_period_end 
-    ? new Date(subscription.current_period_end * 1000)
+  const isActiveSubscription = subscription && new Date(subscription.expires_at) > new Date();
+  const subscriptionEnd = subscription?.expires_at 
+    ? new Date(subscription.expires_at)
     : null;
 
   const deleteConfirmationText = t('profile:delete_confirmation.placeholder') === 'Type DELETE' ? 'DELETE' : 'ИЗТРИЙ';
@@ -291,7 +285,9 @@ const Profile: React.FC = () => {
               <div className="space-y-4">
                 <div className="flex justify-between items-center py-3 border-b border-[#D9D9D9]">
                   <span className="text-[#5E6572] font-['Listopad']">{t('profile:status')}</span>
-                  <span className="text-[#141204] font-['Listopad'] capitalize">{subscription.status}</span>
+                  <span className="text-[#141204] font-['Listopad'] capitalize">
+                    {isActiveSubscription ? 'Active' : 'Expired'}
+                  </span>
                 </div>
                 <div className="flex justify-between items-center py-3 border-b border-[#D9D9D9]">
                   <span className="text-[#5E6572] font-['Listopad']">{t('profile:valid_until')}</span>
@@ -299,18 +295,10 @@ const Profile: React.FC = () => {
                     {subscriptionEnd ? format(subscriptionEnd, 'dd.MM.yyyy') : 'N/A'}
                   </span>
                 </div>
-                {subscription?.payment_method_last4 && (
-                  <div className="flex justify-between items-center py-3 border-b border-[#D9D9D9]">
-                    <span className="text-[#5E6572] font-['Listopad']">{t('profile:payment_method')}</span>
-                    <span className="text-[#141204] font-['Listopad']">
-                      {subscription.payment_method_brand} •••• {subscription.payment_method_last4}
-                    </span>
-                  </div>
-                )}
-                {subscription?.cancel_at_period_end && (
+                {subscription?.granted_by && (
                   <div className="flex justify-between items-center py-3">
-                    <span className="text-[#5E6572] font-['Listopad']">{t('profile:cancellation')}</span>
-                    <span className="text-red-600 font-['Listopad']">{t('profile:will_be_cancelled')}</span>
+                    <span className="text-[#5E6572] font-['Listopad']">Granted by</span>
+                    <span className="text-[#141204] font-['Listopad']">Admin</span>
                   </div>
                 )}
               </div>
