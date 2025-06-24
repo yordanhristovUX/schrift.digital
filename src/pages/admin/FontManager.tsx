@@ -224,11 +224,6 @@ const FontManager: React.FC = () => {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="ml-64 p-8">
-        <div className="max-w-7xl mx-auto">
-
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     window.location.href = '/login';
@@ -512,8 +507,6 @@ const FontManager: React.FC = () => {
                       placeholder="Latin, Cyrillic, Greek"
                     />
                   </div>
-
-
                 </div>
 
                 <div className="mt-6 flex justify-end">
