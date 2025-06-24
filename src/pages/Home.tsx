@@ -257,7 +257,7 @@ const Home: React.FC = () => {
                 return (
                   <div 
                     key={font.id} 
-                    className="border border-border-primary rounded-sm p-6 transition-all duration-300 hover:shadow-lg space-y-4"
+                    className="border border-border-primary rounded-sm p-6 transition-all duration-300 hover:shadow-lg space-y-4 bg-background-primary"
                   >
                     {font.subscriber_only && (
                       <div className="flex justify-start">
@@ -270,7 +270,7 @@ const Home: React.FC = () => {
                     <div className="flex justify-between items-start">
                       <div>
                         <h3 className="text-xl font-semibold text-text-primary">{font.name}</h3>
-                        <p className="text-sm opacity-70">
+                        <p className="text-sm text-text-secondary">
                           <span className="font-['Listopad']">{t('home.font_info.designer')}:</span> {font.designer}
                         </p>
                       </div>
@@ -306,7 +306,7 @@ const Home: React.FC = () => {
                           <label className="text-sm font-medium font-['Listopad'] text-text-primary">
                             {t('home.font_size')}
                           </label>
-                          <span className="text-sm opacity-70 font-['Listopad']">{fontSizes[font.id]}px</span>
+                          <span className="text-sm text-text-secondary font-['Listopad']">{fontSizes[font.id]}px</span>
                         </div>
                         <input
                           type="range"
@@ -346,7 +346,7 @@ const Home: React.FC = () => {
                             <label className="text-sm font-medium font-['Listopad'] text-text-primary">
                               Тежина
                             </label>
-                            <span className="text-sm opacity-70 font-['Listopad']">{currentWeight}</span>
+                            <span className="text-sm text-text-secondary font-['Listopad']">{currentWeight}</span>
                           </div>
                           <div className="flex flex-wrap gap-2">
                             {availableWeights
@@ -394,7 +394,7 @@ const Home: React.FC = () => {
                               >
                                 Aa
                               </div>
-                              <div className="text-sm opacity-70 font-['Listopad']">{file.weight}</div>
+                              <div className="text-sm text-text-secondary font-['Listopad']">{file.weight}</div>
                             </div>
                           ))}
                         </div>
@@ -419,7 +419,7 @@ const Home: React.FC = () => {
                               >
                                 Aa
                               </div>
-                              <div className="text-sm opacity-70 font-['Listopad']">{file.weight}</div>
+                              <div className="text-sm text-text-secondary font-['Listopad']">{file.weight}</div>
                             </div>
                           ))}
                         </div>
