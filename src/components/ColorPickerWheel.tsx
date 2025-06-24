@@ -303,13 +303,11 @@ const ColorPickerWheel: React.FC<ColorPickerWheelProps> = ({
     try {
       const { h, s, l } = hexToHsl(color);
       console.log('Predefined color clicked:', color, 'HSL:', { h, s, l });
-    setHue(h);
-    setSaturation(s);
-    setLightness(l);
-    setHexInput(color);
-    onColorSelect(color);
-  };
-
+      setHue(h);
+      setSaturation(s);
+      setLightness(l);
+      setHexInput(color);
+      onColorSelect(color);
     } catch (error) {
       console.error('Error parsing predefined color:', error);
     }
@@ -371,9 +369,7 @@ const ColorPickerWheel: React.FC<ColorPickerWheelProps> = ({
         className="relative bg-white rounded-lg p-4 shadow-2xl border border-gray-200"
         style={{
           width: '280px',
-          animation: 'fadeInScale 0.2s ease-out'
-        }}
-        style={{
+          animation: 'fadeInScale 0.2s ease-out',
           position: 'absolute',
           left: `${position.x}px`,
           top: `${position.y}px`,
