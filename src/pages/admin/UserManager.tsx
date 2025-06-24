@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { LayoutDashboard, Type, Users, Settings, LogOut, CreditCard, Crown, Mail, Calendar, Shield, AlertCircle, Search } from 'lucide-react';
+import { LayoutDashboard, Type, Users, Settings, LogOut, CreditCard, Crown, Mail, Calendar, Shield, AlertCircle, Search, Plus, X } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { format } from 'date-fns';
+import Modal from '../../components/Modal';
 
 interface User {
   id: string;
@@ -28,6 +29,10 @@ const UserManager: React.FC = () => {
     subscribers: 0,
     newThisMonth: 0
   });
+  const [showGrantModal, setShowGrantModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [grantMonths, setGrantMonths] = useState(1);
+  const [granting, setGranting] = useState(false);
 
   useEffect(() => {
     fetchUsers();
@@ -121,6 +126,78 @@ const UserManager: React.FC = () => {
       console.error('Error updating user role:', err);
       alert(`Failed to update user role: ${err.message}`);
     }
+  };
+
+  const handleGrantSubscription = async () => {
+    if (!selectedUser) return;
+
+    setGranting(true);
+    try {
+      // Calculate subscription period
+      const now = new Date();
+      const endDate = new Date(now);
+      endDate.setMonth(endDate.getMonth() + grantMonths);
+
+      const currentPeriodStart = Math.floor(now.getTime() / 1000);
+      const currentPeriodEnd = Math.floor(endDate.getTime() / 1000);
+
+      // Create a manual customer ID
+      const customerId = `manual_${selectedUser.id}_${Date.now()}`;
+
+      // Insert or update stripe_customers record
+      const { error: customerError } = await supabase
+        .from('stripe_customers')
+        .upsert({
+          user_id: selectedUser.id,
+          customer_id: customerId,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'user_id'
+        });
+
+      if (customerError) throw customerError;
+
+      // Insert or update stripe_subscriptions record
+      const { error: subscriptionError } = await supabase
+        .from('stripe_subscriptions')
+        .upsert({
+          customer_id: customerId,
+          subscription_id: `manual_sub_${selectedUser.id}_${Date.now()}`,
+          price_id: 'manual_grant',
+          current_period_start: currentPeriodStart,
+          current_period_end: currentPeriodEnd,
+          cancel_at_period_end: false,
+          payment_method_brand: 'manual',
+          payment_method_last4: 'grant',
+          status: 'active',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'customer_id'
+        });
+
+      if (subscriptionError) throw subscriptionError;
+
+      // Refresh users data
+      await fetchUsers();
+      
+      setShowGrantModal(false);
+      setSelectedUser(null);
+      setGrantMonths(1);
+      
+      alert(`Successfully granted ${grantMonths} month(s) subscription to ${selectedUser.full_name}`);
+    } catch (err: any) {
+      console.error('Error granting subscription:', err);
+      alert(`Failed to grant subscription: ${err.message}`);
+    } finally {
+      setGranting(false);
+    }
+  };
+
+  const openGrantModal = (user: User) => {
+    setSelectedUser(user);
+    setShowGrantModal(true);
   };
 
   const filteredUsers = users.filter(user => {
@@ -471,14 +548,24 @@ const UserManager: React.FC = () => {
                           {format(new Date(user.created_at), 'MMM dd, yyyy')}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          <select
-                            value={user.role}
-                            onChange={(e) => handleRoleChange(user.id, e.target.value as 'user' | 'admin')}
-                            className="text-sm border border-gray-300 rounded px-2 py-1 focus:ring-violet-500 focus:border-violet-500"
-                          >
-                            <option value="user">User</option>
-                            <option value="admin">Admin</option>
-                          </select>
+                          <div className="flex items-center space-x-2">
+                            <select
+                              value={user.role}
+                              onChange={(e) => handleRoleChange(user.id, e.target.value as 'user' | 'admin')}
+                              className="text-sm border border-gray-300 rounded px-2 py-1 focus:ring-violet-500 focus:border-violet-500"
+                            >
+                              <option value="user">User</option>
+                              <option value="admin">Admin</option>
+                            </select>
+                            <button
+                              onClick={() => openGrantModal(user)}
+                              className="inline-flex items-center px-2 py-1 text-xs font-medium text-green-700 bg-green-100 rounded hover:bg-green-200 transition-colors"
+                              title="Grant Subscription"
+                            >
+                              <Crown size={12} className="mr-1" />
+                              Grant
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -489,6 +576,94 @@ const UserManager: React.FC = () => {
           </div>
         </div>
       </main>
+
+      {/* Grant Subscription Modal */}
+      <Modal isOpen={showGrantModal} onClose={() => !granting && setShowGrantModal(false)}>
+        <div className="p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-lg font-semibold text-gray-900">
+              Grant Subscription
+            </h3>
+            {!granting && (
+              <button
+                onClick={() => setShowGrantModal(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X size={20} />
+              </button>
+            )}
+          </div>
+
+          {selectedUser && (
+            <div className="mb-6">
+              <div className="flex items-center mb-4">
+                <div className="w-10 h-10 bg-violet-100 rounded-full flex items-center justify-center mr-3">
+                  <span className="text-violet-700 font-medium">
+                    {selectedUser.full_name.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+                <div>
+                  <div className="font-medium text-gray-900">{selectedUser.full_name}</div>
+                  <div className="text-sm text-gray-500">{selectedUser.email}</div>
+                </div>
+              </div>
+
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Subscription Duration (months)
+                </label>
+                <div className="flex items-center space-x-3">
+                  <input
+                    type="number"
+                    min="1"
+                    max="12"
+                    value={grantMonths}
+                    onChange={(e) => setGrantMonths(parseInt(e.target.value) || 1)}
+                    className="w-20 px-3 py-2 border border-gray-300 rounded-md focus:ring-violet-500 focus:border-violet-500"
+                    disabled={granting}
+                  />
+                  <span className="text-sm text-gray-600">
+                    {grantMonths === 1 ? 'month' : 'months'}
+                  </span>
+                </div>
+                <p className="mt-2 text-sm text-gray-500">
+                  This will grant access until {format(
+                    new Date(Date.now() + grantMonths * 30 * 24 * 60 * 60 * 1000),
+                    'MMM dd, yyyy'
+                  )}
+                </p>
+              </div>
+
+              <div className="flex justify-end space-x-3">
+                <button
+                  onClick={() => setShowGrantModal(false)}
+                  disabled={granting}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleGrantSubscription}
+                  disabled={granting}
+                  className="px-4 py-2 text-sm font-medium text-white bg-violet-600 rounded-md hover:bg-violet-700 disabled:opacity-50 flex items-center"
+                >
+                  {granting ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Granting...
+                    </>
+                  ) : (
+                    <>
+                      <Crown size={16} className="mr-2" />
+                      Grant Subscription
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </Modal>
     </div>
   );
 };
