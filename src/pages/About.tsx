@@ -216,8 +216,8 @@ const About: React.FC = () => {
                     </h4>
                     <p className="text-[#1E40AF] font-['Listopad'] text-sm">
                       {i18n.language === 'bg' 
-                        ? 'Активирането на "BG Cyrillic by N" е ключово за правилното показване на българските букви като "я", "ъ", "щ" и други.'
-                        : 'Activating "BG Cyrillic by N" is essential for proper display of Bulgarian letters like "я", "ъ", "щ" and others.'
+                        ? 'Активирането на "BG Cyrillic by N" е ключово за правилното показване на българските букви като "б", "в", "д", "ж", "з", "к", "р", "у", "ф", "ю" и други.'
+                        : 'Activating "BG Cyrillic by N" is essential for proper display of Bulgarian letters like "б", "в", "д", "ж", "з", "к", "р", "у", "ф", "ю" and others.'
                       }
                     </p>
                   </div>
