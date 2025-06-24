@@ -131,6 +131,13 @@ const Home: React.FC = () => {
   };
 
   const handleFontClick = async (fontId: string) => {
+    // Reset to light theme when navigating away from home page
+    const root = document.documentElement;
+    const body = document.body;
+    root.style.setProperty('--color-background-primary', '#F5F5F5');
+    root.style.setProperty('--color-text-primary', '#141204');
+    body.removeAttribute('data-theme');
+    
     const font = fonts.find(f => f.id === fontId);
     
     // Check if font requires subscription and user doesn't have one

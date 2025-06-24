@@ -63,6 +63,18 @@ const MinimalColorPicker: React.FC = () => {
     setShowColorPicker(false);
   };
 
+  // Reset theme when component unmounts (page navigation)
+  useEffect(() => {
+    return () => {
+      // Reset to light theme on unmount
+      const root = document.documentElement;
+      const body = document.body;
+      root.style.setProperty('--color-background-primary', '#F5F5F5');
+      root.style.setProperty('--color-text-primary', '#141204');
+      body.removeAttribute('data-theme');
+    };
+  }, []);
+
   const handleColorSelect = (colorId: string) => {
     const root = document.documentElement;
     
