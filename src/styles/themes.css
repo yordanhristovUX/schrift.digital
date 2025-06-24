@@ -25,7 +25,7 @@
   --color-action-secondary-hover: #4A5161;
 }
 
-/* Dark Theme - Swaps primary colors */
+/* Dark Theme - Simply inverts primary colors */
 [data-theme="dark"] {
   /* Background Colors - Dark backgrounds */
   --color-background-primary: #141204;
@@ -75,42 +75,6 @@
   --color-background-tertiary: #FED7AA;
 }
 
-/* Text Color Variants (Dark Mode Only) */
-[data-theme="dark"][data-text-color="warm"] {
-  --color-text-primary: #FED7AA;
-  --color-text-secondary: #FDBA74;
-  --color-action-primary: #FED7AA;
-  --color-action-primary-hover: #FDBA74;
-}
-
-[data-theme="dark"][data-text-color="cool"] {
-  --color-text-primary: #93C5FD;
-  --color-text-secondary: #BFDBFE;
-  --color-action-primary: #93C5FD;
-  --color-action-primary-hover: #BFDBFE;
-}
-
-[data-theme="dark"][data-text-color="nature"] {
-  --color-text-primary: #86EFAC;
-  --color-text-secondary: #BBF7D0;
-  --color-action-primary: #86EFAC;
-  --color-action-primary-hover: #BBF7D0;
-}
-
-[data-theme="dark"][data-text-color="sunset"] {
-  --color-text-primary: #FDBA74;
-  --color-text-secondary: #FED7AA;
-  --color-action-primary: #FDBA74;
-  --color-action-primary-hover: #FED7AA;
-}
-
-[data-theme="dark"][data-text-color="purple"] {
-  --color-text-primary: #C4B5FD;
-  --color-text-secondary: #DDD6FE;
-  --color-action-primary: #C4B5FD;
-  --color-action-primary-hover: #DDD6FE;
-}
-
 /* Ensure all elements use the design system tokens */
 body {
   background-color: var(--color-background-primary);
@@ -136,6 +100,11 @@ body {
   color: var(--color-text-primary) !important;
 }
 
+.text-text-secondary,
+.text-\[#5E6572\] {
+  color: var(--color-text-secondary) !important;
+}
+
 .border-border-primary,
 .border-\[#D9D9D9\] {
   border-color: var(--color-border-primary) !important;
@@ -145,4 +114,16 @@ body {
 .border.border-border-primary.rounded-sm {
   background-color: var(--color-background-primary);
   border-color: var(--color-border-primary);
+}
+
+/* Ensure navbar respects theme */
+nav {
+  background-color: var(--color-background-inverse);
+  color: var(--color-text-inverse);
+}
+
+/* Ensure footer respects theme */
+footer {
+  background-color: var(--color-background-inverse);
+  color: var(--color-text-inverse);
 }
