@@ -14,6 +14,7 @@ const Home: React.FC = () => {
   const [previewText, setPreviewText] = useState('Щурецът свири, а жабите скачат върху дъбови листа.');
   const [fontSizes, setFontSizes] = useState<Record<string, number>>({});
   const [selectedWeights, setSelectedWeights] = useState<Record<string, string>>({});
+  const [selectedStyles, setSelectedStyles] = useState<Record<string, string>>({});
   const [hasSubscription, setHasSubscription] = useState(false);
   const navigate = useNavigate();
   const { t, i18n } = useTranslation(['common']);
@@ -59,6 +60,12 @@ const Home: React.FC = () => {
           // Set default weight to Regular if available, otherwise first available weight
           const availableWeights = font.weight_files ? Object.values(font.weight_files).map(f => f.weight) : ['Regular'];
           weights[font.id] = availableWeights.includes('Regular') ? 'Regular' : availableWeights[0];
+          
+          // Set default style to Normal
+          const availableStyles = font.weight_files ? Object.values(font.weight_files).map(f => f.style) : ['Normal'];
+          const styles: Record<string, string> = {};
+          styles[font.id] = availableStyles.includes('Normal') ? 'Normal' : availableStyles[0];
+          setSelectedStyles(styles);
         });
         
         setFontSizes(sizes);
@@ -116,6 +123,10 @@ const Home: React.FC = () => {
 
   const handleWeightChange = (fontId: string, weight: string) => {
     setSelectedWeights(prev => ({ ...prev, [fontId]: weight }));
+  };
+
+  const handleStyleChange = (fontId: string, style: string) => {
+    setSelectedStyles(prev => ({ ...prev, [fontId]: style }));
   };
 
   const handleFontClick = async (fontId: string) => {
@@ -229,13 +240,18 @@ const Home: React.FC = () => {
                   [...new Set(Object.values(font.weight_files).map(f => f.weight))]
                     .sort((a, b) => getWeightValue(a) - getWeightValue(b)) : 
                   ['Regular'];
+                const availableStyles = font.weight_files ? 
+                  [...new Set(Object.values(font.weight_files).map(f => f.style))]
+                    .sort((a, b) => a === 'Normal' ? -1 : b === 'Normal' ? 1 : a.localeCompare(b)) : 
+                  ['Normal'];
                 const currentWeight = selectedWeights[font.id] || 'Regular';
+                const currentStyle = selectedStyles[font.id] || 'Normal';
                 const currentWeightValue = getWeightValue(currentWeight);
                 
                 return (
                   <div 
                     key={font.id} 
-                    className="space-y-4"
+                    className="border border-border-primary rounded-sm p-6 bg-background-primary transition-all duration-300 hover:shadow-lg space-y-4"
                   >
                     <div className="flex justify-between items-start">
                       <div>
@@ -248,7 +264,7 @@ const Home: React.FC = () => {
                         onClick={() => handleFontClick(font.id)}
                         className={`text-sm font-['Listopad'] ${
                           font.subscriber_only && !hasSubscription
-                            ? 'text-purple-600 hover:text-purple-700'
+                            ? 'text-red-600 hover:text-red-700'
                             : 'text-[#141204] hover:text-[#2D2B1F]'
                         }`}
                       >
@@ -261,7 +277,8 @@ const Home: React.FC = () => {
                       style={{ 
                         fontFamily: `"${font.name}", sans-serif`,
                         fontSize: `${fontSizes[font.id]}px`,
-                        fontWeight: currentWeightValue,
+                        fontWeight: getWeightValue(currentWeight),
+                        fontStyle: currentStyle.toLowerCase(),
                         lineHeight: '1.3'
                       }}
                     >
@@ -275,38 +292,71 @@ const Home: React.FC = () => {
                             {t('home.font_size')}
                           </label>
                           <span className="text-sm text-text-secondary font-['Listopad']">{fontSizes[font.id]}px</span>
-                        </div>
-                        <input
+                                fontWeight: getWeightValue(currentWeight),
+                                fontStyle: currentStyle.toLowerCase()
                           type="range"
                           min="12"
                           max="72"
                           value={fontSizes[font.id]}
-                          onChange={(e) => handleSizeChange(font.id, parseInt(e.target.value))}
+                            <div className="text-sm text-text-secondary font-['Lópad']">
+                              {currentWeight} {currentStyle !== 'Normal' && currentStyle}
+                            </div>
                           className="w-full h-1 bg-background-secondary rounded-sm appearance-none cursor-pointer"
                         />
                       </div>
-
                       <div>
                         <div className="flex justify-between mb-2">
-                          <label className="text-sm font-medium text-text-primary font-['Listopad']">
-                            {t('home.font_weight')}
-                          </label>
-                          <span className="text-sm text-text-secondary font-['Listopad']">{currentWeight}</span>
+                          <div className="flex items-center space-x-4">
+                            <label className="text-sm font-medium text-text-primary font-['Listopad']">
+                              Style
+                            </label>
+                            <div className="flex space-x-2">
+                              {availableStyles.map((style) => (
+                                <button
+                                  key={style}
+                                  onClick={() => handleStyleChange(font.id, style)}
+                                  className={`px-3 py-1 text-sm rounded-sm font-['Listopad'] transition-colors ${
+                                    currentStyle === style
+                                      ? 'bg-[#141204] text-[#FFFFFC]'
+                                      : 'bg-[#D9D9D9] text-[#141204] hover:bg-[#BCBDC0]'
+                                  }`}
+                                >
+                                  {style}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
                         </div>
-                        <div className="flex flex-wrap gap-2">
-                          {availableWeights.map((weight) => (
-                            <button
-                              key={weight}
-                              onClick={() => handleWeightChange(font.id, weight)}
-                              className={`px-3 py-1 text-sm rounded-sm font-['Listopad'] transition-colors ${
-                                currentWeight === weight
-                                  ? 'bg-[#141204] text-[#FFFFFC]'
-                                  : 'bg-[#D9D9D9] text-[#141204] hover:bg-[#BCBDC0]'
-                              }`}
-                            >
-                              {weight}
-                            </button>
-                          ))}
+                        
+                        <div>
+                          <div className="flex justify-between mb-2">
+                            <label className="text-sm font-medium text-text-primary font-['Listopad']">
+                              {t('home.font_weight')}
+                            </label>
+                            <span className="text-sm text-text-secondary font-['Listopad']">{currentWeight}</span>
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            {availableWeights
+                              .filter(weight => {
+                                // Only show weights that are available for the current style
+                                return font.weight_files && Object.values(font.weight_files).some(
+                                  file => file.weight === weight && file.style === currentStyle
+                                );
+                              })
+                              .map((weight) => (
+                                <button
+                                  key={weight}
+                                  onClick={() => handleWeightChange(font.id, weight)}
+                                  className={`px-3 py-1 text-sm rounded-sm font-['Listopad'] transition-colors ${
+                                    currentWeight === weight
+                                      ? 'bg-[#141204] text-[#FFFFFC]'
+                                      : 'bg-[#D9D9D9] text-[#141204] hover:bg-[#BCBDC0]'
+                                  }`}
+                                >
+                                  {weight}
+                                </button>
+                              ))}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -314,7 +364,7 @@ const Home: React.FC = () => {
                     <div className="space-y-4">
                       {font.subscriber_only && (
                         <div className="mb-2">
-                          <span className="inline-flex items-center text-purple-600">
+                          <span className="inline-flex items-center text-red-600">
                             <Crown size={14} className="mr-1" />
                             Subscriber Only
                           </span>
@@ -345,29 +395,6 @@ const Home: React.FC = () => {
                         </div>
                       )}
 
-                      {/* Italic weights */}
-                      {italic.length > 0 && (
-                        <div className="flex flex-wrap gap-8 pt-4 border-t border-border-primary">
-                          {italic.map(([key, file]) => (
-                            <div
-                              key={key}
-                              className="text-center"
-                            >
-                              <div
-                                className="text-4xl text-text-primary mb-2"
-                                style={{ 
-                                  fontFamily: `"${font.name}", sans-serif`,
-                                  fontWeight: getWeightValue(file.weight),
-                                  fontStyle: 'italic'
-                                }}
-                              >
-                                Aa
-                              </div>
-                              <div className="text-sm text-text-secondary font-['Listopad']">{file.weight} Italic</div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
                     </div>
                   </div>
                 );

@@ -138,7 +138,7 @@ const FontPreview: React.FC<FontPreviewProps> = ({ font, requireAuth = false }) 
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">Preview {font.name}</h2>
         {font.subscriber_only && (
-          <div className="flex items-center text-purple-600 text-sm font-medium mb-2">
+          <div className="flex items-center text-red-600 text-sm font-medium mb-2">
             <Crown size={16} className="mr-1" />
             Subscriber Only
           </div>
@@ -148,7 +148,7 @@ const FontPreview: React.FC<FontPreviewProps> = ({ font, requireAuth = false }) 
             onClick={handleDownload}
             className={`flex items-center px-4 py-2 rounded-sm text-sm font-medium ${
               font.subscriber_only && !hasSubscription
-                ? 'bg-purple-600 text-white hover:bg-purple-700'
+                ? 'bg-red-600 text-white hover:bg-red-700'
                 : 'bg-[#141204] text-[#FFFFFC] hover:bg-[#2D2B1F]'
             }`}
           >

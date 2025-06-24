@@ -104,9 +104,10 @@ const FontDetail: React.FC = () => {
             <div className="md:col-span-2">
               <div className="bg-[#FFFFFC] rounded-sm shadow-md p-6 mb-6">
                 <h2 className="text-xl font-bold mb-4">About this font</h2>
-                <p className="text-[#5E6572] mb-4">
-                  {font.description}
-                </p>
+                <div 
+                  className="text-[#5E6572] mb-4 prose prose-sm max-w-none"
+                  dangerouslySetInnerHTML={{ __html: font.description || '' }}
+                />
               </div>
               
               <div className="bg-[#FFFFFC] rounded-sm shadow-md p-6">

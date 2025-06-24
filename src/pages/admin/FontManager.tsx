@@ -411,11 +411,13 @@ const FontManager: React.FC = () => {
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Description (Rich Text)
                     </label>
-                    <RichTextEditor
-                      value={formData.description}
-                      onChange={(value) => setFormData({ ...formData, description: value })}
-                      placeholder="Enter font description with formatting..."
-                    />
+                    <div className="border border-gray-300 rounded-md">
+                      <RichTextEditor
+                        value={formData.description}
+                        onChange={(value) => setFormData({ ...formData, description: value })}
+                        placeholder="Enter font description with formatting..."
+                      />
+                    </div>
                   </div>
 
                   <div className="flex items-center space-x-4">
@@ -604,7 +606,7 @@ const FontManager: React.FC = () => {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                         font.subscriber_only
-                          ? 'bg-purple-100 text-purple-800'
+                          ? 'bg-red-100 text-red-800'
                           : font.is_paid 
                           ? 'bg-amber-100 text-amber-800'
                           : 'bg-green-100 text-green-800'
