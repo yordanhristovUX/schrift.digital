@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ChevronLeft, Download } from 'lucide-react';
+import { ChevronLeft, Download, Crown } from 'lucide-react';
 import FontPreview from '../components/FontPreview';
 import { Font } from '../types/font';
 import { getFontById, downloadFont } from '../lib/fontService';
@@ -12,6 +12,7 @@ const FontDetail: React.FC = () => {
   const [font, setFont] = useState<Font | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [hasSubscription, setHasSubscription] = useState(false);
   
   useEffect(() => {
     const checkAuth = async () => {
@@ -21,12 +22,23 @@ const FontDetail: React.FC = () => {
         return;
       }
 
+      // Check subscription status
+      const { data: subscriptionData } = await supabase.rpc('has_active_premium');
+      setHasSubscription(!!subscriptionData);
+
       const fetchFont = async () => {
         try {
           if (!id) throw new Error('Font ID is required');
           const data = await getFontById(id);
           if (!data) throw new Error('Font not found');
           setFont(data);
+          
+          // Check if font requires subscription and user doesn't have one
+          if (data.subscriber_only && !subscriptionData) {
+            // Allow viewing the font page but restrict download
+            console.log('User viewing subscriber-only font without subscription');
+          }
+          
         } catch (err: any) {
           console.error('Error fetching font:', err);
           setError(err.message);
@@ -40,6 +52,17 @@ const FontDetail: React.FC = () => {
 
     checkAuth();
   }, [id, navigate]);
+
+  const handleDownload = async () => {
+    if (font?.subscriber_only && !hasSubscription) {
+      navigate('/supporter');
+      return;
+    }
+    
+    if (font) {
+      downloadFont(font);
+    }
+  };
 
   const handleBack = () => {
     navigate('/');
@@ -92,13 +115,18 @@ const FontDetail: React.FC = () => {
             
             <div className="mt-4 md:mt-0">
               <button 
-                onClick={() => downloadFont(font)}
+                onClick={handleDownload}
                 className="flex items-center px-4 py-2 rounded-sm text-sm font-medium bg-[#141204] text-[#FFFFFC] hover:bg-[#2D2B1F]"
               >
+                {font.subscriber_only && !hasSubscription && (
+                  <Crown size={16} className="mr-2" />
+                )}
                 <Download size={16} className="mr-2" />
                 {font.is_paid 
                   ? `Purchase Family $${font.price}` 
-                  : `Download Complete Family (${Object.keys(font.weight_files || {}).length} weights)`}
+                  : font.subscriber_only && !hasSubscription
+                    ? 'Become Subscriber to Download'
+                    : `Download Complete Family (${Object.keys(font.weight_files || {}).length} weights)`}
               </button>
             </div>
           </div>
@@ -107,7 +135,7 @@ const FontDetail: React.FC = () => {
       
       <section className="section">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <FontPreview font={font} requireAuth={true} />
+          <FontPreview font={font} requireAuth={!font.subscriber_only || hasSubscription} />
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="md:col-span-2">
