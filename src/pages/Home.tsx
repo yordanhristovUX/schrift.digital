@@ -292,15 +292,13 @@ const Home: React.FC = () => {
                             {t('home.font_size')}
                           </label>
                           <span className="text-sm text-text-secondary font-['Listopad']">{fontSizes[font.id]}px</span>
-                                fontWeight: getWeightValue(currentWeight),
-                                fontStyle: currentStyle.toLowerCase()
+                        </div>
+                        <input
                           type="range"
                           min="12"
                           max="72"
                           value={fontSizes[font.id]}
-                            <div className="text-sm text-text-secondary font-['Lópad']">
-                              {currentWeight} {currentStyle !== 'Normal' && currentStyle}
-                            </div>
+                          onChange={(e) => handleSizeChange(font.id, parseInt(e.target.value))}
                           className="w-full h-1 bg-background-secondary rounded-sm appearance-none cursor-pointer"
                         />
                       </div>
@@ -394,7 +392,6 @@ const Home: React.FC = () => {
                           ))}
                         </div>
                       )}
-
                     </div>
                   </div>
                 );
