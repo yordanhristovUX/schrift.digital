@@ -134,15 +134,9 @@ const FontPreview: React.FC<FontPreviewProps> = ({ font, requireAuth = false }) 
     ['Normal'];
 
   return (
-    <div className="bg-[#FFFFFC] rounded-sm shadow-md p-6 mb-8">
+    <div className="bg-[#FFFFFC] rounded-sm shadow-md p-6 mb-8 border border-[#D9D9D9]">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">Preview {font.name}</h2>
-        {font.subscriber_only && (
-          <div className="flex items-center text-red-600 text-sm font-medium mb-2">
-            <Crown size={16} className="mr-1" />
-            Subscriber Only
-          </div>
-        )}
         <div className="flex items-center gap-4">
           <button
             onClick={handleDownload}

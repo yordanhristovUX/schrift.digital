@@ -253,6 +253,14 @@ const Home: React.FC = () => {
                     key={font.id} 
                     className="border border-border-primary rounded-sm p-6 bg-background-primary transition-all duration-300 hover:shadow-lg space-y-4"
                   >
+                    {font.subscriber_only && (
+                      <div className="flex justify-start">
+                        <span className="inline-flex items-center px-2 py-1 text-xs font-medium text-red-700 bg-red-100 rounded-full">
+                          <Crown size={12} className="mr-1" />
+                          Subscriber Only
+                        </span>
+                      </div>
+                    )}
                     <div className="flex justify-between items-start">
                       <div>
                         <h3 className="text-xl font-semibold text-text-primary">{font.name}</h3>
@@ -360,15 +368,6 @@ const Home: React.FC = () => {
                     </div>
 
                     <div className="space-y-4">
-                      {font.subscriber_only && (
-                        <div className="mb-2">
-                          <span className="inline-flex items-center text-red-600">
-                            <Crown size={14} className="mr-1" />
-                            Subscriber Only
-                          </span>
-                        </div>
-                      )}
-                      
                       {/* Normal weights */}
                       {normal.length > 0 && (
                         <div className="flex flex-wrap gap-8">

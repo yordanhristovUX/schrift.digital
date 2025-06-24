@@ -75,6 +75,15 @@ const FontDetail: React.FC = () => {
             Back to all fonts
           </button>
           
+          {font.subscriber_only && (
+            <div className="flex justify-start mb-4">
+              <span className="inline-flex items-center px-2 py-1 text-xs font-medium text-red-700 bg-red-100 rounded-full">
+                <Crown size={12} className="mr-1" />
+                Subscriber Only
+              </span>
+            </div>
+          )}
+          
           <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
             <div>
               <h1 className="text-3xl md:text-4xl font-bold text-[#141204] mb-2">{font.name}</h1>
@@ -102,7 +111,7 @@ const FontDetail: React.FC = () => {
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="md:col-span-2">
-              <div className="bg-[#FFFFFC] rounded-sm shadow-md p-6 mb-6">
+              <div className="bg-[#FFFFFC] rounded-sm shadow-md p-6 mb-6 border border-[#D9D9D9]">
                 <h2 className="text-xl font-bold mb-4">About this font</h2>
                 <div 
                   className="text-[#5E6572] mb-4 prose prose-sm max-w-none"
@@ -110,7 +119,7 @@ const FontDetail: React.FC = () => {
                 />
               </div>
               
-              <div className="bg-[#FFFFFC] rounded-sm shadow-md p-6">
+              <div className="bg-[#FFFFFC] rounded-sm shadow-md p-6 border border-[#D9D9D9]">
                 <h2 className="text-xl font-bold mb-4">Features</h2>
                 <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {font.opentype_features?.map((feature, index) => (
@@ -128,7 +137,7 @@ const FontDetail: React.FC = () => {
             </div>
             
             <div>
-              <div className="bg-[#FFFFFC] rounded-sm shadow-md p-6 mb-6">
+              <div className="bg-[#FFFFFC] rounded-sm shadow-md p-6 mb-6 border border-[#D9D9D9]">
                 <h2 className="text-xl font-bold mb-4">Font Information</h2>
                 <dl className="space-y-3">
                   <div>
