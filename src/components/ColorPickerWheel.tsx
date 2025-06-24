@@ -18,19 +18,36 @@ const ColorPickerWheel: React.FC<ColorPickerWheelProps> = ({
   type,
   position
 }) => {
-  const wheelRef = useRef<HTMLDivElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [selectedColor, setSelectedColor] = useState(currentColor);
-  const [isDragging, setIsDragging] = useState(false);
+  const pickerRef = useRef<HTMLDivElement>(null);
+  const squareRef = useRef<HTMLCanvasElement>(null);
+  const hueRef = useRef<HTMLCanvasElement>(null);
+  const opacityRef = useRef<HTMLCanvasElement>(null);
+  
+  const [hue, setHue] = useState(240);
+  const [saturation, setSaturation] = useState(100);
+  const [lightness, setLightness] = useState(50);
+  const [opacity, setOpacity] = useState(100);
+  const [hexInput, setHexInput] = useState('#3669EB');
 
-  const swatchColors = [
-    '#22C55E', '#EAB308', '#F97316', '#EF4444', '#EC4899', '#8B5CF6',
-    '#6366F1', '#3B82F6', '#06B6D4', '#10B981', '#84CC16', '#F59E0B'
+  // Predefined colors - mix of dark and light with different hues and low saturation
+  const predefinedColors = [
+    '#4F46E5', // Indigo
+    '#10B981', // Emerald  
+    '#F59E0B', // Amber
+    '#EF4444', // Red
+    '#EC4899', // Pink
+    '#8B5CF6', // Purple
+    '#2D3748', // Dark gray
+    '#4A5568', // Medium gray
+    '#718096', // Light gray
+    '#E2E8F0', // Very light gray
+    '#FED7D7', // Light red
+    '#C6F6D5', // Light green
   ];
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (wheelRef.current && !wheelRef.current.contains(event.target as Node)) {
+      if (pickerRef.current && !pickerRef.current.contains(event.target as Node)) {
         onClose();
       }
     };
@@ -45,81 +62,175 @@ const ColorPickerWheel: React.FC<ColorPickerWheelProps> = ({
   }, [isOpen, onClose]);
 
   useEffect(() => {
-    if (isOpen && canvasRef.current) {
-      drawColorWheel();
+    if (isOpen) {
+      drawSquare();
+      drawHueBar();
+      drawOpacityBar();
     }
-  }, [isOpen]);
+  }, [isOpen, hue, saturation, lightness, opacity]);
 
-  const drawColorWheel = () => {
-    const canvas = canvasRef.current;
+  useEffect(() => {
+    const color = `hsla(${hue}, ${saturation}%, ${lightness}%, ${opacity / 100})`;
+    const hexColor = hslToHex(hue, saturation, lightness);
+    setHexInput(hexColor);
+    onColorSelect(opacity === 100 ? hexColor : color);
+  }, [hue, saturation, lightness, opacity, onColorSelect]);
+
+  const drawSquare = () => {
+    const canvas = squareRef.current;
     if (!canvas) return;
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const centerX = canvas.width / 2;
-    const centerY = canvas.height / 2;
-    const radius = Math.min(centerX, centerY) - 10;
+    const width = canvas.width;
+    const height = canvas.height;
 
     // Clear canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.clearRect(0, 0, width, height);
 
-    // Draw color wheel
-    for (let angle = 0; angle < 360; angle += 1) {
-      const startAngle = (angle - 1) * Math.PI / 180;
-      const endAngle = angle * Math.PI / 180;
-      
-      ctx.beginPath();
-      ctx.arc(centerX, centerY, radius, startAngle, endAngle);
-      ctx.lineWidth = 20;
-      ctx.strokeStyle = `hsl(${angle}, 100%, 50%)`;
-      ctx.stroke();
+    // Create base color from hue
+    const baseColor = `hsl(${hue}, 100%, 50%)`;
+    
+    // Fill with base color
+    ctx.fillStyle = baseColor;
+    ctx.fillRect(0, 0, width, height);
+
+    // Add white to black gradient (left to right for saturation)
+    const satGradient = ctx.createLinearGradient(0, 0, width, 0);
+    satGradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
+    satGradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    ctx.fillStyle = satGradient;
+    ctx.fillRect(0, 0, width, height);
+
+    // Add black gradient (top to bottom for lightness)
+    const lightGradient = ctx.createLinearGradient(0, 0, 0, height);
+    lightGradient.addColorStop(0, 'rgba(0, 0, 0, 0)');
+    lightGradient.addColorStop(1, 'rgba(0, 0, 0, 1)');
+    ctx.fillStyle = lightGradient;
+    ctx.fillRect(0, 0, width, height);
+  };
+
+  const drawHueBar = () => {
+    const canvas = hueRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const width = canvas.width;
+    const height = canvas.height;
+
+    // Create hue gradient
+    const gradient = ctx.createLinearGradient(0, 0, width, 0);
+    for (let i = 0; i <= 360; i += 60) {
+      gradient.addColorStop(i / 360, `hsl(${i}, 100%, 50%)`);
     }
 
-    // Draw saturation/lightness gradient
-    const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius - 20);
-    gradient.addColorStop(0, 'white');
-    gradient.addColorStop(0.7, 'rgba(255,255,255,0)');
-    gradient.addColorStop(1, 'black');
-
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, radius - 20, 0, 2 * Math.PI);
     ctx.fillStyle = gradient;
-    ctx.fill();
+    ctx.fillRect(0, 0, width, height);
   };
 
-  const getColorFromPosition = (x: number, y: number) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return '#000000';
+  const drawOpacityBar = () => {
+    const canvas = opacityRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const width = canvas.width;
+    const height = canvas.height;
+
+    // Clear canvas
+    ctx.clearRect(0, 0, width, height);
+
+    // Draw checkerboard pattern
+    const checkSize = 8;
+    for (let x = 0; x < width; x += checkSize) {
+      for (let y = 0; y < height; y += checkSize) {
+        const isEven = (Math.floor(x / checkSize) + Math.floor(y / checkSize)) % 2 === 0;
+        ctx.fillStyle = isEven ? '#ffffff' : '#e5e5e5';
+        ctx.fillRect(x, y, checkSize, checkSize);
+      }
+    }
+
+    // Add opacity gradient
+    const currentColor = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+    const gradient = ctx.createLinearGradient(0, 0, width, 0);
+    gradient.addColorStop(0, 'rgba(0, 0, 0, 0)');
+    gradient.addColorStop(1, currentColor);
+
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, width, height);
+  };
+
+  const handleSquareClick = (event: React.MouseEvent<HTMLCanvasElement>) => {
+    const canvas = squareRef.current;
+    if (!canvas) return;
 
     const rect = canvas.getBoundingClientRect();
-    const centerX = canvas.width / 2;
-    const centerY = canvas.height / 2;
-    const canvasX = x - rect.left;
-    const canvasY = y - rect.top;
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
 
-    const deltaX = canvasX - centerX;
-    const deltaY = canvasY - centerY;
-    const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-    const angle = Math.atan2(deltaY, deltaX) * 180 / Math.PI;
-    const hue = (angle + 360) % 360;
-    
-    const maxRadius = Math.min(centerX, centerY) - 30;
-    const saturation = Math.min(distance / maxRadius * 100, 100);
-    const lightness = 50;
+    const newSaturation = 100 - (x / canvas.width) * 100;
+    const newLightness = 100 - (y / canvas.height) * 100;
 
-    return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+    setSaturation(Math.max(0, Math.min(100, newSaturation)));
+    setLightness(Math.max(0, Math.min(100, newLightness)));
   };
 
-  const handleCanvasClick = (event: React.MouseEvent<HTMLCanvasElement>) => {
-    const color = getColorFromPosition(event.clientX, event.clientY);
-    setSelectedColor(color);
+  const handleHueClick = (event: React.MouseEvent<HTMLCanvasElement>) => {
+    const canvas = hueRef.current;
+    if (!canvas) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const newHue = (x / canvas.width) * 360;
+
+    setHue(Math.max(0, Math.min(360, newHue)));
+  };
+
+  const handleOpacityClick = (event: React.MouseEvent<HTMLCanvasElement>) => {
+    const canvas = opacityRef.current;
+    if (!canvas) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const newOpacity = (x / canvas.width) * 100;
+
+    setOpacity(Math.max(0, Math.min(100, newOpacity)));
+  };
+
+  const handleHexInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
+    setHexInput(value);
+
+    if (value.match(/^#[0-9A-Fa-f]{6}$/)) {
+      const { h, s, l } = hexToHsl(value);
+      setHue(h);
+      setSaturation(s);
+      setLightness(l);
+    }
+  };
+
+  const handlePredefinedColorClick = (color: string) => {
+    const { h, s, l } = hexToHsl(color);
+    setHue(h);
+    setSaturation(s);
+    setLightness(l);
+    setHexInput(color);
     onColorSelect(color);
   };
 
-  const handleSwatchClick = (color: string) => {
-    setSelectedColor(color);
-    onColorSelect(color);
+  const hslToHex = (h: number, s: number, l: number) => {
+    l /= 100;
+    const a = s * Math.min(l, 1 - l) / 100;
+    const f = (n: number) => {
+      const k = (n + h / 30) % 12;
+      const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+      return Math.round(255 * color).toString(16).padStart(2, '0');
+    };
+    return `#${f(0)}${f(8)}${f(4)}`;
   };
 
   const hexToHsl = (hex: string) => {
@@ -154,17 +265,17 @@ const ColorPickerWheel: React.FC<ColorPickerWheelProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-10">
       <div
-        ref={wheelRef}
-        className="relative bg-white rounded-2xl p-6 shadow-2xl border border-gray-100"
+        ref={pickerRef}
+        className="relative bg-white rounded-lg p-4 shadow-2xl border border-gray-200"
         style={{
-          width: '320px',
-          animation: 'fadeInScale 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)'
+          width: '280px',
+          animation: 'fadeInScale 0.2s ease-out'
         }}
       >
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-medium text-gray-700 font-['Listopad'] uppercase tracking-wide">
-            PICK A SWATCH:
+          <h3 className="text-sm font-medium text-gray-700 font-['Listopad']">
+            Color Picker
           </h3>
           <button
             onClick={onClose}
@@ -174,76 +285,95 @@ const ColorPickerWheel: React.FC<ColorPickerWheelProps> = ({
           </button>
         </div>
 
-        {/* Color swatches */}
-        <div className="flex justify-center space-x-2 mb-6">
-          {swatchColors.map((color, index) => (
-            <button
-              key={color}
-              onClick={() => handleSwatchClick(color)}
-              className={`w-6 h-6 rounded-full border-2 transition-all duration-200 hover:scale-110 ${
-                selectedColor === color 
-                  ? 'border-gray-600 scale-105 shadow-md' 
-                  : 'border-white shadow-sm hover:border-gray-300'
-              }`}
-              style={{ backgroundColor: color }}
-            />
-          ))}
+        {/* Color Square */}
+        <div className="relative mb-4">
+          <canvas
+            ref={squareRef}
+            width={240}
+            height={160}
+            onClick={handleSquareClick}
+            className="cursor-crosshair rounded border border-gray-200 w-full"
+          />
+          {/* Picker circle */}
+          <div
+            className="absolute w-3 h-3 border-2 border-white rounded-full shadow-md pointer-events-none"
+            style={{
+              left: `${100 - saturation}%`,
+              top: `${100 - lightness}%`,
+              transform: 'translate(-50%, -50%)'
+            }}
+          />
         </div>
 
-        {/* Color wheel */}
-        <div className="flex justify-center mb-4">
-          <div className="relative">
-            <canvas
-              ref={canvasRef}
-              width={200}
-              height={200}
-              onClick={handleCanvasClick}
-              className="cursor-crosshair rounded-full"
-              style={{ filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.1))' }}
-            />
-            {/* Center circle showing selected color */}
-            <div
-              className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-8 h-8 rounded-full border-3 border-white shadow-lg"
-              style={{ backgroundColor: selectedColor }}
-            />
-          </div>
+        {/* Hue Bar */}
+        <div className="relative mb-3">
+          <canvas
+            ref={hueRef}
+            width={240}
+            height={16}
+            onClick={handleHueClick}
+            className="cursor-pointer rounded border border-gray-200 w-full"
+          />
+          {/* Hue indicator */}
+          <div
+            className="absolute w-3 h-4 border-2 border-white rounded-sm shadow-md pointer-events-none"
+            style={{
+              left: `${(hue / 360) * 100}%`,
+              top: '50%',
+              transform: 'translate(-50%, -50%)'
+            }}
+          />
         </div>
 
-        {/* Color info */}
-        <div className="text-center mb-4">
-          <div className="flex items-center justify-center space-x-2 mb-2">
-            <span className="text-xs text-gray-500 font-mono">
-              {selectedColor.startsWith('#') ? selectedColor.toUpperCase() : selectedColor}
-            </span>
-          </div>
+        {/* Opacity Bar */}
+        <div className="relative mb-4">
+          <canvas
+            ref={opacityRef}
+            width={240}
+            height={16}
+            onClick={handleOpacityClick}
+            className="cursor-pointer rounded border border-gray-200 w-full"
+          />
+          {/* Opacity indicator */}
+          <div
+            className="absolute w-3 h-4 border-2 border-white rounded-sm shadow-md pointer-events-none"
+            style={{
+              left: `${opacity}%`,
+              top: '50%',
+              transform: 'translate(-50%, -50%)'
+            }}
+          />
         </div>
 
-        {/* UI Contrast section */}
-        <div className="border-t border-gray-100 pt-4">
-          <div className="text-xs text-gray-500 uppercase tracking-wide text-center mb-3 font-['Listopad']">
-            UI CONTRAST
-          </div>
-          <div className="flex justify-center space-x-4">
-            <button
-              onClick={() => handleSwatchClick('#F8F9FA')}
-              className={`px-4 py-2 text-xs font-medium rounded-lg transition-all ${
-                selectedColor === '#F8F9FA' 
-                  ? 'bg-gray-200 text-gray-800' 
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-150'
-              }`}
-            >
-              LIGHT
-            </button>
-            <button
-              onClick={() => handleSwatchClick('#1F2937')}
-              className={`px-4 py-2 text-xs font-medium rounded-lg transition-all ${
-                selectedColor === '#1F2937' 
-                  ? 'bg-gray-800 text-white' 
-                  : 'bg-gray-700 text-gray-200 hover:bg-gray-600'
-              }`}
-            >
-              DARK
-            </button>
+        {/* Color Input */}
+        <div className="flex items-center space-x-2 mb-4">
+          <div
+            className="w-8 h-8 rounded border border-gray-200 flex-shrink-0"
+            style={{ backgroundColor: `hsl(${hue}, ${saturation}%, ${lightness}%)` }}
+          />
+          <input
+            type="text"
+            value={hexInput}
+            onChange={handleHexInputChange}
+            className="flex-1 px-2 py-1 text-sm border border-gray-200 rounded font-mono"
+            placeholder="#000000"
+          />
+          <span className="text-sm text-gray-500 font-mono">{Math.round(opacity)}%</span>
+        </div>
+
+        {/* Predefined Colors */}
+        <div>
+          <div className="text-xs text-gray-500 mb-2 font-['Listopad']">Default Colors</div>
+          <div className="grid grid-cols-6 gap-2">
+            {predefinedColors.map((color, index) => (
+              <button
+                key={index}
+                onClick={() => handlePredefinedColorClick(color)}
+                className="w-8 h-8 rounded border border-gray-200 hover:scale-110 transition-transform"
+                style={{ backgroundColor: color }}
+                title={color}
+              />
+            ))}
           </div>
         </div>
       </div>
@@ -252,7 +382,7 @@ const ColorPickerWheel: React.FC<ColorPickerWheelProps> = ({
         @keyframes fadeInScale {
           0% {
             opacity: 0;
-            transform: scale(0.8) translateY(20px);
+            transform: scale(0.95) translateY(10px);
           }
           100% {
             opacity: 1;
