@@ -7,6 +7,7 @@ interface DashboardStats {
   totalFonts: number;
   totalUsers: number;
   totalDownloads: number;
+  revenue: number;
 }
 
 const Dashboard: React.FC = () => {
@@ -14,7 +15,8 @@ const Dashboard: React.FC = () => {
   const [stats, setStats] = useState<DashboardStats>({
     totalFonts: 0,
     totalUsers: 0,
-    totalDownloads: 0
+    totalDownloads: 0,
+    revenue: 0
   });
 
   useEffect(() => {
@@ -37,10 +39,19 @@ const Dashboard: React.FC = () => {
 
       const totalDownloads = downloadsData?.reduce((sum, font) => sum + (font.downloads || 0), 0) || 0;
 
+      // Calculate revenue from paid subscriptions only
+      const { data: paidSubscriptions } = await supabase
+        .from('admin_user_subscriptions')
+        .select('stripe_payment_intent_id')
+        .not('stripe_payment_intent_id', 'is', null);
+
+      const revenue = (paidSubscriptions?.length || 0) * 2; // €2 per paid subscription
+
       setStats({
         totalFonts: fontsCount || 0,
         totalUsers: usersCount || 0,
-        totalDownloads: totalDownloads
+        totalDownloads: totalDownloads,
+        revenue: revenue
       });
     };
 
@@ -122,6 +133,7 @@ const Dashboard: React.FC = () => {
           <h1 className="text-2xl font-bold mb-6">Dashboard Overview</h1>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
             <div className="bg-white rounded-lg shadow p-6">
               <h3 className="text-lg font-semibold mb-2">Total Fonts</h3>
               <p className="text-3xl font-bold text-violet-700">{stats.totalFonts}</p>
@@ -135,6 +147,12 @@ const Dashboard: React.FC = () => {
             <div className="bg-white rounded-lg shadow p-6">
               <h3 className="text-lg font-semibold mb-2">Total Downloads</h3>
               <p className="text-3xl font-bold text-violet-700">{stats.totalDownloads}</p>
+            </div>
+            
+            <div className="bg-white rounded-lg shadow p-6">
+              <h3 className="text-lg font-semibold mb-2">Revenue</h3>
+              <p className="text-3xl font-bold text-green-700">€{stats.revenue}</p>
+              <p className="text-sm text-gray-500 mt-1">From paid subscriptions only</p>
             </div>
           </div>
 

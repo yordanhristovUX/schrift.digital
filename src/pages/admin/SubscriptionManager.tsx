@@ -53,8 +53,9 @@ const SubscriptionManager: React.FC = () => {
       const active = subscriptionsData?.filter(sub => sub.is_active).length || 0;
       const expired = total - active;
       
-      // Estimate revenue (€2 per subscription)
-      const revenue = total * 2;
+      // Calculate revenue only from paid subscriptions (those with stripe_payment_intent_id)
+      const paidSubscriptions = subscriptionsData?.filter(sub => sub.stripe_payment_intent_id).length || 0;
+      const revenue = paidSubscriptions * 2; // €2 per paid subscription
 
       setStats({ total, active, expired, revenue });
 
