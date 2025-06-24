@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Crown, Palette, Type } from 'lucide-react';
-import ColorPickerWheel from '../components/ColorPickerWheel';
+import { Crown } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Helmet } from 'react-helmet-async';
 import { supabase } from '../lib/supabase';
@@ -17,12 +16,6 @@ const Home: React.FC = () => {
   const [selectedWeights, setSelectedWeights] = useState<Record<string, string>>({});
   const [selectedStyles, setSelectedStyles] = useState<Record<string, string>>({});
   const [hasSubscription, setHasSubscription] = useState(false);
-  const [backgroundColor, setBackgroundColor] = useState('var(--color-background-primary)');
-  const [textColor, setTextColor] = useState('var(--color-text-primary)');
-  const [showBackgroundPicker, setShowBackgroundPicker] = useState(false);
-  const [showTextPicker, setShowTextPicker] = useState(false);
-  const [backgroundPickerPos, setBackgroundPickerPos] = useState({ x: 0, y: 0 });
-  const [textPickerPos, setTextPickerPos] = useState({ x: 0, y: 0 });
   const navigate = useNavigate();
   const { t, i18n } = useTranslation(['common']);
   
@@ -165,34 +158,6 @@ const Home: React.FC = () => {
     window.location.reload();
   };
 
-  const handleBackgroundPickerClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setBackgroundPickerPos({
-      x: e.clientX,
-      y: e.clientY
-    });
-    setShowBackgroundPicker(true);
-  };
-
-  const handleTextPickerClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setTextPickerPos({
-      x: e.clientX,
-      y: e.clientY
-    });
-    setShowTextPicker(true);
-  };
-
-  const handleBackgroundColorSelect = (color: string) => {
-    setBackgroundColor(color);
-    // Don't close immediately, let user continue selecting
-  };
-
-  const handleTextColorSelect = (color: string) => {
-    setTextColor(color);
-    // Don't close immediately, let user continue selecting
-  };
-
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -256,26 +221,6 @@ const Home: React.FC = () => {
               <p className="text-lg text-[#5E6572] font-['Listopad']">
                 {t('home.library_count', { count: fonts.length })}
               </p>
-              
-              {/* Color toggle controls */}
-              <div className="flex items-center space-x-3">
-                <button
-                  onClick={handleBackgroundPickerClick}
-                  data-color-picker-trigger="background"
-                  className="p-2 rounded-full bg-white border border-gray-300 hover:bg-gray-50 transition-colors"
-                  title="Change background color"
-                >
-                  <Palette size={16} style={{ color: backgroundColor }} />
-                </button>
-                <button
-                  onClick={handleTextPickerClick}
-                  data-color-picker-trigger="text"
-                  className="p-2 rounded-full bg-white border border-gray-300 hover:bg-gray-50 transition-colors"
-                  title="Change text color"
-                >
-                  <Type size={16} style={{ color: textColor }} />
-                </button>
-              </div>
             </div>
 
             {/* Preview text input */}
@@ -309,10 +254,6 @@ const Home: React.FC = () => {
                   <div 
                     key={font.id} 
                     className="border border-border-primary rounded-sm p-6 transition-all duration-300 hover:shadow-lg space-y-4"
-                    style={{ 
-                      backgroundColor: backgroundColor || 'var(--color-background-primary)',
-                      color: textColor
-                    }}
                   >
                     {font.subscriber_only && (
                       <div className="flex justify-start">
@@ -324,7 +265,7 @@ const Home: React.FC = () => {
                     )}
                     <div className="flex justify-between items-start">
                       <div>
-                        <h3 className="text-xl font-semibold" style={{ color: textColor }}>{font.name}</h3>
+                        <h3 className="text-xl font-semibold text-text-primary">{font.name}</h3>
                         <p className="text-sm opacity-70">
                           <span className="font-['Listopad']">{t('home.font_info.designer')}:</span> {font.designer}
                         </p>
@@ -349,7 +290,7 @@ const Home: React.FC = () => {
                         fontWeight: getWeightValue(currentWeight),
                         fontStyle: currentStyle.toLowerCase(),
                         lineHeight: '1.3',
-                        color: textColor
+                        color: 'var(--color-text-primary)'
                       }}
                     >
                       {previewText}
@@ -358,7 +299,7 @@ const Home: React.FC = () => {
                     <div className="space-y-6 mb-8">
                       <div>
                         <div className="flex justify-between mb-2">
-                          <label className="text-sm font-medium font-['Listopad']" style={{ color: textColor }}>
+                          <label className="text-sm font-medium font-['Listopad'] text-text-primary">
                             {t('home.font_size')}
                           </label>
                           <span className="text-sm opacity-70 font-['Listopad']">{fontSizes[font.id]}px</span>
@@ -375,7 +316,7 @@ const Home: React.FC = () => {
                       <div>
                         <div className="flex justify-between mb-2">
                           <div className="flex items-center space-x-4">
-                            <label className="text-sm font-medium font-['Listopad']" style={{ color: textColor }}>
+                            <label className="text-sm font-medium font-['Listopad'] text-text-primary">
                               Стил
                             </label>
                             <div className="flex space-x-2">
@@ -398,7 +339,7 @@ const Home: React.FC = () => {
                         
                         <div>
                           <div className="flex justify-between mb-2">
-                            <label className="text-sm font-medium font-['Listopad']" style={{ color: textColor }}>
+                            <label className="text-sm font-medium font-['Listopad'] text-text-primary">
                               Тежина
                             </label>
                             <span className="text-sm opacity-70 font-['Listopad']">{currentWeight}</span>
@@ -444,7 +385,7 @@ const Home: React.FC = () => {
                                   fontFamily: `"${font.name}", sans-serif`,
                                   fontWeight: getWeightValue(file.weight),
                                   fontStyle: 'normal',
-                                  color: textColor
+                                  color: 'var(--color-text-primary)'
                                 }}
                               >
                                 Aa
@@ -469,7 +410,7 @@ const Home: React.FC = () => {
                                   fontFamily: `"${font.name}", sans-serif`,
                                   fontWeight: getWeightValue(file.weight),
                                   fontStyle: 'italic',
-                                  color: textColor
+                                  color: 'var(--color-text-primary)'
                                 }}
                               >
                                 Aa
@@ -484,25 +425,6 @@ const Home: React.FC = () => {
                 );
               })}
             </div>
-
-            {/* Color Picker Wheels */}
-            <ColorPickerWheel
-              isOpen={showBackgroundPicker}
-              onClose={() => setShowBackgroundPicker(false)}
-              onColorSelect={handleBackgroundColorSelect}
-              currentColor={backgroundColor}
-              type="background"
-              position={backgroundPickerPos}
-            />
-
-            <ColorPickerWheel
-              isOpen={showTextPicker}
-              onClose={() => setShowTextPicker(false)}
-              onColorSelect={handleTextColorSelect}
-              currentColor={textColor}
-              type="text"
-              position={textPickerPos}
-            />
           </div>
         </section>
       </div>
