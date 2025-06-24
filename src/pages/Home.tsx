@@ -328,6 +328,9 @@ const Home: React.FC = () => {
                           className="text-xl font-semibold" 
                           style={{ color: textColor === 'var(--color-text-primary)' ? '#141204' : textColor }}
                         >{font.name}</h3>
+                          className="text-xl font-semibold" 
+                          style={{ color: textColor === 'var(--color-text-primary)' ? '#141204' : textColor }}
+                        >{font.name}</h3>
                         <p className="text-sm opacity-70">
                           <span className="font-['Listopad']">{t('home.font_info.designer')}:</span> {font.designer}
                         </p>

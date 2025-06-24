@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { ChromePicker, ColorResult } from 'react-color';
 import { X } from 'lucide-react';
 
 interface ColorPickerWheelProps {
@@ -18,38 +19,25 @@ const ColorPickerWheel: React.FC<ColorPickerWheelProps> = ({
   type,
   position
 }) => {
-  const wheelRef = useRef<HTMLDivElement>(null);
-  const [selectedColor, setSelectedColor] = useState(currentColor);
+  const pickerRef = useRef<HTMLDivElement>(null);
+  const [color, setColor] = useState(currentColor);
 
-  const backgroundColors = [
-    '#FFFFFF', '#F8F9FA', '#F1F3F4', '#E8EAED', '#DADCE0', '#BDC1C6',
-    '#9AA0A6', '#80868B', '#5F6368', '#3C4043', '#202124', '#000000',
-    '#FFF3E0', '#FFE0B2', '#FFCC80', '#FFB74D', '#FFA726', '#FF9800',
-    '#F57C00', '#E65100', '#FFEBEE', '#FFCDD2', '#EF9A9A', '#E57373',
-    '#EF5350', '#F44336', '#E53935', '#D32F2F', '#E8F5E8', '#C8E6C8',
-    '#A5D6A7', '#81C784', '#66BB6A', '#4CAF50', '#43A047', '#388E3C'
-  ];
+  // Convert CSS variables to actual hex values for the picker
+  const getActualColor = (colorValue: string) => {
+    if (colorValue === 'var(--color-background-primary)') return '#F5F5F5';
+    if (colorValue === 'var(--color-text-primary)') return '#141204';
+    return colorValue;
+  };
 
-  const textColors = [
-    '#000000', '#212121', '#424242', '#616161', '#757575', '#9E9E9E',
-    '#BDBDBD', '#E0E0E0', '#F5F5F5', '#FAFAFA', '#FFFFFF', '#141204',
-    '#2D2B1F', '#5E6572', '#8B4513', '#A0522D', '#CD853F', '#DEB887',
-    '#F4A460', '#D2691E', '#B22222', '#DC143C', '#FF0000', '#FF6347',
-    '#FF4500', '#FF8C00', '#FFA500', '#FFD700', '#FFFF00', '#ADFF2F',
-    '#32CD32', '#00FF00', '#00FA9A', '#00CED1', '#00BFFF', '#0000FF'
-  ];
-
-  const colors = type === 'background' ? backgroundColors : textColors;
-
-  // Sync selectedColor when currentColor changes
+  // Sync color when currentColor changes
   useEffect(() => {
-    setSelectedColor(currentColor);
+    setColor(getActualColor(currentColor));
   }, [currentColor]);
 
   // Close on click outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (wheelRef.current && !wheelRef.current.contains(event.target as Node)) {
+      if (pickerRef.current && !pickerRef.current.contains(event.target as Node)) {
         onClose();
       }
     };
@@ -63,117 +51,105 @@ const ColorPickerWheel: React.FC<ColorPickerWheelProps> = ({
     };
   }, [isOpen, onClose]);
 
-  const handleColorClick = (color: string) => {
-    setSelectedColor(color);
-    onColorSelect(color);
+  const handleColorChange = (colorResult: ColorResult) => {
+    const hexColor = colorResult.hex;
+    setColor(hexColor);
+    onColorSelect(hexColor);
   };
 
   if (!isOpen) return null;
 
+  // Calculate position to keep picker on screen
+  const pickerWidth = 225;
+  const pickerHeight = 300;
+  const viewportWidth = window.innerWidth;
+  const viewportHeight = window.innerHeight;
+
+  let adjustedX = position.x;
+  let adjustedY = position.y;
+
+  // Adjust horizontal position
+  if (position.x + pickerWidth > viewportWidth) {
+    adjustedX = viewportWidth - pickerWidth - 20;
+  }
+  if (adjustedX < 20) {
+    adjustedX = 20;
+  }
+
+  // Adjust vertical position
+  if (position.y + pickerHeight > viewportHeight) {
+    adjustedY = position.y - pickerHeight - 20;
+  }
+  if (adjustedY < 20) {
+    adjustedY = 20;
+  }
+
   return (
     <div className="fixed inset-0 z-50 pointer-events-none">
       <div
-        ref={wheelRef}
-        className="absolute bg-white rounded-full p-6 shadow-2xl transition-all duration-300 ease-out animate-scale-in pointer-events-auto"
+        ref={pickerRef}
+        className="absolute pointer-events-auto"
         style={{
-          top: `${position.y}px`,
-          left: `${position.x}px`,
-          width: '320px',
-          height: '320px',
-          transform: 'translate(-50%, -50%)',
-          animation: 'colorWheelAppear 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)'
+          top: `${adjustedY}px`,
+          left: `${adjustedX}px`,
         }}
       >
-        {/* Close button */}
-        <button
-          onClick={onClose}
-          className="absolute top-2 right-2 p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors z-10"
-        >
-          <X size={16} />
-        </button>
+        <div className="bg-white rounded-lg shadow-2xl border border-gray-200 overflow-hidden">
+          {/* Header */}
+          <div className="flex items-center justify-between p-3 border-b border-gray-200 bg-gray-50">
+            <h3 className="text-sm font-medium text-gray-800 font-['Listopad']">
+              {type === 'background' ? 'Background Color' : 'Text Color'}
+            </h3>
+            <button
+              onClick={onClose}
+              className="p-1 rounded-full hover:bg-gray-200 transition-colors"
+            >
+              <X size={16} />
+            </button>
+          </div>
 
-        {/* Title */}
-        <div className="text-center mb-4">
-          <h3 className="text-lg font-semibold text-gray-800 font-['Listopad']">
-            {type === 'background' ? 'Background Color' : 'Text Color'}
-          </h3>
-        </div>
+          {/* Color Picker */}
+          <div className="p-3">
+            <ChromePicker
+              color={color}
+              onChange={handleColorChange}
+              disableAlpha={true}
+              styles={{
+                default: {
+                  picker: {
+                    boxShadow: 'none',
+                    border: 'none',
+                    borderRadius: '0',
+                    fontFamily: 'Listopad, sans-serif'
+                  }
+                }
+              }}
+            />
+          </div>
 
-        {/* Color wheel */}
-        <div className="relative w-full h-full flex items-center justify-center">
-          <div className="relative w-48 h-48">
-            {colors.map((color, index) => {
-              const angle = (index * 360) / colors.length;
-              const radius = 85;
-              const x = Math.cos((angle * Math.PI) / 180) * radius;
-              const y = Math.sin((angle * Math.PI) / 180) * radius;
-
-              return (
+          {/* Preset colors for quick selection */}
+          <div className="p-3 border-t border-gray-200">
+            <div className="text-xs text-gray-500 mb-2 font-['Listopad']">Quick Colors:</div>
+            <div className="flex flex-wrap gap-2">
+              {type === 'background' ? [
+                '#FFFFFF', '#F5F5F5', '#E5E7EB', '#D1D5DB', '#9CA3AF', '#6B7280', '#374151', '#1F2937', '#111827', '#000000'
+              ] : [
+                '#000000', '#141204', '#374151', '#6B7280', '#EF4444', '#F97316', '#EAB308', '#22C55E', '#3B82F6', '#8B5CF6'
+              ].map(presetColor => (
                 <button
-                  key={color}
-                  onClick={() => handleColorClick(color)}
-                  className={`absolute w-6 h-6 rounded-full border-2 transition-all duration-200 hover:scale-125 hover:z-10 ${
-                    selectedColor === color 
-                      ? 'border-gray-800 scale-110 shadow-lg' 
-                      : 'border-gray-300 hover:border-gray-500'
+                  key={presetColor}
+                  onClick={() => handleColorChange({ hex: presetColor } as ColorResult)}
+                  className={`w-6 h-6 rounded border-2 transition-all hover:scale-110 ${
+                    color === presetColor ? 'border-gray-800' : 'border-gray-300'
                   }`}
-                  style={{
-                    backgroundColor: color,
-                    left: `calc(50% + ${x}px - 12px)`,
-                    top: `calc(50% + ${y}px - 12px)`,
-                    animationDelay: `${index * 20}ms`,
-                    animation: 'colorDotAppear 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards'
-                  }}
-                  title={color}
+                  style={{ backgroundColor: presetColor }}
+                  title={presetColor}
                 />
-              );
-            })}
-
-            {/* Center preview */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div
-                className="w-12 h-12 rounded-full border-4 border-white shadow-lg"
-                style={{ backgroundColor: selectedColor }}
-              />
+              ))}
             </div>
           </div>
         </div>
-
-        {/* Current color display */}
-        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
-          <div className="text-center">
-            <div className="text-xs text-gray-500 font-mono">{selectedColor}</div>
-          </div>
-        </div>
       </div>
-
-      {/* Animations */}
-      <style jsx>{`
-        @keyframes colorWheelAppear {
-          0% {
-            transform: scale(0.3) rotate(-180deg) translate(-50%, -50%);
-            opacity: 0;
-          }
-          50% {
-            opacity: 1;
-          }
-          100% {
-            transform: scale(1) rotate(0deg) translate(-50%, -50%);
-            opacity: 1;
-          }
-        }
-
-        @keyframes colorDotAppear {
-          0% {
-            transform: scale(0) rotate(180deg);
-            opacity: 0;
-          }
-          100% {
-            transform: scale(1) rotate(0deg);
-            opacity: 1;
-          }
-        }
-      `}</style>
     </div>
   );
 };
