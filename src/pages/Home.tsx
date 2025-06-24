@@ -257,7 +257,7 @@ const Home: React.FC = () => {
                 return (
                   <div 
                     key={font.id} 
-                    className="border border-border-primary rounded-sm p-6 transition-all duration-300 hover:shadow-lg space-y-4 bg-background-primary"
+                    className="font-card rounded-sm p-6 space-y-4 bg-background-primary"
                   >
                     {font.subscriber_only && (
                       <div className="flex justify-start">

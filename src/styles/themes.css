@@ -27,9 +27,15 @@
   /* Button Colors - Dynamic based on theme */
   --color-button-selected-bg: var(--color-text-primary);
   --color-button-selected-text: var(--color-background-primary);
-  --color-button-unselected-bg: var(--color-background-secondary);
+  --color-button-unselected-bg: #D9D9D9;
   --color-button-unselected-text: var(--color-text-primary);
-  --color-button-hover-bg: var(--color-background-tertiary);
+  --color-button-hover-bg: #BCBDC0;
+}
+
+/* Dark Mode Button Overrides */
+[data-theme="dark"] {
+  --color-button-unselected-bg: #2D2B1F;
+  --color-button-hover-bg: #3D3B2F;
 }
 
 /* Global Smooth Transitions */
@@ -58,4 +64,21 @@ body {
   background-color: var(--color-button-selected-bg);
   color: var(--color-button-selected-text);
   border-color: var(--color-button-selected-bg);
+}
+
+/* Font Card Hover Effects */
+.font-card {
+  border: 1px solid var(--color-border-primary);
+  transition: all 0.3s ease;
+}
+
+.font-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-color: var(--color-action-primary);
+}
+
+/* Dark mode font card hover */
+[data-theme="dark"] .font-card:hover {
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
+  border-color: var(--color-text-primary);
 }

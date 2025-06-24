@@ -43,17 +43,20 @@ const MinimalColorPicker: React.FC = () => {
 
   const handleThemeToggle = () => {
     const root = document.documentElement;
+    const body = document.body;
     
     if (!isDarkMode) {
       // Switch to dark mode - swap the variables
       root.style.setProperty('--color-background-primary', '#141204');
       root.style.setProperty('--color-text-primary', '#FFFFFC');
+      body.setAttribute('data-theme', 'dark');
       setIsDarkMode(true);
     } else {
       // Switch to light mode - restore original values
       const selectedBgColorValue = backgroundColors.find(c => c.id === selectedBgColor)?.color || '#F5F5F5';
       root.style.setProperty('--color-background-primary', selectedBgColorValue);
       root.style.setProperty('--color-text-primary', '#141204');
+      body.removeAttribute('data-theme');
       setIsDarkMode(false);
     }
     
@@ -91,7 +94,7 @@ const MinimalColorPicker: React.FC = () => {
       <div className="relative" ref={colorPickerRef}>
         <button
           onClick={() => setShowColorPicker(!showColorPicker)}
-          className="w-10 h-10 rounded-full border-2 border-gray-400 hover:border-gray-600 transition-all duration-200 shadow-md hover:shadow-lg cursor-pointer"
+          className="w-10 h-10 rounded-full border border-gray-300 hover:border-gray-500 transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer"
           style={{ 
             backgroundColor: currentDisplayColor,
           }}
@@ -108,8 +111,8 @@ const MinimalColorPicker: React.FC = () => {
                 <button
                   key={color.id}
                   onClick={() => handleColorSelect(color.id)}
-                  className={`w-8 h-8 rounded-full border-2 hover:scale-110 transition-transform duration-200 ${
-                    selectedColorId === color.id ? 'border-gray-800 ring-2 ring-gray-300' : 'border-gray-400'
+                  className={`w-8 h-8 rounded-full border hover:scale-110 transition-transform duration-200 ${
+                    selectedColorId === color.id ? 'border-gray-800 ring-1 ring-gray-300' : 'border-gray-300'
                   }`}
                   style={{ backgroundColor: color.color }}
                   title={color.name}
@@ -123,7 +126,7 @@ const MinimalColorPicker: React.FC = () => {
       {/* Dark/Light Mode Toggle */}
       <button
         onClick={handleThemeToggle}
-        className="w-10 h-10 rounded-full border-2 border-gray-400 hover:border-gray-600 transition-all duration-200 shadow-md hover:shadow-lg relative overflow-hidden"
+        className="w-10 h-10 rounded-full border border-gray-300 hover:border-gray-500 transition-all duration-200 shadow-sm hover:shadow-md relative overflow-hidden"
         title={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
       >
         <div 
