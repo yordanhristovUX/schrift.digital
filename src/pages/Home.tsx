@@ -304,8 +304,8 @@ const Home: React.FC = () => {
                         <div className="flex justify-between mb-2">
                           <label className="text-sm font-medium text-[#141204] font-['Listopad']">
                             {t('home.font_size')}
+                            <span className="text-sm opacity-70 font-['Listopad'] ml-auto">{fontSizes[font.id]}px</span>
                           </label>
-                          <span className="text-sm opacity-70 font-['Listopad']">{fontSizes[font.id]}px</span>
                         </div>
                         <input
                           type="range"
@@ -344,8 +344,8 @@ const Home: React.FC = () => {
                           <div className="flex justify-between mb-2">
                             <label className="text-sm font-medium text-[#141204] font-['Listopad']">
                               Тежина
+                              <span className="text-sm opacity-70 font-['Listopad'] ml-auto">{currentWeight}</span>
                             </label>
-                            <span className="text-sm opacity-70 font-['Listopad']">{currentWeight}</span>
                           </div>
                           <div className="flex flex-wrap gap-2">
                             {availableWeights
