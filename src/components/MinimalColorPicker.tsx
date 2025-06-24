@@ -14,17 +14,26 @@ const backgroundColors: ColorOption[] = [
   { id: 'sunset', name: 'Sunset', color: '#FFF7ED' }
 ];
 
+const textColors: ColorOption[] = [
+  { id: 'default', name: 'Default', color: '#FFFFFC' },
+  { id: 'warm', name: 'Warm', color: '#FEF7ED' },
+  { id: 'cool', name: 'Cool', color: '#E0F2FE' },
+  { id: 'nature', name: 'Nature', color: '#ECFDF5' },
+  { id: 'sunset', name: 'Sunset', color: '#FFF7ED' }
+];
+
 const MinimalColorPicker: React.FC = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [selectedBgColor, setSelectedBgColor] = useState('default');
-  const [showBgPicker, setShowBgPicker] = useState(false);
-  const bgPickerRef = useRef<HTMLDivElement>(null);
+  const [selectedTextColor, setSelectedTextColor] = useState('default');
+  const [showColorPicker, setShowColorPicker] = useState(false);
+  const colorPickerRef = useRef<HTMLDivElement>(null);
 
   // Close picker when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (bgPickerRef.current && !bgPickerRef.current.contains(event.target as Node)) {
-        setShowBgPicker(false);
+      if (colorPickerRef.current && !colorPickerRef.current.contains(event.target as Node)) {
+        setShowColorPicker(false);
       }
     };
 
@@ -42,52 +51,65 @@ const MinimalColorPicker: React.FC = () => {
       setIsDarkMode(true);
     } else {
       // Switch to light mode - restore original values
-      const selectedColor = backgroundColors.find(c => c.id === selectedBgColor)?.color || '#F5F5F5';
-      root.style.setProperty('--color-background-primary', selectedColor);
+      const selectedBgColorValue = backgroundColors.find(c => c.id === selectedBgColor)?.color || '#F5F5F5';
+      root.style.setProperty('--color-background-primary', selectedBgColorValue);
       root.style.setProperty('--color-text-primary', '#141204');
       setIsDarkMode(false);
     }
     
-    setShowBgPicker(false);
+    setShowColorPicker(false);
   };
 
-  const handleBgColorSelect = (colorId: string) => {
-    if (!isDarkMode) {
+  const handleColorSelect = (colorId: string) => {
+    const root = document.documentElement;
+    
+    if (isDarkMode) {
+      // In dark mode, change text color
+      const selectedColor = textColors.find(c => c.id === colorId)?.color || '#FFFFFC';
+      root.style.setProperty('--color-text-primary', selectedColor);
+      setSelectedTextColor(colorId);
+    } else {
+      // In light mode, change background color
       const selectedColor = backgroundColors.find(c => c.id === colorId)?.color || '#F5F5F5';
-      const root = document.documentElement;
       root.style.setProperty('--color-background-primary', selectedColor);
       setSelectedBgColor(colorId);
     }
-    setShowBgPicker(false);
+    
+    setShowColorPicker(false);
   };
 
-  const currentBgColor = backgroundColors.find(c => c.id === selectedBgColor)?.color || '#F5F5F5';
+  const currentDisplayColor = isDarkMode 
+    ? textColors.find(c => c.id === selectedTextColor)?.color || '#FFFFFC'
+    : backgroundColors.find(c => c.id === selectedBgColor)?.color || '#F5F5F5';
+
+  const colorsToShow = isDarkMode ? textColors : backgroundColors;
+  const selectedColorId = isDarkMode ? selectedTextColor : selectedBgColor;
 
   return (
     <div className="flex items-center space-x-4">
-      {/* Background Color Picker */}
-      <div className="relative" ref={bgPickerRef}>
+      {/* Color Picker */}
+      <div className="relative" ref={colorPickerRef}>
         <button
-          onClick={() => !isDarkMode && setShowBgPicker(!showBgPicker)}
-          className={`w-10 h-10 rounded-full border-2 border-gray-400 hover:border-gray-600 transition-all duration-200 shadow-md hover:shadow-lg ${
-            isDarkMode ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
-          }`}
+          onClick={() => setShowColorPicker(!showColorPicker)}
+          className="w-10 h-10 rounded-full border-2 border-gray-400 hover:border-gray-600 transition-all duration-200 shadow-md hover:shadow-lg cursor-pointer"
           style={{ 
-            backgroundColor: isDarkMode ? '#666' : currentBgColor,
+            backgroundColor: currentDisplayColor,
           }}
-          title={isDarkMode ? "Background color picker (disabled in dark mode)" : "Change background color"}
-          disabled={isDarkMode}
+          title={isDarkMode ? "Change text color" : "Change background color"}
         />
 
-        {showBgPicker && !isDarkMode && (
+        {showColorPicker && (
           <div className="absolute top-12 left-0 bg-white rounded-lg shadow-xl border border-gray-300 p-3 z-50 min-w-max">
+            <div className="text-xs text-gray-600 mb-2 font-medium">
+              {isDarkMode ? 'Text Color' : 'Background Color'}
+            </div>
             <div className="flex space-x-2">
-              {backgroundColors.map((color) => (
+              {colorsToShow.map((color) => (
                 <button
                   key={color.id}
-                  onClick={() => handleBgColorSelect(color.id)}
+                  onClick={() => handleColorSelect(color.id)}
                   className={`w-8 h-8 rounded-full border-2 hover:scale-110 transition-transform duration-200 ${
-                    selectedBgColor === color.id ? 'border-gray-800 ring-2 ring-gray-300' : 'border-gray-400'
+                    selectedColorId === color.id ? 'border-gray-800 ring-2 ring-gray-300' : 'border-gray-400'
                   }`}
                   style={{ backgroundColor: color.color }}
                   title={color.name}

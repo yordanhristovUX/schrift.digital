@@ -328,10 +328,8 @@ const Home: React.FC = () => {
                                 <button
                                   key={style}
                                   onClick={() => handleStyleChange(font.id, style)}
-                                  className={`px-3 py-1 text-sm rounded-sm font-['Listopad'] transition-colors ${
-                                    currentStyle === style
-                                      ? 'bg-action-primary text-text-inverse'
-                                      : 'bg-background-secondary text-text-primary hover:bg-background-tertiary'
+                                  className={`px-3 py-1 text-sm rounded-sm font-['Listopad'] transition-colors theme-button ${
+                                    currentStyle === style ? 'selected' : ''
                                   }`}
                                 >
                                   {style}
@@ -360,10 +358,8 @@ const Home: React.FC = () => {
                                 <button
                                   key={weight}
                                   onClick={() => handleWeightChange(font.id, weight)}
-                                  className={`px-3 py-1 text-sm rounded-sm font-['Listopad'] transition-colors ${
-                                    currentWeight === weight
-                                      ? 'bg-action-primary text-text-inverse'
-                                      : 'bg-background-secondary text-text-primary hover:bg-background-tertiary'
+                                  className={`px-3 py-1 text-sm rounded-sm font-['Listopad'] transition-colors theme-button ${
+                                    currentWeight === weight ? 'selected' : ''
                                   }`}
                                 >
                                   {weight}
