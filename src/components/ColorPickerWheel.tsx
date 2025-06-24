@@ -18,416 +18,54 @@ const ColorPickerWheel: React.FC<ColorPickerWheelProps> = ({
   type,
   position
 }) => {
-  const pickerRef = useRef<HTMLDivElement>(null);
-  const squareRef = useRef<HTMLCanvasElement>(null);
-  const hueRef = useRef<HTMLCanvasElement>(null);
-  
-  const [hue, setHue] = useState(0);
-  const [red, setRed] = useState(255);
-  const [green, setGreen] = useState(255);
-  const [blue, setBlue] = useState(255);
-  const [hexInput, setHexInput] = useState('#FFFFFF');
-  const [isDragging, setIsDragging] = useState<'square' | 'hue' | null>(null);
+  const wheelRef = useRef<HTMLDivElement>(null);
+  const [selectedColor, setSelectedColor] = useState(currentColor);
 
-  // Predefined colors - mix of dark and light with different hues
-  const predefinedColors = [
-    '#4F46E5', // Indigo
-    '#10B981', // Emerald  
-    '#F59E0B', // Amber
-    '#EF4444', // Red
-    '#EC4899', // Pink
-    '#8B5CF6', // Purple
-    '#2D3748', // Dark gray
-    '#4A5568', // Medium gray
-    '#718096', // Light gray
-    '#E2E8F0', // Very light gray
-    '#FED7D7', // Light red
-    '#C6F6D5', // Light green
+  const backgroundColors = [
+    '#FFFFFF', '#F8F9FA', '#F1F3F4', '#E8EAED', '#DADCE0', '#BDC1C6',
+    '#9AA0A6', '#80868B', '#5F6368', '#3C4043', '#202124', '#000000',
+    '#FFF3E0', '#FFE0B2', '#FFCC80', '#FFB74D', '#FFA726', '#FF9800',
+    '#F57C00', '#E65100', '#FFEBEE', '#FFCDD2', '#EF9A9A', '#E57373',
+    '#EF5350', '#F44336', '#E53935', '#D32F2F', '#E8F5E8', '#C8E6C8',
+    '#A5D6A7', '#81C784', '#66BB6A', '#4CAF50', '#43A047', '#388E3C'
   ];
 
-  // Initialize with current color when picker opens
-  useEffect(() => {
-    if (isOpen && currentColor) {
-      try {
-        console.log('Initializing with color:', currentColor);
-        const { r, g, b } = hexToRgb(currentColor);
-        setRed(r);
-        setGreen(g);
-        setBlue(b);
-        setHexInput(currentColor);
-        
-        // Calculate hue from RGB for the hue bar
-        const hueValue = rgbToHue(r, g, b);
-        setHue(hueValue);
-      } catch (error) {
-        console.error('Error parsing color:', error);
-        // Default to white if parsing fails
-        setRed(255);
-        setGreen(255);
-        setBlue(255);
-        setHue(0);
-        setHexInput('#FFFFFF');
-      }
-    }
-  }, [isOpen, currentColor]);
+  const textColors = [
+    '#000000', '#212121', '#424242', '#616161', '#757575', '#9E9E9E',
+    '#BDBDBD', '#E0E0E0', '#F5F5F5', '#FAFAFA', '#FFFFFF', '#141204',
+    '#2D2B1F', '#5E6572', '#8B4513', '#A0522D', '#CD853F', '#DEB887',
+    '#F4A460', '#D2691E', '#B22222', '#DC143C', '#FF0000', '#FF6347',
+    '#FF4500', '#FF8C00', '#FFA500', '#FFD700', '#FFFF00', '#ADFF2F',
+    '#32CD32', '#00FF00', '#00FA9A', '#00CED1', '#00BFFF', '#0000FF'
+  ];
 
+  const colors = type === 'background' ? backgroundColors : textColors;
+
+  // Sync selectedColor when currentColor changes
+  useEffect(() => {
+    setSelectedColor(currentColor);
+  }, [currentColor]);
+
+  // Close on click outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      // Only close if clicking outside AND not on the trigger button
-      if (pickerRef.current && !pickerRef.current.contains(event.target as Node) && 
-          !(event.target as Element).closest('[data-color-picker-trigger]')) {
+      if (wheelRef.current && !wheelRef.current.contains(event.target as Node)) {
         onClose();
       }
     };
 
-    const handleMouseMove = (event: MouseEvent) => {
-      if (!isDragging) return;
-
-      if (isDragging === 'square') {
-        handleSquareMove(event);
-      } else if (isDragging === 'hue') {
-        handleHueMove(event);
-      }
-    };
-
-    const handleMouseUp = () => {
-      setIsDragging(null);
-    };
-
     if (isOpen) {
       document.addEventListener('mousedown', handleClickOutside);
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [isOpen, isDragging]);
+  }, [isOpen, onClose]);
 
-  useEffect(() => {
-    if (isOpen) {
-      drawSquare();
-      drawHueBar();
-    }
-  }, [isOpen, hue, red, green, blue]);
-
-  useEffect(() => {
-    const hexColor = rgbToHex(red, green, blue);
-    setHexInput(hexColor);
-    onColorSelect(hexColor);
-  }, [red, green, blue, onColorSelect]);
-
-  const drawSquare = () => {
-    const canvas = squareRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    const width = canvas.width;
-    const height = canvas.height;
-
-    // Clear canvas
-    ctx.clearRect(0, 0, width, height);
-
-    // Get pure hue color
-    const pureHue = hueToRgb(hue);
-    
-    // Create the color square with proper RGB gradients
-    for (let x = 0; x < width; x++) {
-      for (let y = 0; y < height; y++) {
-        // Calculate saturation (0 to 1 from left to right)
-        const saturation = x / width;
-        // Calculate brightness (1 to 0 from top to bottom)
-        const brightness = 1 - (y / height);
-        
-        // Mix white -> pure hue -> black
-        let r, g, b;
-        
-        if (saturation === 0) {
-          // Left edge: white to black
-          r = g = b = Math.round(brightness * 255);
-        } else {
-          // Mix pure hue with white/black based on brightness
-          r = Math.round(pureHue.r * saturation * brightness + 255 * (1 - saturation) * brightness);
-          g = Math.round(pureHue.g * saturation * brightness + 255 * (1 - saturation) * brightness);
-          b = Math.round(pureHue.b * saturation * brightness + 255 * (1 - saturation) * brightness);
-        }
-        
-        ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
-        ctx.fillRect(x, y, 1, 1);
-      }
-    }
-  };
-
-  const drawHueBar = () => {
-    const canvas = hueRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    const width = canvas.width;
-    const height = canvas.height;
-
-    // Create hue gradient using RGB
-    for (let x = 0; x < width; x++) {
-      const hueValue = (x / width) * 360;
-      const rgb = hueToRgb(hueValue);
-      ctx.fillStyle = `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
-      ctx.fillRect(x, 0, 1, height);
-    }
-  };
-
-  const getCanvasPosition = (canvas: HTMLCanvasElement, event: MouseEvent | React.MouseEvent) => {
-    const rect = canvas.getBoundingClientRect();
-    return {
-      x: Math.max(0, Math.min(canvas.width, event.clientX - rect.left)),
-      y: Math.max(0, Math.min(canvas.height, event.clientY - rect.top))
-    };
-  };
-
-  const handleSquareClick = (event: React.MouseEvent<HTMLCanvasElement>) => {
-    const canvas = squareRef.current;
-    if (!canvas) return;
-
-    const { x, y } = getCanvasPosition(canvas, event);
-    updateSquarePosition(x, y, canvas);
-    setIsDragging('square');
-  };
-
-  const handleSquareMove = (event: MouseEvent) => {
-    const canvas = squareRef.current;
-    if (!canvas) return;
-
-    const { x, y } = getCanvasPosition(canvas, event);
-    updateSquarePosition(x, y, canvas);
-  };
-
-  const updateSquarePosition = (x: number, y: number, canvas: HTMLCanvasElement) => {
-    // Calculate saturation (0 to 1 from left to right)
-    const saturation = x / canvas.width;
-    // Calculate brightness (1 to 0 from top to bottom)
-    const brightness = 1 - (y / canvas.height);
-    
-    // Get pure hue color
-    const pureHue = hueToRgb(hue);
-    
-    // Calculate RGB based on saturation and brightness
-    let r, g, b;
-    
-    if (saturation === 0) {
-      // Left edge: white to black
-      r = g = b = Math.round(brightness * 255);
-    } else {
-      // Mix pure hue with white/black based on brightness
-      r = Math.round(pureHue.r * saturation * brightness + 255 * (1 - saturation) * brightness);
-      g = Math.round(pureHue.g * saturation * brightness + 255 * (1 - saturation) * brightness);
-      b = Math.round(pureHue.b * saturation * brightness + 255 * (1 - saturation) * brightness);
-    }
-    
-    setRed(Math.max(0, Math.min(255, r)));
-    setGreen(Math.max(0, Math.min(255, g)));
-    setBlue(Math.max(0, Math.min(255, b)));
-  };
-
-  const handleHueClick = (event: React.MouseEvent<HTMLCanvasElement>) => {
-    const canvas = hueRef.current;
-    if (!canvas) return;
-
-    const { x } = getCanvasPosition(canvas, event);
-    updateHuePosition(x, canvas);
-    setIsDragging('hue');
-  };
-
-  const handleHueMove = (event: MouseEvent) => {
-    const canvas = hueRef.current;
-    if (!canvas) return;
-
-    const { x } = getCanvasPosition(canvas, event);
-    updateHuePosition(x, canvas);
-  };
-
-  const updateHuePosition = (x: number, canvas: HTMLCanvasElement) => {
-    const newHue = (x / canvas.width) * 360;
-    setHue(Math.max(0, Math.min(360, newHue)));
-    
-    // Update RGB based on new hue
-    const pureHue = hueToRgb(newHue);
-    
-    // Preserve saturation and brightness by recalculating RGB
-    const hsv = rgbToHsv(red, green, blue);
-    const newRgb = hsvToRgb(newHue, hsv.s, hsv.v);
-    
-    setRed(newRgb.r);
-    setGreen(newRgb.g);
-    setBlue(newRgb.b);
-  };
-
-  const handleHexInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value;
-    setHexInput(value);
-
-    if (value.match(/^#[0-9A-Fa-f]{6}$/)) {
-      const { r, g, b } = hexToRgb(value);
-      setRed(r);
-      setGreen(g);
-      setBlue(b);
-      
-      // Update hue based on new RGB
-      const newHue = rgbToHue(r, g, b);
-      setHue(newHue);
-    }
-  };
-
-  const handlePredefinedColorClick = (color: string) => {
-    try {
-      const { r, g, b } = hexToRgb(color);
-      setRed(r);
-      setGreen(g);
-      setBlue(b);
-      setHexInput(color);
-      
-      // Update hue based on new RGB
-      const newHue = rgbToHue(r, g, b);
-      setHue(newHue);
-      
-      onColorSelect(color);
-    } catch (error) {
-      console.error('Error parsing predefined color:', error);
-    }
-  };
-
-  // RGB to Hex conversion
-  const rgbToHex = (r: number, g: number, b: number) => {
-    return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`.toUpperCase();
-  };
-
-  // Hex to RGB conversion
-  const hexToRgb = (hex: string) => {
-    // Remove # if present
-    hex = hex.replace('#', '');
-
-    // Ensure we have a valid hex color
-    if (!/^[0-9A-Fa-f]{6}$/.test(hex)) {
-      console.warn('Invalid hex color:', hex);
-      hex = 'FFFFFF'; // Default to white
-    }
-    
-    const r = parseInt(hex.slice(0, 2), 16);
-    const g = parseInt(hex.slice(2, 4), 16);
-    const b = parseInt(hex.slice(4, 6), 16);
-
-    return { r, g, b };
-  };
-
-  // Hue to RGB conversion
-  const hueToRgb = (hue: number) => {
-    const h = hue / 60;
-    const c = 255;
-    const x = c * (1 - Math.abs((h % 2) - 1));
-
-    let r = 0, g = 0, b = 0;
-
-    if (h >= 0 && h < 1) { r = c; g = x; b = 0; }
-    else if (h >= 1 && h < 2) { r = x; g = c; b = 0; }
-    else if (h >= 2 && h < 3) { r = 0; g = c; b = x; }
-    else if (h >= 3 && h < 4) { r = 0; g = x; b = c; }
-    else if (h >= 4 && h < 5) { r = x; g = 0; b = c; }
-    else { r = c; g = 0; b = x; }
-
-    return { r: Math.round(r), g: Math.round(g), b: Math.round(b) };
-  };
-
-  // RGB to Hue conversion
-  const rgbToHue = (r: number, g: number, b: number) => {
-    r /= 255;
-    g /= 255;
-    b /= 255;
-    
-    const max = Math.max(r, g, b);
-    const min = Math.min(r, g, b);
-    let h = 0;
-    
-    if (max === min) {
-      return 0; // achromatic
-    }
-    
-    const d = max - min;
-    
-    if (max === r) {
-      h = (g - b) / d + (g < b ? 6 : 0);
-    } else if (max === g) {
-      h = (b - r) / d + 2;
-    } else {
-      h = (r - g) / d + 4;
-    }
-    
-    h *= 60;
-    
-    return h;
-  };
-
-  // RGB to HSV conversion (for preserving saturation and brightness when changing hue)
-  const rgbToHsv = (r: number, g: number, b: number) => {
-    r /= 255;
-    g /= 255;
-    b /= 255;
-    
-    const max = Math.max(r, g, b);
-    const min = Math.min(r, g, b);
-    let h = 0;
-    const v = max;
-    
-    const d = max - min;
-    const s = max === 0 ? 0 : d / max;
-    
-    if (max === min) {
-      h = 0; // achromatic
-    } else {
-      if (max === r) {
-        h = (g - b) / d + (g < b ? 6 : 0);
-      } else if (max === g) {
-        h = (b - r) / d + 2;
-      } else {
-        h = (r - g) / d + 4;
-      }
-      h *= 60;
-    }
-    
-    return { h, s, v };
-  };
-
-  // HSV to RGB conversion
-  const hsvToRgb = (h: number, s: number, v: number) => {
-    const c = v * s;
-    const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
-    const m = v - c;
-    
-    let r = 0, g = 0, b = 0;
-    
-    if (h >= 0 && h < 60) {
-      r = c; g = x; b = 0;
-    } else if (h >= 60 && h < 120) {
-      r = x; g = c; b = 0;
-    } else if (h >= 120 && h < 180) {
-      r = 0; g = c; b = x;
-    } else if (h >= 180 && h < 240) {
-      r = 0; g = x; b = c;
-    } else if (h >= 240 && h < 300) {
-      r = x; g = 0; b = c;
-    } else {
-      r = c; g = 0; b = x;
-    }
-    
-    return {
-      r: Math.round((r + m) * 255),
-      g: Math.round((g + m) * 255),
-      b: Math.round((b + m) * 255)
-    };
+  const handleColorClick = (color: string) => {
+    setSelectedColor(color);
+    onColorSelect(color);
   };
 
   if (!isOpen) return null;
@@ -435,112 +73,104 @@ const ColorPickerWheel: React.FC<ColorPickerWheelProps> = ({
   return (
     <div className="fixed inset-0 z-50 pointer-events-none">
       <div
-        ref={pickerRef}
-        className="relative bg-white rounded-lg p-4 shadow-2xl border border-gray-200"
+        ref={wheelRef}
+        className="absolute bg-white rounded-full p-6 shadow-2xl transition-all duration-300 ease-out animate-scale-in pointer-events-auto"
         style={{
-          width: '280px',
-          animation: 'fadeInScale 0.2s ease-out',
-          position: 'absolute',
-          left: `${position.x}px`,
           top: `${position.y}px`,
-          transform: 'translate(-50%, -10px)',
-          pointerEvents: 'auto'
+          left: `${position.x}px`,
+          width: '320px',
+          height: '320px',
+          transform: 'translate(-50%, -50%)',
+          animation: 'colorWheelAppear 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)'
         }}
       >
-        {/* Header */}
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-medium text-gray-700 font-['Listopad']">
-            Color Picker
+        {/* Close button */}
+        <button
+          onClick={onClose}
+          className="absolute top-2 right-2 p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors z-10"
+        >
+          <X size={16} />
+        </button>
+
+        {/* Title */}
+        <div className="text-center mb-4">
+          <h3 className="text-lg font-semibold text-gray-800 font-['Listopad']">
+            {type === 'background' ? 'Background Color' : 'Text Color'}
           </h3>
-          <button
-            onClick={onClose}
-            className="p-1 rounded-full hover:bg-gray-100 transition-colors"
-          >
-            <X size={16} />
-          </button>
         </div>
 
-        {/* Color Square */}
-        <div className="relative mb-4">
-          <canvas
-            ref={squareRef}
-            width={240}
-            height={160}
-            onMouseDown={handleSquareClick}
-            className="cursor-crosshair rounded border border-gray-200 w-full"
-          />
-          {/* Picker circle */}
-          <div
-            className="absolute w-3 h-3 border-2 border-white rounded-full shadow-md pointer-events-none"
-            style={{
-              left: `${(red / 255) * 100}%`,
-              top: `${100 - (blue / 255) * 100}%`,
-              transform: 'translate(-50%, -50%)'
-            }}
-          />
-        </div>
+        {/* Color wheel */}
+        <div className="relative w-full h-full flex items-center justify-center">
+          <div className="relative w-48 h-48">
+            {colors.map((color, index) => {
+              const angle = (index * 360) / colors.length;
+              const radius = 85;
+              const x = Math.cos((angle * Math.PI) / 180) * radius;
+              const y = Math.sin((angle * Math.PI) / 180) * radius;
 
-        {/* Hue Bar */}
-        <div className="relative mb-4">
-          <canvas
-            ref={hueRef}
-            width={240}
-            height={16}
-            onMouseDown={handleHueClick}
-            className="cursor-pointer rounded border border-gray-200 w-full"
-          />
-          {/* Hue indicator */}
-          <div
-            className="absolute w-3 h-4 border-2 border-white rounded-sm shadow-md pointer-events-none"
-            style={{
-              left: `${(hue / 360) * 100}%`,
-              top: '50%',
-              transform: 'translate(-50%, -50%)'
-            }}
-          />
-        </div>
+              return (
+                <button
+                  key={color}
+                  onClick={() => handleColorClick(color)}
+                  className={`absolute w-6 h-6 rounded-full border-2 transition-all duration-200 hover:scale-125 hover:z-10 ${
+                    selectedColor === color 
+                      ? 'border-gray-800 scale-110 shadow-lg' 
+                      : 'border-gray-300 hover:border-gray-500'
+                  }`}
+                  style={{
+                    backgroundColor: color,
+                    left: `calc(50% + ${x}px - 12px)`,
+                    top: `calc(50% + ${y}px - 12px)`,
+                    animationDelay: `${index * 20}ms`,
+                    animation: 'colorDotAppear 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards'
+                  }}
+                  title={color}
+                />
+              );
+            })}
 
-        {/* Color Input */}
-        <div className="flex items-center space-x-2 mb-4">
-          <div
-            className="w-8 h-8 rounded border border-gray-200 flex-shrink-0"
-            style={{ backgroundColor: `rgb(${red}, ${green}, ${blue})` }}
-          />
-          <input
-            type="text"
-            value={hexInput}
-            onChange={handleHexInputChange}
-            className="flex-1 px-2 py-1 text-sm border border-gray-200 rounded font-mono"
-            placeholder="#000000"
-          />
-        </div>
-
-        {/* Predefined Colors */}
-        <div>
-          <div className="text-xs text-gray-500 mb-2 font-['Listopad']">Default Colors</div>
-          <div className="grid grid-cols-6 gap-2">
-            {predefinedColors.map((color, index) => (
-              <button
-                key={index}
-                onClick={() => handlePredefinedColorClick(color)}
-                className="w-8 h-8 rounded border border-gray-200 hover:scale-110 transition-transform"
-                style={{ backgroundColor: color }}
-                title={color}
+            {/* Center preview */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div
+                className="w-12 h-12 rounded-full border-4 border-white shadow-lg"
+                style={{ backgroundColor: selectedColor }}
               />
-            ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Current color display */}
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
+          <div className="text-center">
+            <div className="text-xs text-gray-500 font-mono">{selectedColor}</div>
           </div>
         </div>
       </div>
 
+      {/* Animations */}
       <style jsx>{`
-        @keyframes fadeInScale {
+        @keyframes colorWheelAppear {
           0% {
+            transform: scale(0.3) rotate(-180deg) translate(-50%, -50%);
             opacity: 0;
-            transform: scale(0.95) translateY(10px);
+          }
+          50% {
+            opacity: 1;
           }
           100% {
+            transform: scale(1) rotate(0deg) translate(-50%, -50%);
             opacity: 1;
-            transform: scale(1) translateY(0);
+          }
+        }
+
+        @keyframes colorDotAppear {
+          0% {
+            transform: scale(0) rotate(180deg);
+            opacity: 0;
+          }
+          100% {
+            transform: scale(1) rotate(0deg);
+            opacity: 1;
           }
         }
       `}</style>
