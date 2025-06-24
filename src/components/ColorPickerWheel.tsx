@@ -49,12 +49,23 @@ const ColorPickerWheel: React.FC<ColorPickerWheelProps> = ({
   // Initialize with current color when picker opens
   useEffect(() => {
     if (isOpen && currentColor) {
-      const { h, s, l } = hexToHsl(currentColor);
-      setHue(h);
-      setSaturation(s);
-      setLightness(l);
-      setHexInput(currentColor);
-      setOpacity(100);
+      try {
+        console.log('Initializing with color:', currentColor);
+        const { h, s, l } = hexToHsl(currentColor);
+        setHue(h);
+        setSaturation(s);
+        setLightness(l);
+        setHexInput(currentColor);
+        setOpacity(100);
+      } catch (error) {
+        console.error('Error parsing color:', error);
+        // Default to white if parsing fails
+        setHue(0);
+        setSaturation(0);
+        setLightness(100);
+        setHexInput('#FFFFFF');
+        setOpacity(100);
+      }
     }
   }, [isOpen, currentColor]);
 
@@ -309,6 +320,12 @@ const ColorPickerWheel: React.FC<ColorPickerWheelProps> = ({
   const hexToHsl = (hex: string) => {
     // Remove # if present
     hex = hex.replace('#', '');
+
+    // Ensure we have a valid hex color
+    if (!/^[0-9A-Fa-f]{6}$/.test(hex)) {
+      console.warn('Invalid hex color:', hex);
+      hex = 'FFFFFF'; // Default to white
+    }
     
     const r = parseInt(hex.slice(0, 2), 16) / 255;
     const g = parseInt(hex.slice(2, 4), 16) / 255;
@@ -339,7 +356,7 @@ const ColorPickerWheel: React.FC<ColorPickerWheelProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-10">
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div
         ref={pickerRef}
         className="relative bg-white rounded-lg p-4 shadow-2xl border border-gray-200"
@@ -347,6 +364,7 @@ const ColorPickerWheel: React.FC<ColorPickerWheelProps> = ({
           width: '280px',
           animation: 'fadeInScale 0.2s ease-out'
         }}
+        onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-center justify-between mb-4">

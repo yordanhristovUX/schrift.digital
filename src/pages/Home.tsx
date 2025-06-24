@@ -17,7 +17,7 @@ const Home: React.FC = () => {
   const [selectedWeights, setSelectedWeights] = useState<Record<string, string>>({});
   const [selectedStyles, setSelectedStyles] = useState<Record<string, string>>({});
   const [hasSubscription, setHasSubscription] = useState(false);
-  const [backgroundColor, setBackgroundColor] = useState('#FFFFFC');
+  const [backgroundColor, setBackgroundColor] = useState('#e5e7eb');
   const [textColor, setTextColor] = useState('#141204');
   const [showBackgroundPicker, setShowBackgroundPicker] = useState(false);
   const [showTextPicker, setShowTextPicker] = useState(false);
@@ -168,8 +168,8 @@ const Home: React.FC = () => {
   const handleBackgroundPickerClick = (e: React.MouseEvent) => {
     const rect = e.currentTarget.getBoundingClientRect();
     setBackgroundPickerPos({
-      x: rect.left + rect.width / 2,
-      y: rect.top + rect.height / 2
+      x: e.clientX,
+      y: e.clientY
     });
     setShowBackgroundPicker(true);
   };
@@ -177,8 +177,8 @@ const Home: React.FC = () => {
   const handleTextPickerClick = (e: React.MouseEvent) => {
     const rect = e.currentTarget.getBoundingClientRect();
     setTextPickerPos({
-      x: rect.left + rect.width / 2,
-      y: rect.top + rect.height / 2
+      x: e.clientX,
+      y: e.clientY
     });
     setShowTextPicker(true);
   };
