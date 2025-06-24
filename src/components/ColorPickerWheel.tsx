@@ -23,11 +23,12 @@ const ColorPickerWheel: React.FC<ColorPickerWheelProps> = ({
   const hueRef = useRef<HTMLCanvasElement>(null);
   const opacityRef = useRef<HTMLCanvasElement>(null);
   
-  const [hue, setHue] = useState(240);
-  const [saturation, setSaturation] = useState(100);
+  const [hue, setHue] = useState(0);
+  const [saturation, setSaturation] = useState(0);
   const [lightness, setLightness] = useState(50);
   const [opacity, setOpacity] = useState(100);
-  const [hexInput, setHexInput] = useState('#3669EB');
+  const [hexInput, setHexInput] = useState('#FFFFFF');
+  const [isDragging, setIsDragging] = useState<'square' | 'hue' | 'opacity' | null>(null);
 
   // Predefined colors - mix of dark and light with different hues and low saturation
   const predefinedColors = [
@@ -45,6 +46,18 @@ const ColorPickerWheel: React.FC<ColorPickerWheelProps> = ({
     '#C6F6D5', // Light green
   ];
 
+  // Initialize with current color when picker opens
+  useEffect(() => {
+    if (isOpen && currentColor) {
+      const { h, s, l } = hexToHsl(currentColor);
+      setHue(h);
+      setSaturation(s);
+      setLightness(l);
+      setHexInput(currentColor);
+      setOpacity(100);
+    }
+  }, [isOpen, currentColor]);
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (pickerRef.current && !pickerRef.current.contains(event.target as Node)) {
@@ -52,14 +65,34 @@ const ColorPickerWheel: React.FC<ColorPickerWheelProps> = ({
       }
     };
 
+    const handleMouseMove = (event: MouseEvent) => {
+      if (!isDragging) return;
+
+      if (isDragging === 'square') {
+        handleSquareMove(event);
+      } else if (isDragging === 'hue') {
+        handleHueMove(event);
+      } else if (isDragging === 'opacity') {
+        handleOpacityMove(event);
+      }
+    };
+
+    const handleMouseUp = () => {
+      setIsDragging(null);
+    };
+
     if (isOpen) {
       document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, isDragging]);
 
   useEffect(() => {
     if (isOpen) {
@@ -96,7 +129,7 @@ const ColorPickerWheel: React.FC<ColorPickerWheelProps> = ({
     ctx.fillStyle = baseColor;
     ctx.fillRect(0, 0, width, height);
 
-    // Add white to black gradient (left to right for saturation)
+    // Add white to transparent gradient (left to right for saturation)
     const satGradient = ctx.createLinearGradient(0, 0, width, 0);
     satGradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
     satGradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
@@ -164,14 +197,32 @@ const ColorPickerWheel: React.FC<ColorPickerWheelProps> = ({
     ctx.fillRect(0, 0, width, height);
   };
 
+  const getCanvasPosition = (canvas: HTMLCanvasElement, event: MouseEvent | React.MouseEvent) => {
+    const rect = canvas.getBoundingClientRect();
+    return {
+      x: event.clientX - rect.left,
+      y: event.clientY - rect.top
+    };
+  };
+
   const handleSquareClick = (event: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = squareRef.current;
     if (!canvas) return;
 
-    const rect = canvas.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const y = event.clientY - rect.top;
+    const { x, y } = getCanvasPosition(canvas, event);
+    updateSquarePosition(x, y, canvas);
+    setIsDragging('square');
+  };
 
+  const handleSquareMove = (event: MouseEvent) => {
+    const canvas = squareRef.current;
+    if (!canvas) return;
+
+    const { x, y } = getCanvasPosition(canvas, event);
+    updateSquarePosition(x, y, canvas);
+  };
+
+  const updateSquarePosition = (x: number, y: number, canvas: HTMLCanvasElement) => {
     const newSaturation = 100 - (x / canvas.width) * 100;
     const newLightness = 100 - (y / canvas.height) * 100;
 
@@ -183,10 +234,21 @@ const ColorPickerWheel: React.FC<ColorPickerWheelProps> = ({
     const canvas = hueRef.current;
     if (!canvas) return;
 
-    const rect = canvas.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const newHue = (x / canvas.width) * 360;
+    const { x } = getCanvasPosition(canvas, event);
+    updateHuePosition(x, canvas);
+    setIsDragging('hue');
+  };
 
+  const handleHueMove = (event: MouseEvent) => {
+    const canvas = hueRef.current;
+    if (!canvas) return;
+
+    const { x } = getCanvasPosition(canvas, event);
+    updateHuePosition(x, canvas);
+  };
+
+  const updateHuePosition = (x: number, canvas: HTMLCanvasElement) => {
+    const newHue = (x / canvas.width) * 360;
     setHue(Math.max(0, Math.min(360, newHue)));
   };
 
@@ -194,10 +256,21 @@ const ColorPickerWheel: React.FC<ColorPickerWheelProps> = ({
     const canvas = opacityRef.current;
     if (!canvas) return;
 
-    const rect = canvas.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const newOpacity = (x / canvas.width) * 100;
+    const { x } = getCanvasPosition(canvas, event);
+    updateOpacityPosition(x, canvas);
+    setIsDragging('opacity');
+  };
 
+  const handleOpacityMove = (event: MouseEvent) => {
+    const canvas = opacityRef.current;
+    if (!canvas) return;
+
+    const { x } = getCanvasPosition(canvas, event);
+    updateOpacityPosition(x, canvas);
+  };
+
+  const updateOpacityPosition = (x: number, canvas: HTMLCanvasElement) => {
+    const newOpacity = (x / canvas.width) * 100;
     setOpacity(Math.max(0, Math.min(100, newOpacity)));
   };
 
@@ -234,9 +307,12 @@ const ColorPickerWheel: React.FC<ColorPickerWheelProps> = ({
   };
 
   const hexToHsl = (hex: string) => {
-    const r = parseInt(hex.slice(1, 3), 16) / 255;
-    const g = parseInt(hex.slice(3, 5), 16) / 255;
-    const b = parseInt(hex.slice(5, 7), 16) / 255;
+    // Remove # if present
+    hex = hex.replace('#', '');
+    
+    const r = parseInt(hex.slice(0, 2), 16) / 255;
+    const g = parseInt(hex.slice(2, 4), 16) / 255;
+    const b = parseInt(hex.slice(4, 6), 16) / 255;
 
     const max = Math.max(r, g, b);
     const min = Math.min(r, g, b);
@@ -291,7 +367,7 @@ const ColorPickerWheel: React.FC<ColorPickerWheelProps> = ({
             ref={squareRef}
             width={240}
             height={160}
-            onClick={handleSquareClick}
+            onMouseDown={handleSquareClick}
             className="cursor-crosshair rounded border border-gray-200 w-full"
           />
           {/* Picker circle */}
@@ -311,7 +387,7 @@ const ColorPickerWheel: React.FC<ColorPickerWheelProps> = ({
             ref={hueRef}
             width={240}
             height={16}
-            onClick={handleHueClick}
+            onMouseDown={handleHueClick}
             className="cursor-pointer rounded border border-gray-200 w-full"
           />
           {/* Hue indicator */}
@@ -331,7 +407,7 @@ const ColorPickerWheel: React.FC<ColorPickerWheelProps> = ({
             ref={opacityRef}
             width={240}
             height={16}
-            onClick={handleOpacityClick}
+            onMouseDown={handleOpacityClick}
             className="cursor-pointer rounded border border-gray-200 w-full"
           />
           {/* Opacity indicator */}
