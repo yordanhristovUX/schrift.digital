@@ -50,10 +50,21 @@ const MinimalColorPicker: React.FC = () => {
       }
     }
 
-    // Force a repaint to ensure all elements update
-    document.body.style.display = 'none';
-    document.body.offsetHeight; // Trigger reflow
-    document.body.style.display = '';
+    // Force a complete page repaint to ensure all elements update
+    setTimeout(() => {
+      document.body.style.display = 'none';
+      document.body.offsetHeight; // Trigger reflow
+      document.body.style.display = '';
+      
+      // Force update of all elements with inline styles
+      const elementsWithInlineStyles = document.querySelectorAll('[style*="color"]');
+      elementsWithInlineStyles.forEach(element => {
+        const htmlElement = element as HTMLElement;
+        if (htmlElement.style.color) {
+          htmlElement.style.color = 'var(--color-text-primary)';
+        }
+      });
+    }, 50);
   }, [isDarkMode, selectedBgColor]);
 
   const handleThemeToggle = () => {
