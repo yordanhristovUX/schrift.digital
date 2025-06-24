@@ -1,34 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { LayoutDashboard, Type, Users, Settings, LogOut, CreditCard, Crown, Calendar, DollarSign, AlertCircle } from 'lucide-react';
+import { LayoutDashboard, Type, Users, Settings, LogOut, CreditCard, Crown, Calendar, DollarSign, AlertCircle, Plus } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { format } from 'date-fns';
 
-interface Subscription {
+interface UserSubscription {
   id: string;
-  customer_id: string;
-  subscription_id: string;
-  price_id: string;
-  current_period_start: number;
-  current_period_end: number;
-  cancel_at_period_end: boolean;
-  payment_method_brand: string;
-  payment_method_last4: string;
-  status: string;
+  user_id: string;
+  email: string;
+  full_name: string;
+  expires_at: string;
+  is_active: boolean;
+  days_remaining: number;
+  granted_by: string;
+  granted_by_email: string;
+  stripe_payment_intent_id: string;
   created_at: string;
   updated_at: string;
-  user_email?: string;
-  user_name?: string;
 }
 
 const SubscriptionManager: React.FC = () => {
-  const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
+  const [subscriptions, setSubscriptions] = useState<UserSubscription[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [stats, setStats] = useState({
     total: 0,
     active: 0,
-    canceled: 0,
+    expired: 0,
     revenue: 0
   });
 
@@ -40,41 +38,25 @@ const SubscriptionManager: React.FC = () => {
     try {
       setLoading(true);
       
-      // Fetch subscriptions with user data
+      // Fetch user subscriptions using the new view
       const { data: subscriptionsData, error: subscriptionsError } = await supabase
-        .from('stripe_subscriptions')
-        .select(`
-          *,
-          stripe_customers!inner(
-            user_id,
-            users!inner(
-              email,
-              full_name
-            )
-          )
-        `)
-        .order('created_at', { ascending: false });
+        .from('admin_user_subscriptions')
+        .select('*')
+        .order('updated_at', { ascending: false });
 
       if (subscriptionsError) throw subscriptionsError;
 
-      // Transform the data to flatten user information
-      const transformedData = subscriptionsData?.map(sub => ({
-        ...sub,
-        user_email: sub.stripe_customers?.users?.email,
-        user_name: sub.stripe_customers?.users?.full_name
-      })) || [];
-
-      setSubscriptions(transformedData);
+      setSubscriptions(subscriptionsData || []);
 
       // Calculate stats
-      const total = transformedData.length;
-      const active = transformedData.filter(sub => sub.status === 'active').length;
-      const canceled = transformedData.filter(sub => sub.status === 'canceled').length;
+      const total = subscriptionsData?.length || 0;
+      const active = subscriptionsData?.filter(sub => sub.is_active).length || 0;
+      const expired = total - active;
       
-      // Estimate revenue (assuming €2 per month for active subscriptions)
-      const revenue = active * 2;
+      // Estimate revenue (€2 per subscription)
+      const revenue = total * 2;
 
-      setStats({ total, active, canceled, revenue });
+      setStats({ total, active, expired, revenue });
 
     } catch (err: any) {
       console.error('Error fetching subscriptions:', err);
@@ -84,20 +66,16 @@ const SubscriptionManager: React.FC = () => {
     }
   };
 
-  const getStatusBadge = (status: string) => {
-    const statusColors = {
-      active: 'bg-green-100 text-green-800',
-      canceled: 'bg-red-100 text-red-800',
-      past_due: 'bg-yellow-100 text-yellow-800',
-      incomplete: 'bg-gray-100 text-gray-800',
-      trialing: 'bg-blue-100 text-blue-800'
-    };
-
-    return (
-      <span className={`px-2 py-1 text-xs font-medium rounded-full ${statusColors[status] || 'bg-gray-100 text-gray-800'}`}>
-        {status}
-      </span>
-    );
+  const getStatusBadge = (isActive: boolean, daysRemaining: number) => {
+    if (isActive) {
+      if (daysRemaining > 7) {
+        return <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">Active</span>;
+      } else {
+        return <span className="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">Expiring Soon</span>;
+      }
+    } else {
+      return <span className="px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800">Expired</span>;
+    }
   };
 
   const handleSignOut = async () => {
@@ -219,7 +197,7 @@ const SubscriptionManager: React.FC = () => {
                 className="flex items-center space-x-2 px-4 py-2.5 rounded-lg bg-violet-50 text-violet-700"
               >
                 <CreditCard size={20} />
-                <span>Subscriptions</span>
+                <span>Premium Access</span>
               </Link>
               <Link
                 to="/admin/users"
@@ -253,7 +231,7 @@ const SubscriptionManager: React.FC = () => {
       {/* Main content */}
       <main className="ml-64 p-8">
         <div className="max-w-7xl mx-auto">
-          <h1 className="text-2xl font-bold mb-6">Subscription Management</h1>
+          <h1 className="text-2xl font-bold mb-6">Premium Access Management</h1>
           
           {error && (
             <div className="mb-6 bg-red-50 border border-red-200 text-red-700 p-4 rounded-lg flex items-center">
@@ -270,7 +248,7 @@ const SubscriptionManager: React.FC = () => {
                   <CreditCard size={24} className="text-violet-700" />
                 </div>
                 <div className="ml-4">
-                  <h3 className="text-lg font-semibold">Total Subscriptions</h3>
+                  <h3 className="text-lg font-semibold">Total Premium Users</h3>
                   <p className="text-3xl font-bold text-violet-700">{stats.total}</p>
                 </div>
               </div>
@@ -294,8 +272,8 @@ const SubscriptionManager: React.FC = () => {
                   <AlertCircle size={24} className="text-red-700" />
                 </div>
                 <div className="ml-4">
-                  <h3 className="text-lg font-semibold">Canceled</h3>
-                  <p className="text-3xl font-bold text-red-700">{stats.canceled}</p>
+                  <h3 className="text-lg font-semibold">Expired</h3>
+                  <p className="text-3xl font-bold text-red-700">{stats.expired}</p>
                 </div>
               </div>
             </div>
@@ -306,23 +284,23 @@ const SubscriptionManager: React.FC = () => {
                   <DollarSign size={24} className="text-blue-700" />
                 </div>
                 <div className="ml-4">
-                  <h3 className="text-lg font-semibold">Monthly Revenue</h3>
+                  <h3 className="text-lg font-semibold">Total Revenue</h3>
                   <p className="text-3xl font-bold text-blue-700">€{stats.revenue}</p>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Subscriptions Table */}
+          {/* Premium Access Table */}
           <div className="bg-white rounded-lg shadow overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-200">
-              <h2 className="text-lg font-semibold">All Subscriptions</h2>
+              <h2 className="text-lg font-semibold">Premium Access Records</h2>
             </div>
             
             {subscriptions.length === 0 ? (
               <div className="p-8 text-center text-gray-500">
-                <CreditCard size={48} className="mx-auto mb-4 text-gray-300" />
-                <p>No subscriptions found</p>
+                <Crown size={48} className="mx-auto mb-4 text-gray-300" />
+                <p>No premium access records found</p>
               </div>
             ) : (
               <div className="overflow-x-auto">
@@ -330,16 +308,19 @@ const SubscriptionManager: React.FC = () => {
                   <thead className="bg-gray-50">
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Customer
+                        User
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Status
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Period
+                        Expires
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Payment Method
+                        Days Remaining
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Granted By
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Created
@@ -352,44 +333,33 @@ const SubscriptionManager: React.FC = () => {
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div>
                             <div className="text-sm font-medium text-gray-900">
-                              {subscription.user_name || 'Unknown'}
+                              {subscription.full_name || 'Unknown'}
                             </div>
                             <div className="text-sm text-gray-500">
-                              {subscription.user_email || 'No email'}
+                              {subscription.email}
                             </div>
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
+                          {getStatusBadge(subscription.is_active, subscription.days_remaining)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           <div className="flex items-center">
-                            {getStatusBadge(subscription.status)}
-                            {subscription.cancel_at_period_end && (
-                              <span className="ml-2 text-xs text-orange-600">
-                                (Canceling)
-                              </span>
-                            )}
+                            <Calendar size={16} className="mr-2 text-gray-400" />
+                            <span>
+                              {format(new Date(subscription.expires_at), 'MMM dd, yyyy')}
+                            </span>
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {subscription.current_period_start && subscription.current_period_end ? (
-                            <div className="flex items-center">
-                              <Calendar size={16} className="mr-2 text-gray-400" />
-                              <span>
-                                {format(new Date(subscription.current_period_start * 1000), 'MMM dd')} - {' '}
-                                {format(new Date(subscription.current_period_end * 1000), 'MMM dd, yyyy')}
-                              </span>
-                            </div>
+                          {subscription.is_active ? (
+                            <span className="text-green-600">{subscription.days_remaining} days</span>
                           ) : (
-                            'N/A'
+                            <span className="text-red-600">Expired</span>
                           )}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {subscription.payment_method_brand && subscription.payment_method_last4 ? (
-                            <span className="capitalize">
-                              {subscription.payment_method_brand} •••• {subscription.payment_method_last4}
-                            </span>
-                          ) : (
-                            'N/A'
-                          )}
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {subscription.granted_by_email || 'System'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           {format(new Date(subscription.created_at), 'MMM dd, yyyy')}
