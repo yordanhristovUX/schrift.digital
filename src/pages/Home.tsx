@@ -302,7 +302,6 @@ const Home: React.FC = () => {
                     <div className="space-y-6 mb-8">
                       <div>
                         <div className="flex justify-between mb-2">
-                          <label className="text-sm font-medium font-['Listopad']" style={{ color: textColor === 'var(--color-text-primary)' ? '#141204' : textColor }}>
                           <label className="text-sm font-medium text-[#141204] font-['Listopad']">
                             {t('home.font_size')}
                           </label>
@@ -320,7 +319,6 @@ const Home: React.FC = () => {
                       <div>
                         <div className="flex justify-between mb-2">
                           <div className="flex items-center space-x-4">
-                            <label className="text-sm font-medium font-['Listopad']" style={{ color: textColor === 'var(--color-text-primary)' ? '#141204' : textColor }}>
                             <label className="text-sm font-medium text-[#141204] font-['Listopad']">
                               Стил
                             </label>
@@ -344,7 +342,6 @@ const Home: React.FC = () => {
                         
                         <div>
                           <div className="flex justify-between mb-2">
-                            <label className="text-sm font-medium font-['Listopad']" style={{ color: textColor === 'var(--color-text-primary)' ? '#141204' : textColor }}>
                             <label className="text-sm font-medium text-[#141204] font-['Listopad']">
                               Тежина
                             </label>
