@@ -384,7 +384,7 @@ const Home: React.FC = () => {
                         <div>
                           <div className="flex justify-between mb-2">
                             <label className="text-sm font-medium font-['Listopad']" style={{ color: textColor }}>
-                              <label className="text-sm font-medium font-['Listopad']" style={{ color: textColor }}>
+                              Weight
                             </label>
                             <span className="text-sm opacity-70 font-['Listopad']">{currentWeight}</span>
                           </div>
