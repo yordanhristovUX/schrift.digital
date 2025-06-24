@@ -33,7 +33,7 @@ const MinimalColorPicker: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    // Apply theme to document
+    // Apply theme to document root (html element)
     const root = document.documentElement;
     
     if (isDarkMode) {
@@ -49,6 +49,11 @@ const MinimalColorPicker: React.FC = () => {
         root.removeAttribute('data-bg-color');
       }
     }
+
+    // Force a repaint to ensure all elements update
+    document.body.style.display = 'none';
+    document.body.offsetHeight; // Trigger reflow
+    document.body.style.display = '';
   }, [isDarkMode, selectedBgColor]);
 
   const handleThemeToggle = () => {
