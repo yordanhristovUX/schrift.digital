@@ -133,7 +133,7 @@ const FontDetail: React.FC = () => {
         </div>
       </section>
       
-      <section className="section">
+      <section className="section" style={{ paddingTop: '2rem' }}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <FontPreview font={font} requireAuth={!font.subscriber_only || hasSubscription} />
           
