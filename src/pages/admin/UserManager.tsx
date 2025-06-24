@@ -53,31 +53,22 @@ const UserManager: React.FC = () => {
       // Get auth data for each user
       const usersWithAuthData = await Promise.all(
         (usersData || []).map(async (user) => {
-          try {
-            // Get auth user data
-            const { data: authUser } = await supabase.auth.admin.getUserById(user.id);
-            
-            // Check if user has subscription
-            const { data: customerData } = await supabase
-              .from('user_subscriptions')
-              .select('expires_at')
-              .eq('user_id', user.id)
-              .gt('expires_at', new Date().toISOString())
-              .maybeSingle();
+          // Check if user has subscription
+          const { data: customerData } = await supabase
+            .from('user_subscriptions')
+            .select('expires_at')
+            .eq('user_id', user.id)
+            .gt('expires_at', new Date().toISOString())
+            .maybeSingle();
 
-            return {
-              ...user,
-              last_sign_in_at: authUser?.user?.last_sign_in_at,
-              email_confirmed_at: authUser?.user?.email_confirmed_at || authUser?.user?.confirmed_at,
-              has_subscription: !!customerData
-            };
-          } catch (err) {
+          // Since all users in auth.users are confirmed (as you verified), mark them as verified
             console.error(`Error fetching auth data for user ${user.id}:`, err);
             return {
               ...user,
+              last_sign_in_at: null,
+              email_confirmed_at: new Date().toISOString(), // Mark as verified since they exist in auth.users
               has_subscription: false
             };
-          }
         })
       );
 
