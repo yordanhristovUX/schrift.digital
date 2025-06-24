@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Crown, Palette, Type } from 'lucide-react';
+import ColorPickerWheel from '../components/ColorPickerWheel';
 import { useTranslation } from 'react-i18next';
 import { Helmet } from 'react-helmet-async';
 import { supabase } from '../lib/supabase';
@@ -18,6 +19,10 @@ const Home: React.FC = () => {
   const [hasSubscription, setHasSubscription] = useState(false);
   const [backgroundColor, setBackgroundColor] = useState('#FFFFFC');
   const [textColor, setTextColor] = useState('#141204');
+  const [showBackgroundPicker, setShowBackgroundPicker] = useState(false);
+  const [showTextPicker, setShowTextPicker] = useState(false);
+  const [backgroundPickerPos, setBackgroundPickerPos] = useState({ x: 0, y: 0 });
+  const [textPickerPos, setTextPickerPos] = useState({ x: 0, y: 0 });
   const navigate = useNavigate();
   const { t, i18n } = useTranslation(['common']);
   
@@ -160,20 +165,32 @@ const Home: React.FC = () => {
     window.location.reload();
   };
 
-  const toggleBackgroundColor = () => {
-    setBackgroundColor(prev => {
-      const colors = ['#FFFFFC', '#F5F5F5', '#E8E8E8', '#D9D9D9'];
-      const currentIndex = colors.indexOf(prev);
-      return colors[(currentIndex + 1) % colors.length];
+  const handleBackgroundPickerClick = (e: React.MouseEvent) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    setBackgroundPickerPos({
+      x: rect.left + rect.width / 2,
+      y: rect.top + rect.height / 2
     });
+    setShowBackgroundPicker(true);
   };
 
-  const toggleTextColor = () => {
-    setTextColor(prev => {
-      const colors = ['#141204', '#2D2B1F', '#5E6572', '#000000'];
-      const currentIndex = colors.indexOf(prev);
-      return colors[(currentIndex + 1) % colors.length];
+  const handleTextPickerClick = (e: React.MouseEvent) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    setTextPickerPos({
+      x: rect.left + rect.width / 2,
+      y: rect.top + rect.height / 2
     });
+    setShowTextPicker(true);
+  };
+
+  const handleBackgroundColorSelect = (color: string) => {
+    setBackgroundColor(color);
+    setShowBackgroundPicker(false);
+  };
+
+  const handleTextColorSelect = (color: string) => {
+    setTextColor(color);
+    setShowTextPicker(false);
   };
 
   if (loading) {
@@ -243,14 +260,14 @@ const Home: React.FC = () => {
               {/* Color toggle controls */}
               <div className="flex items-center space-x-3">
                 <button
-                  onClick={toggleBackgroundColor}
+                  onClick={handleBackgroundPickerClick}
                   className="p-2 rounded-full bg-white border border-gray-300 hover:bg-gray-50 transition-colors"
                   title="Change background color"
                 >
                   <Palette size={16} style={{ color: backgroundColor }} />
                 </button>
                 <button
-                  onClick={toggleTextColor}
+                  onClick={handleTextPickerClick}
                   className="p-2 rounded-full bg-white border border-gray-300 hover:bg-gray-50 transition-colors"
                   title="Change text color"
                 >
@@ -258,10 +275,6 @@ const Home: React.FC = () => {
                 </button>
               </div>
             </div>
-
-            <p className="text-lg text-[#5E6572] mb-8 font-['Listopad']">
-              {t('home.library_count', { count: fonts.length })}
-            </p>
 
             {/* Preview text input */}
             <div className="mb-12">
@@ -439,11 +452,55 @@ const Home: React.FC = () => {
                           ))}
                         </div>
                       )}
+
+                      {/* Italic weights */}
+                      {italic.length > 0 && (
+                        <div className="flex flex-wrap gap-8">
+                          {italic.map(([key, file]) => (
+                            <div
+                              key={key}
+                              className="text-center"
+                            >
+                              <div
+                                className="text-4xl mb-2"
+                                style={{ 
+                                  fontFamily: `"${font.name}", sans-serif`,
+                                  fontWeight: getWeightValue(file.weight),
+                                  fontStyle: 'italic',
+                                  color: textColor
+                                }}
+                              >
+                                Aa
+                              </div>
+                              <div className="text-sm opacity-70 font-['Listopad']">{file.weight}</div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
                 );
               })}
             </div>
+
+            {/* Color Picker Wheels */}
+            <ColorPickerWheel
+              isOpen={showBackgroundPicker}
+              onClose={() => setShowBackgroundPicker(false)}
+              onColorSelect={handleBackgroundColorSelect}
+              currentColor={backgroundColor}
+              type="background"
+              position={backgroundPickerPos}
+            />
+
+            <ColorPickerWheel
+              isOpen={showTextPicker}
+              onClose={() => setShowTextPicker(false)}
+              onColorSelect={handleTextColorSelect}
+              currentColor={textColor}
+              type="text"
+              position={textPickerPos}
+            />
           </div>
         </section>
       </div>
