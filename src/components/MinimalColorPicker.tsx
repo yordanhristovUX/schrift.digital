@@ -32,30 +32,32 @@ const MinimalColorPicker: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  useEffect(() => {
+  const handleThemeToggle = () => {
     const root = document.documentElement;
     
-    // Apply theme
-    if (isDarkMode) {
-      root.setAttribute('data-theme', 'dark');
-      root.removeAttribute('data-bg-color');
+    if (!isDarkMode) {
+      // Switch to dark mode - swap the variables
+      root.style.setProperty('--color-background-primary', '#141204');
+      root.style.setProperty('--color-text-primary', '#FFFFFC');
+      setIsDarkMode(true);
     } else {
-      root.removeAttribute('data-theme');
-      if (selectedBgColor !== 'default') {
-        root.setAttribute('data-bg-color', selectedBgColor);
-      } else {
-        root.removeAttribute('data-bg-color');
-      }
+      // Switch to light mode - restore original values
+      const selectedColor = backgroundColors.find(c => c.id === selectedBgColor)?.color || '#F5F5F5';
+      root.style.setProperty('--color-background-primary', selectedColor);
+      root.style.setProperty('--color-text-primary', '#141204');
+      setIsDarkMode(false);
     }
-  }, [isDarkMode, selectedBgColor]);
-
-  const handleThemeToggle = () => {
-    setIsDarkMode(!isDarkMode);
+    
     setShowBgPicker(false);
   };
 
   const handleBgColorSelect = (colorId: string) => {
-    setSelectedBgColor(colorId);
+    if (!isDarkMode) {
+      const selectedColor = backgroundColors.find(c => c.id === colorId)?.color || '#F5F5F5';
+      const root = document.documentElement;
+      root.style.setProperty('--color-background-primary', selectedColor);
+      setSelectedBgColor(colorId);
+    }
     setShowBgPicker(false);
   };
 
