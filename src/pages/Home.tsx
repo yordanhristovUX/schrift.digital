@@ -235,13 +235,9 @@ const Home: React.FC = () => {
                 return (
                   <div 
                     key={font.id} 
-                    className={`text-sm font-['Listopad'] ${
-                      font.subscriber_only && !hasSubscription
-                        ? 'text-purple-600 hover:text-purple-700'
-                        : 'text-[#141204] hover:text-[#2D2B1F]'
-                    }`}
+                    className="space-y-4"
                   >
-                    {font.subscriber_only && !hasSubscription ? 'Become Subscriber' : t('home.download')}
+                    <div className="flex justify-between items-start">
                       <div>
                         <h3 className="text-xl font-semibold text-text-primary">{font.name}</h3>
                         <p className="text-sm text-text-secondary">
@@ -250,9 +246,13 @@ const Home: React.FC = () => {
                       </div>
                       <button
                         onClick={() => handleFontClick(font.id)}
-                        className="text-sm text-[#141204] hover:text-[#2D2B1F] font-['Listopad']"
+                        className={`text-sm font-['Listopad'] ${
+                          font.subscriber_only && !hasSubscription
+                            ? 'text-purple-600 hover:text-purple-700'
+                            : 'text-[#141204] hover:text-[#2D2B1F]'
+                        }`}
                       >
-                        {t('home.download')}
+                        {font.subscriber_only && !hasSubscription ? 'Become Subscriber' : t('home.download')}
                       </button>
                     </div>
 
@@ -312,6 +312,15 @@ const Home: React.FC = () => {
                     </div>
 
                     <div className="space-y-4">
+                      {font.subscriber_only && (
+                        <div className="mb-2">
+                          <span className="inline-flex items-center text-purple-600">
+                            <Crown size={14} className="mr-1" />
+                            Subscriber Only
+                          </span>
+                        </div>
+                      )}
+                      
                       {/* Normal weights */}
                       {normal.length > 0 && (
                         <div className="flex flex-wrap gap-8">
@@ -358,12 +367,6 @@ const Home: React.FC = () => {
                             </div>
                           ))}
                         </div>
-                      {font.subscriber_only && (
-                        <span className="inline-flex items-center text-purple-600 mr-2">
-                          <Crown size={14} className="mr-1" />
-                          Subscriber Only •
-                        </span>
-                      )}
                       )}
                     </div>
                   </div>
