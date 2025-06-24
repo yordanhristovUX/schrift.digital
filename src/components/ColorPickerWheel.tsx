@@ -203,8 +203,8 @@ const ColorPickerWheel: React.FC<ColorPickerWheelProps> = ({
     // Add opacity gradient
     const currentColor = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
     const gradient = ctx.createLinearGradient(0, 0, width, 0);
-    gradient.addColorStop(0, `${currentColor}00`); // Transparent version of current color
-    gradient.addColorStop(1, currentColor);
+    gradient.addColorStop(0, `hsla(${hue}, ${saturation}%, ${lightness}%, 0)`); // Transparent version of current color
+    gradient.addColorStop(1, `hsla(${hue}, ${saturation}%, ${lightness}%, 1)`);
 
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, width, height);
