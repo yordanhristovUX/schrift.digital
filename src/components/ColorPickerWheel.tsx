@@ -21,15 +21,13 @@ const ColorPickerWheel: React.FC<ColorPickerWheelProps> = ({
   const pickerRef = useRef<HTMLDivElement>(null);
   const squareRef = useRef<HTMLCanvasElement>(null);
   const hueRef = useRef<HTMLCanvasElement>(null);
-  const opacityRef = useRef<HTMLCanvasElement>(null);
   
   const [hue, setHue] = useState(0);
   const [red, setRed] = useState(255);
   const [green, setGreen] = useState(255);
   const [blue, setBlue] = useState(255);
-  const [opacity, setOpacity] = useState(100);
   const [hexInput, setHexInput] = useState('#FFFFFF');
-  const [isDragging, setIsDragging] = useState<'square' | 'hue' | 'opacity' | null>(null);
+  const [isDragging, setIsDragging] = useState<'square' | 'hue' | null>(null);
 
   // Predefined colors - mix of dark and light with different hues
   const predefinedColors = [
@@ -57,7 +55,6 @@ const ColorPickerWheel: React.FC<ColorPickerWheelProps> = ({
         setGreen(g);
         setBlue(b);
         setHexInput(currentColor);
-        setOpacity(100);
         
         // Calculate hue from RGB for the hue bar
         const hueValue = rgbToHue(r, g, b);
@@ -70,7 +67,6 @@ const ColorPickerWheel: React.FC<ColorPickerWheelProps> = ({
         setBlue(255);
         setHue(0);
         setHexInput('#FFFFFF');
-        setOpacity(100);
       }
     }
   }, [isOpen, currentColor]);
@@ -91,8 +87,6 @@ const ColorPickerWheel: React.FC<ColorPickerWheelProps> = ({
         handleSquareMove(event);
       } else if (isDragging === 'hue') {
         handleHueMove(event);
-      } else if (isDragging === 'opacity') {
-        handleOpacityMove(event);
       }
     };
 
@@ -117,15 +111,14 @@ const ColorPickerWheel: React.FC<ColorPickerWheelProps> = ({
     if (isOpen) {
       drawSquare();
       drawHueBar();
-      drawOpacityBar();
     }
-  }, [isOpen, hue, red, green, blue, opacity]);
+  }, [isOpen, hue, red, green, blue]);
 
   useEffect(() => {
     const hexColor = rgbToHex(red, green, blue);
     setHexInput(hexColor);
     onColorSelect(hexColor);
-  }, [red, green, blue, opacity, onColorSelect]);
+  }, [red, green, blue, onColorSelect]);
 
   const drawSquare = () => {
     const canvas = squareRef.current;
@@ -185,37 +178,6 @@ const ColorPickerWheel: React.FC<ColorPickerWheelProps> = ({
       const hueValue = (x / width) * 360;
       const rgb = hueToRgb(hueValue);
       ctx.fillStyle = `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
-      ctx.fillRect(x, 0, 1, height);
-    }
-  };
-
-  const drawOpacityBar = () => {
-    const canvas = opacityRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    const width = canvas.width;
-    const height = canvas.height;
-
-    // Clear canvas
-    ctx.clearRect(0, 0, width, height);
-
-    // Draw checkerboard pattern
-    const checkSize = 8;
-    for (let x = 0; x < width; x += checkSize) {
-      for (let y = 0; y < height; y += checkSize) {
-        const isEven = (Math.floor(x / checkSize) + Math.floor(y / checkSize)) % 2 === 0;
-        ctx.fillStyle = isEven ? '#ffffff' : '#e5e5e5';
-        ctx.fillRect(x, y, checkSize, checkSize);
-      }
-    }
-
-    // Add opacity gradient
-    for (let x = 0; x < width; x++) {
-      const alpha = x / width;
-      ctx.fillStyle = `rgba(${red}, ${green}, ${blue}, ${alpha})`;
       ctx.fillRect(x, 0, 1, height);
     }
   };
@@ -303,28 +265,6 @@ const ColorPickerWheel: React.FC<ColorPickerWheelProps> = ({
     setRed(newRgb.r);
     setGreen(newRgb.g);
     setBlue(newRgb.b);
-  };
-
-  const handleOpacityClick = (event: React.MouseEvent<HTMLCanvasElement>) => {
-    const canvas = opacityRef.current;
-    if (!canvas) return;
-
-    const { x } = getCanvasPosition(canvas, event);
-    updateOpacityPosition(x, canvas);
-    setIsDragging('opacity');
-  };
-
-  const handleOpacityMove = (event: MouseEvent) => {
-    const canvas = opacityRef.current;
-    if (!canvas) return;
-
-    const { x } = getCanvasPosition(canvas, event);
-    updateOpacityPosition(x, canvas);
-  };
-
-  const updateOpacityPosition = (x: number, canvas: HTMLCanvasElement) => {
-    const newOpacity = Math.round((x / canvas.width) * 100);
-    setOpacity(Math.max(0, Math.min(100, newOpacity)));
   };
 
   const handleHexInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -541,7 +481,7 @@ const ColorPickerWheel: React.FC<ColorPickerWheelProps> = ({
         </div>
 
         {/* Hue Bar */}
-        <div className="relative mb-3">
+        <div className="relative mb-4">
           <canvas
             ref={hueRef}
             width={240}
@@ -554,26 +494,6 @@ const ColorPickerWheel: React.FC<ColorPickerWheelProps> = ({
             className="absolute w-3 h-4 border-2 border-white rounded-sm shadow-md pointer-events-none"
             style={{
               left: `${(hue / 360) * 100}%`,
-              top: '50%',
-              transform: 'translate(-50%, -50%)'
-            }}
-          />
-        </div>
-
-        {/* Opacity Bar */}
-        <div className="relative mb-4">
-          <canvas
-            ref={opacityRef}
-            width={240}
-            height={16}
-            onMouseDown={handleOpacityClick}
-            className="cursor-pointer rounded border border-gray-200 w-full"
-          />
-          {/* Opacity indicator */}
-          <div
-            className="absolute w-3 h-4 border-2 border-white rounded-sm shadow-md pointer-events-none"
-            style={{
-              left: `${(opacity / 100) * 100}%`,
               top: '50%',
               transform: 'translate(-50%, -50%)'
             }}
@@ -593,7 +513,6 @@ const ColorPickerWheel: React.FC<ColorPickerWheelProps> = ({
             className="flex-1 px-2 py-1 text-sm border border-gray-200 rounded font-mono"
             placeholder="#000000"
           />
-          <span className="text-sm text-gray-500 font-mono">{Math.round(opacity)}%</span>
         </div>
 
         {/* Predefined Colors */}
