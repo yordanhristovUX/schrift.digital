@@ -71,7 +71,9 @@ const ColorPickerWheel: React.FC<ColorPickerWheelProps> = ({
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (pickerRef.current && !pickerRef.current.contains(event.target as Node)) {
+      // Only close if clicking outside AND not on the trigger button
+      if (pickerRef.current && !pickerRef.current.contains(event.target as Node) && 
+          !(event.target as Element).closest('[data-color-picker-trigger]')) {
         onClose();
       }
     };
@@ -103,7 +105,7 @@ const ColorPickerWheel: React.FC<ColorPickerWheelProps> = ({
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [isOpen, onClose, isDragging]);
+  }, [isOpen, isDragging]);
 
   useEffect(() => {
     if (isOpen) {
@@ -356,7 +358,7 @@ const ColorPickerWheel: React.FC<ColorPickerWheelProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="fixed inset-0 z-50 pointer-events-none">
       <div
         ref={pickerRef}
         className="relative bg-white rounded-lg p-4 shadow-2xl border border-gray-200"
@@ -364,7 +366,13 @@ const ColorPickerWheel: React.FC<ColorPickerWheelProps> = ({
           width: '280px',
           animation: 'fadeInScale 0.2s ease-out'
         }}
-        onClick={(e) => e.stopPropagation()}
+        style={{
+          position: 'absolute',
+          left: `${position.x}px`,
+          top: `${position.y}px`,
+          transform: 'translate(-50%, -10px)',
+          pointerEvents: 'auto'
+        }}
       >
         {/* Header */}
         <div className="flex items-center justify-between mb-4">

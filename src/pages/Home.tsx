@@ -166,7 +166,7 @@ const Home: React.FC = () => {
   };
 
   const handleBackgroundPickerClick = (e: React.MouseEvent) => {
-    const rect = e.currentTarget.getBoundingClientRect();
+    e.stopPropagation();
     setBackgroundPickerPos({
       x: e.clientX,
       y: e.clientY
@@ -175,7 +175,7 @@ const Home: React.FC = () => {
   };
 
   const handleTextPickerClick = (e: React.MouseEvent) => {
-    const rect = e.currentTarget.getBoundingClientRect();
+    e.stopPropagation();
     setTextPickerPos({
       x: e.clientX,
       y: e.clientY
@@ -185,12 +185,12 @@ const Home: React.FC = () => {
 
   const handleBackgroundColorSelect = (color: string) => {
     setBackgroundColor(color);
-    setShowBackgroundPicker(false);
+    // Don't close immediately, let user continue selecting
   };
 
   const handleTextColorSelect = (color: string) => {
     setTextColor(color);
-    setShowTextPicker(false);
+    // Don't close immediately, let user continue selecting
   };
 
   if (loading) {
@@ -261,6 +261,7 @@ const Home: React.FC = () => {
               <div className="flex items-center space-x-3">
                 <button
                   onClick={handleBackgroundPickerClick}
+                  data-color-picker-trigger="background"
                   className="p-2 rounded-full bg-white border border-gray-300 hover:bg-gray-50 transition-colors"
                   title="Change background color"
                 >
@@ -268,6 +269,7 @@ const Home: React.FC = () => {
                 </button>
                 <button
                   onClick={handleTextPickerClick}
+                  data-color-picker-trigger="text"
                   className="p-2 rounded-full bg-white border border-gray-300 hover:bg-gray-50 transition-colors"
                   title="Change text color"
                 >
@@ -306,7 +308,7 @@ const Home: React.FC = () => {
                 return (
                   <div 
                     key={font.id} 
-                    className="border border-border-primary rounded-sm p-6 transition-all duration-300 hover:shadow-lg space-y-4"
+                    className="border border-border-primary rounded-sm p-6 bg-white transition-all duration-300 hover:shadow-lg space-y-4"
                     style={{ 
                       backgroundColor: backgroundColor,
                       color: textColor
