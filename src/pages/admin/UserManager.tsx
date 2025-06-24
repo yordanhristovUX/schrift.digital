@@ -62,13 +62,12 @@ const UserManager: React.FC = () => {
             .maybeSingle();
 
           // Since all users in auth.users are confirmed (as you verified), mark them as verified
-            console.error(`Error fetching auth data for user ${user.id}:`, err);
-            return {
-              ...user,
-              last_sign_in_at: null,
-              email_confirmed_at: new Date().toISOString(), // Mark as verified since they exist in auth.users
-              has_subscription: false
-            };
+          return {
+            ...user,
+            last_sign_in_at: null,
+            email_confirmed_at: new Date().toISOString(), // Mark as verified since they exist in auth.users
+            has_subscription: !!customerData
+          };
         })
       );
 
