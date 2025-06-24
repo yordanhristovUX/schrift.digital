@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Crown } from 'lucide-react';
+import MinimalColorPicker from '../components/MinimalColorPicker';
 import { useTranslation } from 'react-i18next';
 import { Helmet } from 'react-helmet-async';
 import { supabase } from '../lib/supabase';
@@ -221,6 +222,9 @@ const Home: React.FC = () => {
               <p className="text-lg text-[#5E6572] font-['Listopad']">
                 {t('home.library_count', { count: fonts.length })}
               </p>
+              
+              {/* Minimal Color Picker */}
+              <MinimalColorPicker />
             </div>
 
             {/* Preview text input */}

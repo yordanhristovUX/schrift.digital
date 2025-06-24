@@ -1,4 +1,5 @@
 @import './fonts.css';
+@import './styles/themes.css';
 @import './styles/tokens.css';
 @import './styles/design-system.css';
 @tailwind base;

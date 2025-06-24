@@ -1,0 +1,102 @@
+/* Theme System - Light and Dark Mode Support */
+
+/* Light Theme (Default) */
+:root {
+  /* Background Colors */
+  --color-background-primary: #F5F5F5;
+  --color-background-secondary: #D9D9D9;
+  --color-background-tertiary: #BCBDC0;
+  --color-background-inverse: #141204;
+
+  /* Text Colors */
+  --color-text-primary: #141204;
+  --color-text-secondary: #5E6572;
+  --color-text-tertiary: #BCBDC0;
+  --color-text-inverse: #FFFFFC;
+
+  /* Border Colors */
+  --color-border-primary: #D9D9D9;
+  --color-border-secondary: #BCBDC0;
+
+  /* Action Colors */
+  --color-action-primary: #141204;
+  --color-action-primary-hover: #2D2B1F;
+  --color-action-secondary: #5E6572;
+  --color-action-secondary-hover: #4A5161;
+}
+
+/* Dark Theme */
+[data-theme="dark"] {
+  /* Background Colors */
+  --color-background-primary: #141204;
+  --color-background-secondary: #2D2B1F;
+  --color-background-tertiary: #5E6572;
+  --color-background-inverse: #F5F5F5;
+
+  /* Text Colors */
+  --color-text-primary: #FFFFFC;
+  --color-text-secondary: #BCBDC0;
+  --color-text-tertiary: #5E6572;
+  --color-text-inverse: #141204;
+
+  /* Border Colors */
+  --color-border-primary: #5E6572;
+  --color-border-secondary: #BCBDC0;
+
+  /* Action Colors */
+  --color-action-primary: #FFFFFC;
+  --color-action-primary-hover: #D9D9D9;
+  --color-action-secondary: #BCBDC0;
+  --color-action-secondary-hover: #D9D9D9;
+}
+
+/* Background Color Variants */
+[data-bg-color="warm"] {
+  --color-background-primary: #FEF7ED;
+  --color-background-secondary: #FED7AA;
+  --color-background-tertiary: #FDBA74;
+}
+
+[data-bg-color="cool"] {
+  --color-background-primary: #EFF6FF;
+  --color-background-secondary: #BFDBFE;
+  --color-background-tertiary: #93C5FD;
+}
+
+[data-bg-color="nature"] {
+  --color-background-primary: #F0FDF4;
+  --color-background-secondary: #BBF7D0;
+  --color-background-tertiary: #86EFAC;
+}
+
+[data-bg-color="sunset"] {
+  --color-background-primary: #FFF7ED;
+  --color-background-secondary: #FFEDD5;
+  --color-background-tertiary: #FED7AA;
+}
+
+/* Text Color Variants for Dark Mode */
+[data-theme="dark"][data-text-color="warm"] {
+  --color-text-primary: #FED7AA;
+  --color-text-secondary: #FDBA74;
+}
+
+[data-theme="dark"][data-text-color="cool"] {
+  --color-text-primary: #93C5FD;
+  --color-text-secondary: #BFDBFE;
+}
+
+[data-theme="dark"][data-text-color="nature"] {
+  --color-text-primary: #86EFAC;
+  --color-text-secondary: #BBF7D0;
+}
+
+[data-theme="dark"][data-text-color="sunset"] {
+  --color-text-primary: #FDBA74;
+  --color-text-secondary: #FED7AA;
+}
+
+[data-theme="dark"][data-text-color="purple"] {
+  --color-text-primary: #C4B5FD;
+  --color-text-secondary: #DDD6FE;
+}
