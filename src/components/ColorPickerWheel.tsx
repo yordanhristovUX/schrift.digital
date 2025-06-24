@@ -119,7 +119,7 @@ const ColorPickerWheel: React.FC<ColorPickerWheelProps> = ({
     const color = `hsla(${hue}, ${saturation}%, ${lightness}%, ${opacity / 100})`;
     const hexColor = hslToHex(hue, saturation, lightness);
     setHexInput(hexColor);
-    onColorSelect(opacity === 100 ? hexColor : color);
+    onColorSelect(hexColor); // Always use hex for now, opacity can be added later if needed
   }, [hue, saturation, lightness, opacity, onColorSelect]);
 
   const drawSquare = () => {
@@ -203,7 +203,7 @@ const ColorPickerWheel: React.FC<ColorPickerWheelProps> = ({
     // Add opacity gradient
     const currentColor = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
     const gradient = ctx.createLinearGradient(0, 0, width, 0);
-    gradient.addColorStop(0, 'rgba(0, 0, 0, 0)');
+    gradient.addColorStop(0, `${currentColor}00`); // Transparent version of current color
     gradient.addColorStop(1, currentColor);
 
     ctx.fillStyle = gradient;
@@ -236,8 +236,8 @@ const ColorPickerWheel: React.FC<ColorPickerWheelProps> = ({
   };
 
   const updateSquarePosition = (x: number, y: number, canvas: HTMLCanvasElement) => {
-    const newSaturation = 100 - (x / canvas.width) * 100;
-    const newLightness = 100 - (y / canvas.height) * 100;
+    const newSaturation = (1 - x / canvas.width) * 100;
+    const newLightness = (1 - y / canvas.height) * 100;
 
     setSaturation(Math.max(0, Math.min(100, newSaturation)));
     setLightness(Math.max(0, Math.min(100, newLightness)));
@@ -283,7 +283,7 @@ const ColorPickerWheel: React.FC<ColorPickerWheelProps> = ({
   };
 
   const updateOpacityPosition = (x: number, canvas: HTMLCanvasElement) => {
-    const newOpacity = (x / canvas.width) * 100;
+    const newOpacity = Math.round((x / canvas.width) * 100);
     setOpacity(Math.max(0, Math.min(100, newOpacity)));
   };
 
@@ -300,12 +300,19 @@ const ColorPickerWheel: React.FC<ColorPickerWheelProps> = ({
   };
 
   const handlePredefinedColorClick = (color: string) => {
-    const { h, s, l } = hexToHsl(color);
+    try {
+      const { h, s, l } = hexToHsl(color);
+      console.log('Predefined color clicked:', color, 'HSL:', { h, s, l });
     setHue(h);
     setSaturation(s);
     setLightness(l);
     setHexInput(color);
     onColorSelect(color);
+  };
+
+    } catch (error) {
+      console.error('Error parsing predefined color:', error);
+    }
   };
 
   const hslToHex = (h: number, s: number, l: number) => {
@@ -400,7 +407,7 @@ const ColorPickerWheel: React.FC<ColorPickerWheelProps> = ({
           <div
             className="absolute w-3 h-3 border-2 border-white rounded-full shadow-md pointer-events-none"
             style={{
-              left: `${100 - saturation}%`,
+              left: `${(1 - saturation / 100) * 100}%`,
               top: `${100 - lightness}%`,
               transform: 'translate(-50%, -50%)'
             }}
@@ -440,7 +447,7 @@ const ColorPickerWheel: React.FC<ColorPickerWheelProps> = ({
           <div
             className="absolute w-3 h-4 border-2 border-white rounded-sm shadow-md pointer-events-none"
             style={{
-              left: `${opacity}%`,
+              left: `${(opacity / 100) * 100}%`,
               top: '50%',
               transform: 'translate(-50%, -50%)'
             }}
