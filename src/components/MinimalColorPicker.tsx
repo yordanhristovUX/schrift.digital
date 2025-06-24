@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 interface ColorOption {
   id: string;
@@ -29,6 +29,23 @@ const MinimalColorPicker: React.FC = () => {
   const [selectedTextColor, setSelectedTextColor] = useState('default');
   const [showBgPicker, setShowBgPicker] = useState(false);
   const [showTextPicker, setShowTextPicker] = useState(false);
+  const bgPickerRef = useRef<HTMLDivElement>(null);
+  const textPickerRef = useRef<HTMLDivElement>(null);
+
+  // Close pickers when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (bgPickerRef.current && !bgPickerRef.current.contains(event.target as Node)) {
+        setShowBgPicker(false);
+      }
+      if (textPickerRef.current && !textPickerRef.current.contains(event.target as Node)) {
+        setShowTextPicker(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   useEffect(() => {
     // Apply theme to document
@@ -36,12 +53,20 @@ const MinimalColorPicker: React.FC = () => {
     
     if (isDarkMode) {
       root.setAttribute('data-theme', 'dark');
-      root.setAttribute('data-text-color', selectedTextColor);
+      if (selectedTextColor !== 'default') {
+        root.setAttribute('data-text-color', selectedTextColor);
+      } else {
+        root.removeAttribute('data-text-color');
+      }
       root.removeAttribute('data-bg-color');
     } else {
       root.removeAttribute('data-theme');
       root.removeAttribute('data-text-color');
-      root.setAttribute('data-bg-color', selectedBgColor);
+      if (selectedBgColor !== 'default') {
+        root.setAttribute('data-bg-color', selectedBgColor);
+      } else {
+        root.removeAttribute('data-bg-color');
+      }
     }
   }, [isDarkMode, selectedBgColor, selectedTextColor]);
 
@@ -65,36 +90,35 @@ const MinimalColorPicker: React.FC = () => {
   const currentTextColor = textColors.find(c => c.id === selectedTextColor)?.color || '#FFFFFC';
 
   return (
-    <div className="flex items-center space-x-3">
-      {/* Background Color Picker (Light Mode) / Theme Toggle */}
-      <div className="relative">
+    <div className="flex items-center space-x-4">
+      {/* First Circle: Background Color Picker (Light Mode) / Light Mode Toggle (Dark Mode) */}
+      <div className="relative" ref={bgPickerRef}>
         <button
           onClick={isDarkMode ? handleThemeToggle : () => setShowBgPicker(!showBgPicker)}
-          className="w-8 h-8 rounded-full border-2 border-gray-300 hover:border-gray-400 transition-colors shadow-sm"
+          className="w-10 h-10 rounded-full border-2 border-gray-400 hover:border-gray-600 transition-all duration-200 shadow-md hover:shadow-lg relative"
           style={{ 
             backgroundColor: isDarkMode ? '#141204' : currentBgColor,
-            position: 'relative'
           }}
           title={isDarkMode ? "Switch to light mode" : "Change background color"}
         >
           {isDarkMode && (
             <div 
-              className="absolute inset-1 rounded-full"
-              style={{ backgroundColor: currentTextColor }}
+              className="absolute inset-1 rounded-full border border-gray-600"
+              style={{ backgroundColor: '#F5F5F5' }}
             />
           )}
         </button>
 
         {/* Background Color Options */}
         {showBgPicker && !isDarkMode && (
-          <div className="absolute top-10 left-0 bg-white rounded-lg shadow-lg border border-gray-200 p-2 z-50">
-            <div className="grid grid-cols-5 gap-2">
+          <div className="absolute top-12 left-0 bg-white rounded-lg shadow-xl border border-gray-300 p-3 z-50 min-w-max">
+            <div className="flex space-x-2">
               {backgroundColors.map((color) => (
                 <button
                   key={color.id}
                   onClick={() => handleBgColorSelect(color.id)}
-                  className={`w-6 h-6 rounded-full border-2 hover:scale-110 transition-transform ${
-                    selectedBgColor === color.id ? 'border-gray-600' : 'border-gray-300'
+                  className={`w-8 h-8 rounded-full border-2 hover:scale-110 transition-transform duration-200 ${
+                    selectedBgColor === color.id ? 'border-gray-800 ring-2 ring-gray-300' : 'border-gray-400'
                   }`}
                   style={{ backgroundColor: color.color }}
                   title={color.name}
@@ -105,34 +129,34 @@ const MinimalColorPicker: React.FC = () => {
         )}
       </div>
 
-      {/* Dark Mode Toggle / Text Color Picker */}
-      <div className="relative">
+      {/* Second Circle: Dark Mode Toggle (Light Mode) / Text Color Picker (Dark Mode) */}
+      <div className="relative" ref={textPickerRef}>
         <button
           onClick={isDarkMode ? () => setShowTextPicker(!showTextPicker) : handleThemeToggle}
-          className="w-8 h-8 rounded-full border-2 border-gray-300 hover:border-gray-400 transition-colors shadow-sm relative overflow-hidden"
+          className="w-10 h-10 rounded-full border-2 border-gray-400 hover:border-gray-600 transition-all duration-200 shadow-md hover:shadow-lg relative overflow-hidden"
           title={isDarkMode ? "Change text color" : "Switch to dark mode"}
         >
           {/* Split circle design */}
           <div 
             className="absolute inset-0 w-1/2"
-            style={{ backgroundColor: isDarkMode ? currentTextColor : '#F5F5F5' }}
+            style={{ backgroundColor: isDarkMode ? currentTextColor : '#FFFFFC' }}
           />
           <div 
             className="absolute inset-0 left-1/2 w-1/2"
-            style={{ backgroundColor: isDarkMode ? '#141204' : '#141204' }}
+            style={{ backgroundColor: '#141204' }}
           />
         </button>
 
         {/* Text Color Options (Dark Mode Only) */}
         {showTextPicker && isDarkMode && (
-          <div className="absolute top-10 right-0 bg-white rounded-lg shadow-lg border border-gray-200 p-2 z-50">
+          <div className="absolute top-12 right-0 bg-white rounded-lg shadow-xl border border-gray-300 p-3 z-50 min-w-max">
             <div className="grid grid-cols-3 gap-2">
               {textColors.map((color) => (
                 <button
                   key={color.id}
                   onClick={() => handleTextColorSelect(color.id)}
-                  className={`w-6 h-6 rounded-full border-2 hover:scale-110 transition-transform ${
-                    selectedTextColor === color.id ? 'border-gray-600' : 'border-gray-300'
+                  className={`w-8 h-8 rounded-full border-2 hover:scale-110 transition-transform duration-200 ${
+                    selectedTextColor === color.id ? 'border-gray-800 ring-2 ring-gray-300' : 'border-gray-400'
                   }`}
                   style={{ backgroundColor: color.color }}
                   title={color.name}
