@@ -82,3 +82,37 @@ body {
   box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
   border-color: var(--color-text-primary);
 }
+
+/* Download Link Styles */
+.download-link {
+  color: var(--color-action-primary);
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 4px;
+  transition: all 0.2s ease;
+}
+
+.download-link:hover {
+  color: var(--color-action-primary-hover);
+  text-decoration-color: currentColor;
+}
+
+/* Dark mode download link */
+[data-theme="dark"] .download-link {
+  color: var(--color-text-primary);
+}
+
+[data-theme="dark"] .download-link:hover {
+  color: var(--color-text-tertiary);
+}
+
+/* Arrow Animation on Card Hover */
+.font-card:hover .download-arrow {
+  transform: translateX(4px);
+}
+
+/* Ensure download link is visible in both themes */
+.download-link {
+  opacity: 1;
+  font-weight: 500;
+}

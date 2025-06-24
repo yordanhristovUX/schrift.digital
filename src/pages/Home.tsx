@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Crown } from 'lucide-react';
+import { Crown, ArrowRight } from 'lucide-react';
 import MinimalColorPicker from '../components/MinimalColorPicker';
 import { useTranslation } from 'react-i18next';
 import { Helmet } from 'react-helmet-async';
@@ -276,13 +276,17 @@ const Home: React.FC = () => {
                       </div>
                       <button
                         onClick={() => handleFontClick(font.id)}
-                        className={`text-sm font-['Listopad'] ${
+                        className={`download-link text-sm font-['Listopad'] flex items-center gap-2 transition-all duration-200 ${
                           font.subscriber_only && !hasSubscription
-                            ? 'text-red-600 hover:text-red-700'
-                            : 'text-action-primary hover:text-action-primary-hover'
+                            ? 'text-red-600 hover:text-red-700 font-medium'
+                            : 'text-action-primary hover:text-action-primary-hover font-medium'
                         }`}
                       >
                         {font.subscriber_only && !hasSubscription ? 'Become Subscriber' : t('home.download')}
+                        <ArrowRight 
+                          size={16} 
+                          className="download-arrow transition-transform duration-200" 
+                        />
                       </button>
                     </div>
 
