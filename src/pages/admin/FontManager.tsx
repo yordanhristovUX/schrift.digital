@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Upload, Plus, Trash2, Edit, Save, X } from 'lucide-react';
+import { Upload, Plus, Trash2, Edit, Save, X, Type, LayoutDashboard, CreditCard, Users, Settings, LogOut } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { Font, FontWeight, FontStyle, LicenseType } from '../../types/font';
 
@@ -36,8 +36,6 @@ const weightMap: Record<string, FontWeight> = {
   'extrabold': 'ExtraBold',
   'black': 'Black'
 };
-
-import { LayoutDashboard, Type, Users, Settings, LogOut, CreditCard } from 'lucide-react';
 
 const FontManager: React.FC = () => {
   const [fonts, setFonts] = useState<Font[]>([]);
