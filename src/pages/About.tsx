@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Helmet } from 'react-helmet-async';
 
 const About: React.FC = () => {
-  const { t } = useTranslation(['common']);
+  const { t, i18n } = useTranslation(['common']);
 
   return (
     <>
