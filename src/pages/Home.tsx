@@ -217,9 +217,9 @@ const Home: React.FC = () => {
         {/* Font Preview Section */}
         <section className="section bg-background-primary">
           <div className="container mx-auto max-w-5xl">
-            {/* Library count */}
+            {/* Library count and color picker */}
             <div className="flex justify-between items-center mb-8">
-              <p className="text-lg text-[#5E6572] font-['Listopad']">
+              <p className="text-lg text-text-secondary font-['Listopad']">
                 {t('home.library_count', { count: fonts.length })}
               </p>
               
@@ -233,7 +233,7 @@ const Home: React.FC = () => {
                 type="text"
                 value={previewText}
                 onChange={(e) => setPreviewText(e.target.value)}
-                className="w-full text-base p-6 bg-[#FFFFFC] text-text-primary border border-[#D9D9D9] hover:border-[#141204] focus:border-[#141204] focus:outline-none transition-colors duration-200 rounded-sm font-['Listopad']"
+                className="w-full text-base p-6 bg-background-primary text-text-primary border border-border-primary hover:border-action-primary focus:border-action-primary focus:outline-none transition-colors duration-200 rounded-sm font-['Listopad']"
                 placeholder={t('home.preview_placeholder')}
               />
             </div>
@@ -279,7 +279,7 @@ const Home: React.FC = () => {
                         className={`text-sm font-['Listopad'] ${
                           font.subscriber_only && !hasSubscription
                             ? 'text-red-600 hover:text-red-700'
-                            : 'text-[#141204] hover:text-[#2D2B1F]'
+                            : 'text-action-primary hover:text-action-primary-hover'
                         }`}
                       >
                         {font.subscriber_only && !hasSubscription ? 'Become Subscriber' : t('home.download')}
@@ -330,8 +330,8 @@ const Home: React.FC = () => {
                                   onClick={() => handleStyleChange(font.id, style)}
                                   className={`px-3 py-1 text-sm rounded-sm font-['Listopad'] transition-colors ${
                                     currentStyle === style
-                                      ? 'bg-[#141204] text-[#FFFFFC]'
-                                      : 'bg-[#D9D9D9] text-[#141204] hover:bg-[#BCBDC0]'
+                                      ? 'bg-action-primary text-text-inverse'
+                                      : 'bg-background-secondary text-text-primary hover:bg-background-tertiary'
                                   }`}
                                 >
                                   {style}
@@ -362,8 +362,8 @@ const Home: React.FC = () => {
                                   onClick={() => handleWeightChange(font.id, weight)}
                                   className={`px-3 py-1 text-sm rounded-sm font-['Listopad'] transition-colors ${
                                     currentWeight === weight
-                                      ? 'bg-[#141204] text-[#FFFFFC]'
-                                      : 'bg-[#D9D9D9] text-[#141204] hover:bg-[#BCBDC0]'
+                                      ? 'bg-action-primary text-text-inverse'
+                                      : 'bg-background-secondary text-text-primary hover:bg-background-tertiary'
                                   }`}
                                 >
                                   {weight}

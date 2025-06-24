@@ -33,38 +33,20 @@ const MinimalColorPicker: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    // Apply theme to document root (html element)
     const root = document.documentElement;
     
+    // Apply theme
     if (isDarkMode) {
       root.setAttribute('data-theme', 'dark');
-      // Remove background color variations in dark mode
       root.removeAttribute('data-bg-color');
     } else {
       root.removeAttribute('data-theme');
-      // Apply background color only in light mode
       if (selectedBgColor !== 'default') {
         root.setAttribute('data-bg-color', selectedBgColor);
       } else {
         root.removeAttribute('data-bg-color');
       }
     }
-
-    // Force a complete page repaint to ensure all elements update
-    setTimeout(() => {
-      document.body.style.display = 'none';
-      document.body.offsetHeight; // Trigger reflow
-      document.body.style.display = '';
-      
-      // Force update of all elements with inline styles
-      const elementsWithInlineStyles = document.querySelectorAll('[style*="color"]');
-      elementsWithInlineStyles.forEach(element => {
-        const htmlElement = element as HTMLElement;
-        if (htmlElement.style.color) {
-          htmlElement.style.color = 'var(--color-text-primary)';
-        }
-      });
-    }, 50);
   }, [isDarkMode, selectedBgColor]);
 
   const handleThemeToggle = () => {
@@ -81,7 +63,7 @@ const MinimalColorPicker: React.FC = () => {
 
   return (
     <div className="flex items-center space-x-4">
-      {/* First Circle: Background Color Picker (Light Mode Only) */}
+      {/* Background Color Picker */}
       <div className="relative" ref={bgPickerRef}>
         <button
           onClick={() => !isDarkMode && setShowBgPicker(!showBgPicker)}
@@ -95,7 +77,6 @@ const MinimalColorPicker: React.FC = () => {
           disabled={isDarkMode}
         />
 
-        {/* Background Color Options (Light Mode Only) */}
         {showBgPicker && !isDarkMode && (
           <div className="absolute top-12 left-0 bg-white rounded-lg shadow-xl border border-gray-300 p-3 z-50 min-w-max">
             <div className="flex space-x-2">
@@ -115,31 +96,24 @@ const MinimalColorPicker: React.FC = () => {
         )}
       </div>
 
-      {/* Second Circle: Dark/Light Mode Toggle */}
-      <div className="relative">
-        <button
-          onClick={handleThemeToggle}
-          className="w-10 h-10 rounded-full border-2 border-gray-400 hover:border-gray-600 transition-all duration-200 shadow-md hover:shadow-lg relative overflow-hidden"
-          title={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
-        >
-          {/* Split circle design - always shows light/dark split */}
-          <div 
-            className="absolute inset-0 w-1/2"
-            style={{ backgroundColor: '#FFFFFC' }}
-          />
-          <div 
-            className="absolute inset-0 left-1/2 w-1/2"
-            style={{ backgroundColor: '#141204' }}
-          />
-          
-          {/* Indicator dot to show current mode */}
-          <div 
-            className={`absolute top-1/2 transform -translate-y-1/2 w-2 h-2 rounded-full transition-all duration-300 ${
-              isDarkMode ? 'left-1 bg-white' : 'right-1 bg-black'
-            }`}
-          />
-        </button>
-      </div>
+      {/* Dark/Light Mode Toggle */}
+      <button
+        onClick={handleThemeToggle}
+        className="w-10 h-10 rounded-full border-2 border-gray-400 hover:border-gray-600 transition-all duration-200 shadow-md hover:shadow-lg relative overflow-hidden"
+        title={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
+      >
+        <div 
+          className="absolute inset-0 w-1/2 bg-white"
+        />
+        <div 
+          className="absolute inset-0 left-1/2 w-1/2 bg-black"
+        />
+        <div 
+          className={`absolute top-1/2 transform -translate-y-1/2 w-2 h-2 rounded-full transition-all duration-300 ${
+            isDarkMode ? 'left-1 bg-white' : 'right-1 bg-black'
+          }`}
+        />
+      </button>
     </div>
   );
 };

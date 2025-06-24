@@ -1,6 +1,6 @@
-/* Theme System - Light and Dark Mode Support */
+/* Clean Theme System - Simple Token Swapping */
 
-/* Light Theme (Default) */
+/* Default Light Theme */
 :root {
   /* Background Colors */
   --color-background-primary: #F5F5F5;
@@ -25,13 +25,11 @@
   --color-action-secondary-hover: #4A5161;
 }
 
-/* Dark Theme - SWAP the primary background and text colors */
+/* Dark Theme - Simple Token Swap */
 [data-theme="dark"] {
-  /* SWAPPED: Background becomes dark, text becomes light */
-  --color-background-primary: #141204;  /* Was light, now dark */
-  --color-text-primary: #FFFFFC;        /* Was dark, now light */
+  --color-background-primary: #141204;
+  --color-text-primary: #FFFFFC;
   
-  /* Secondary colors adjusted accordingly */
   --color-background-secondary: #2D2B1F;
   --color-background-tertiary: #5E6572;
   --color-background-inverse: #F5F5F5;
@@ -40,11 +38,9 @@
   --color-text-tertiary: #5E6572;
   --color-text-inverse: #141204;
 
-  /* Border Colors */
   --color-border-primary: #5E6572;
   --color-border-secondary: #BCBDC0;
 
-  /* Action Colors */
   --color-action-primary: #FFFFFC;
   --color-action-primary-hover: #D9D9D9;
   --color-action-secondary: #BCBDC0;
@@ -76,172 +72,13 @@
   --color-background-tertiary: #FED7AA;
 }
 
-/* Apply theme to body and ensure smooth transitions */
-body {
-  background-color: var(--color-background-primary);
-  color: var(--color-text-primary);
-  transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-/* Apply theme to all major sections */
-.section {
-  background-color: var(--color-background-primary);
-  color: var(--color-text-primary);
-}
-
-/* Smooth transitions for all elements */
+/* Global Smooth Transitions */
 * {
   transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
-/* Force all background classes to use the token */
-.bg-background-primary,
-.bg-\[#FFFFFC\],
-.bg-white,
-.bg-\[#F5F5F5\] {
-  background-color: var(--color-background-primary) !important;
-}
-
-.bg-background-secondary,
-.bg-\[#D9D9D9\] {
-  background-color: var(--color-background-secondary) !important;
-}
-
-.bg-background-inverse,
-.bg-\[#141204\] {
-  background-color: var(--color-background-inverse) !important;
-}
-
-/* Force all text classes to use the token */
-.text-text-primary,
-.text-\[#141204\] {
-  color: var(--color-text-primary) !important;
-}
-
-.text-text-secondary,
-.text-\[#5E6572\] {
-  color: var(--color-text-secondary) !important;
-}
-
-.text-text-inverse,
-.text-\[#FFFFFC\] {
-  color: var(--color-text-inverse) !important;
-}
-
-/* Force all border classes to use the token */
-.border-border-primary,
-.border-\[#D9D9D9\] {
-  border-color: var(--color-border-primary) !important;
-}
-
-/* Specific overrides for font preview containers */
-.border.border-border-primary.rounded-sm {
-  background-color: var(--color-background-primary) !important;
-  border-color: var(--color-border-primary) !important;
-  color: var(--color-text-primary) !important;
-}
-
-/* Override any hardcoded colors in font preview cards */
-.border.border-border-primary.rounded-sm.p-6 {
-  background-color: var(--color-background-primary) !important;
-  color: var(--color-text-primary) !important;
-}
-
-.border.border-border-primary.rounded-sm.p-6 h3,
-.border.border-border-primary.rounded-sm.p-6 p,
-.border.border-border-primary.rounded-sm.p-6 span,
-.border.border-border-primary.rounded-sm.p-6 label {
-  color: var(--color-text-primary) !important;
-}
-
-.border.border-border-primary.rounded-sm.p-6 .text-text-secondary {
-  color: var(--color-text-secondary) !important;
-}
-
-/* Navbar theme handling */
-nav {
-  background-color: var(--color-background-inverse) !important;
-  color: var(--color-text-inverse) !important;
-}
-
-nav .text-\[#FFFFFC\] {
-  color: var(--color-text-inverse) !important;
-}
-
-nav .text-\[#BCBDC0\] {
-  color: var(--color-text-secondary) !important;
-}
-
-/* Footer theme handling */
-footer {
-  background-color: var(--color-background-inverse) !important;
-  color: var(--color-text-inverse) !important;
-}
-
-footer .text-\[#FFFFFC\] {
-  color: var(--color-text-inverse) !important;
-}
-
-footer .text-\[#BCBDC0\] {
-  color: var(--color-text-secondary) !important;
-}
-
-/* Button theme handling */
-.btn-primary {
-  background-color: var(--color-action-primary) !important;
-  color: var(--color-text-inverse) !important;
-}
-
-.btn-primary:hover {
-  background-color: var(--color-action-primary-hover) !important;
-}
-
-/* Card theme handling */
-.card {
-  background-color: var(--color-background-primary) !important;
-  border-color: var(--color-border-primary) !important;
-  color: var(--color-text-primary) !important;
-}
-
-/* Input theme handling */
-input, textarea, select {
-  background-color: var(--color-background-primary) !important;
-  color: var(--color-text-primary) !important;
-  border-color: var(--color-border-primary) !important;
-}
-
-/* Language switcher dropdown */
-.user-dropdown div,
-.language-switcher div {
-  background-color: var(--color-background-primary) !important;
-  color: var(--color-text-primary) !important;
-}
-
-/* Ensure all text elements use theme colors */
-h1, h2, h3, h4, h5, h6, p, span, label, div {
-  color: inherit;
-}
-
-/* Force theme application to specific font preview elements */
-[style*="fontFamily"] {
-  color: var(--color-text-primary) !important;
-}
-
-/* Override any inline styles that might conflict */
-[style*="color"] {
-  color: var(--color-text-primary) !important;
-}
-
-/* Specific targeting for font preview text */
-.section .container .space-y-12 > div {
-  background-color: var(--color-background-primary) !important;
-  color: var(--color-text-primary) !important;
-}
-
-.section .container .space-y-12 > div * {
-  color: var(--color-text-primary) !important;
-}
-
-.section .container .space-y-12 > div .text-text-secondary {
-  color: var(--color-text-secondary) !important;
+/* Apply theme to body */
+body {
+  background-color: var(--color-background-primary);
+  color: var(--color-text-primary);
 }
