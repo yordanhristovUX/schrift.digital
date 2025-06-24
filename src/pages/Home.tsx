@@ -17,7 +17,7 @@ const Home: React.FC = () => {
   const [selectedWeights, setSelectedWeights] = useState<Record<string, string>>({});
   const [selectedStyles, setSelectedStyles] = useState<Record<string, string>>({});
   const [hasSubscription, setHasSubscription] = useState(false);
-  const [backgroundColor, setBackgroundColor] = useState('#e5e7eb');
+  const [backgroundColor, setBackgroundColor] = useState('#FFFFFF');
   const [textColor, setTextColor] = useState('#141204');
   const [showBackgroundPicker, setShowBackgroundPicker] = useState(false);
   const [showTextPicker, setShowTextPicker] = useState(false);
@@ -308,7 +308,7 @@ const Home: React.FC = () => {
                 return (
                   <div 
                     key={font.id} 
-                    className="border border-border-primary rounded-sm p-6 transition-all duration-300 hover:shadow-lg space-y-4"
+                    className="border border-border-primary rounded-sm p-6 transition-all duration-300 hover:shadow-lg space-y-4 bg-white"
                     style={{ 
                       backgroundColor: backgroundColor,
                       color: textColor

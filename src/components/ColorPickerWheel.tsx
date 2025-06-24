@@ -24,13 +24,14 @@ const ColorPickerWheel: React.FC<ColorPickerWheelProps> = ({
   const opacityRef = useRef<HTMLCanvasElement>(null);
   
   const [hue, setHue] = useState(0);
-  const [saturation, setSaturation] = useState(0);
-  const [lightness, setLightness] = useState(50);
+  const [red, setRed] = useState(255);
+  const [green, setGreen] = useState(255);
+  const [blue, setBlue] = useState(255);
   const [opacity, setOpacity] = useState(100);
   const [hexInput, setHexInput] = useState('#FFFFFF');
   const [isDragging, setIsDragging] = useState<'square' | 'hue' | 'opacity' | null>(null);
 
-  // Predefined colors - mix of dark and light with different hues and low saturation
+  // Predefined colors - mix of dark and light with different hues
   const predefinedColors = [
     '#4F46E5', // Indigo
     '#10B981', // Emerald  
@@ -51,18 +52,23 @@ const ColorPickerWheel: React.FC<ColorPickerWheelProps> = ({
     if (isOpen && currentColor) {
       try {
         console.log('Initializing with color:', currentColor);
-        const { h, s, l } = hexToHsl(currentColor);
-        setHue(h);
-        setSaturation(s);
-        setLightness(l);
+        const { r, g, b } = hexToRgb(currentColor);
+        setRed(r);
+        setGreen(g);
+        setBlue(b);
         setHexInput(currentColor);
         setOpacity(100);
+        
+        // Calculate hue from RGB for the hue bar
+        const hueValue = rgbToHue(r, g, b);
+        setHue(hueValue);
       } catch (error) {
         console.error('Error parsing color:', error);
         // Default to white if parsing fails
+        setRed(255);
+        setGreen(255);
+        setBlue(255);
         setHue(0);
-        setSaturation(0);
-        setLightness(100);
         setHexInput('#FFFFFF');
         setOpacity(100);
       }
@@ -113,14 +119,13 @@ const ColorPickerWheel: React.FC<ColorPickerWheelProps> = ({
       drawHueBar();
       drawOpacityBar();
     }
-  }, [isOpen, hue, saturation, lightness, opacity]);
+  }, [isOpen, hue, red, green, blue, opacity]);
 
   useEffect(() => {
-    const color = `hsla(${hue}, ${saturation}%, ${lightness}%, ${opacity / 100})`;
-    const hexColor = hslToHex(hue, saturation, lightness);
+    const hexColor = rgbToHex(red, green, blue);
     setHexInput(hexColor);
-    onColorSelect(hexColor); // Always use hex for now, opacity can be added later if needed
-  }, [hue, saturation, lightness, opacity, onColorSelect]);
+    onColorSelect(hexColor);
+  }, [red, green, blue, opacity, onColorSelect]);
 
   const drawSquare = () => {
     const canvas = squareRef.current;
@@ -135,26 +140,34 @@ const ColorPickerWheel: React.FC<ColorPickerWheelProps> = ({
     // Clear canvas
     ctx.clearRect(0, 0, width, height);
 
-    // Create base color from hue
-    const baseColor = `hsl(${hue}, 100%, 50%)`;
+    // Get pure hue color
+    const pureHue = hueToRgb(hue);
     
-    // Fill with base color
-    ctx.fillStyle = baseColor;
-    ctx.fillRect(0, 0, width, height);
-
-    // Add white to transparent gradient (left to right for saturation)
-    const satGradient = ctx.createLinearGradient(0, 0, width, 0);
-    satGradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
-    satGradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
-    ctx.fillStyle = satGradient;
-    ctx.fillRect(0, 0, width, height);
-
-    // Add black gradient (top to bottom for lightness)
-    const lightGradient = ctx.createLinearGradient(0, 0, 0, height);
-    lightGradient.addColorStop(0, 'rgba(0, 0, 0, 0)');
-    lightGradient.addColorStop(1, 'rgba(0, 0, 0, 1)');
-    ctx.fillStyle = lightGradient;
-    ctx.fillRect(0, 0, width, height);
+    // Create the color square with proper RGB gradients
+    for (let x = 0; x < width; x++) {
+      for (let y = 0; y < height; y++) {
+        // Calculate saturation (0 to 1 from left to right)
+        const saturation = x / width;
+        // Calculate brightness (1 to 0 from top to bottom)
+        const brightness = 1 - (y / height);
+        
+        // Mix white -> pure hue -> black
+        let r, g, b;
+        
+        if (saturation === 0) {
+          // Left edge: white to black
+          r = g = b = Math.round(brightness * 255);
+        } else {
+          // Mix pure hue with white/black based on brightness
+          r = Math.round(pureHue.r * saturation * brightness + 255 * (1 - saturation) * brightness);
+          g = Math.round(pureHue.g * saturation * brightness + 255 * (1 - saturation) * brightness);
+          b = Math.round(pureHue.b * saturation * brightness + 255 * (1 - saturation) * brightness);
+        }
+        
+        ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+        ctx.fillRect(x, y, 1, 1);
+      }
+    }
   };
 
   const drawHueBar = () => {
@@ -167,14 +180,13 @@ const ColorPickerWheel: React.FC<ColorPickerWheelProps> = ({
     const width = canvas.width;
     const height = canvas.height;
 
-    // Create hue gradient
-    const gradient = ctx.createLinearGradient(0, 0, width, 0);
-    for (let i = 0; i <= 360; i += 60) {
-      gradient.addColorStop(i / 360, `hsl(${i}, 100%, 50%)`);
+    // Create hue gradient using RGB
+    for (let x = 0; x < width; x++) {
+      const hueValue = (x / width) * 360;
+      const rgb = hueToRgb(hueValue);
+      ctx.fillStyle = `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
+      ctx.fillRect(x, 0, 1, height);
     }
-
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, width, height);
   };
 
   const drawOpacityBar = () => {
@@ -201,20 +213,18 @@ const ColorPickerWheel: React.FC<ColorPickerWheelProps> = ({
     }
 
     // Add opacity gradient
-    const currentColor = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
-    const gradient = ctx.createLinearGradient(0, 0, width, 0);
-    gradient.addColorStop(0, `hsla(${hue}, ${saturation}%, ${lightness}%, 0)`); // Transparent version of current color
-    gradient.addColorStop(1, `hsla(${hue}, ${saturation}%, ${lightness}%, 1)`);
-
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, width, height);
+    for (let x = 0; x < width; x++) {
+      const alpha = x / width;
+      ctx.fillStyle = `rgba(${red}, ${green}, ${blue}, ${alpha})`;
+      ctx.fillRect(x, 0, 1, height);
+    }
   };
 
   const getCanvasPosition = (canvas: HTMLCanvasElement, event: MouseEvent | React.MouseEvent) => {
     const rect = canvas.getBoundingClientRect();
     return {
-      x: event.clientX - rect.left,
-      y: event.clientY - rect.top
+      x: Math.max(0, Math.min(canvas.width, event.clientX - rect.left)),
+      y: Math.max(0, Math.min(canvas.height, event.clientY - rect.top))
     };
   };
 
@@ -236,11 +246,30 @@ const ColorPickerWheel: React.FC<ColorPickerWheelProps> = ({
   };
 
   const updateSquarePosition = (x: number, y: number, canvas: HTMLCanvasElement) => {
-    const newSaturation = (1 - x / canvas.width) * 100;
-    const newLightness = (1 - y / canvas.height) * 100;
-
-    setSaturation(Math.max(0, Math.min(100, newSaturation)));
-    setLightness(Math.max(0, Math.min(100, newLightness)));
+    // Calculate saturation (0 to 1 from left to right)
+    const saturation = x / canvas.width;
+    // Calculate brightness (1 to 0 from top to bottom)
+    const brightness = 1 - (y / canvas.height);
+    
+    // Get pure hue color
+    const pureHue = hueToRgb(hue);
+    
+    // Calculate RGB based on saturation and brightness
+    let r, g, b;
+    
+    if (saturation === 0) {
+      // Left edge: white to black
+      r = g = b = Math.round(brightness * 255);
+    } else {
+      // Mix pure hue with white/black based on brightness
+      r = Math.round(pureHue.r * saturation * brightness + 255 * (1 - saturation) * brightness);
+      g = Math.round(pureHue.g * saturation * brightness + 255 * (1 - saturation) * brightness);
+      b = Math.round(pureHue.b * saturation * brightness + 255 * (1 - saturation) * brightness);
+    }
+    
+    setRed(Math.max(0, Math.min(255, r)));
+    setGreen(Math.max(0, Math.min(255, g)));
+    setBlue(Math.max(0, Math.min(255, b)));
   };
 
   const handleHueClick = (event: React.MouseEvent<HTMLCanvasElement>) => {
@@ -263,6 +292,17 @@ const ColorPickerWheel: React.FC<ColorPickerWheelProps> = ({
   const updateHuePosition = (x: number, canvas: HTMLCanvasElement) => {
     const newHue = (x / canvas.width) * 360;
     setHue(Math.max(0, Math.min(360, newHue)));
+    
+    // Update RGB based on new hue
+    const pureHue = hueToRgb(newHue);
+    
+    // Preserve saturation and brightness by recalculating RGB
+    const hsv = rgbToHsv(red, green, blue);
+    const newRgb = hsvToRgb(newHue, hsv.s, hsv.v);
+    
+    setRed(newRgb.r);
+    setGreen(newRgb.g);
+    setBlue(newRgb.b);
   };
 
   const handleOpacityClick = (event: React.MouseEvent<HTMLCanvasElement>) => {
@@ -292,39 +332,42 @@ const ColorPickerWheel: React.FC<ColorPickerWheelProps> = ({
     setHexInput(value);
 
     if (value.match(/^#[0-9A-Fa-f]{6}$/)) {
-      const { h, s, l } = hexToHsl(value);
-      setHue(h);
-      setSaturation(s);
-      setLightness(l);
+      const { r, g, b } = hexToRgb(value);
+      setRed(r);
+      setGreen(g);
+      setBlue(b);
+      
+      // Update hue based on new RGB
+      const newHue = rgbToHue(r, g, b);
+      setHue(newHue);
     }
   };
 
   const handlePredefinedColorClick = (color: string) => {
     try {
-      const { h, s, l } = hexToHsl(color);
-      console.log('Predefined color clicked:', color, 'HSL:', { h, s, l });
-      setHue(h);
-      setSaturation(s);
-      setLightness(l);
+      const { r, g, b } = hexToRgb(color);
+      setRed(r);
+      setGreen(g);
+      setBlue(b);
       setHexInput(color);
+      
+      // Update hue based on new RGB
+      const newHue = rgbToHue(r, g, b);
+      setHue(newHue);
+      
       onColorSelect(color);
     } catch (error) {
       console.error('Error parsing predefined color:', error);
     }
   };
 
-  const hslToHex = (h: number, s: number, l: number) => {
-    l /= 100;
-    const a = s * Math.min(l, 1 - l) / 100;
-    const f = (n: number) => {
-      const k = (n + h / 30) % 12;
-      const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
-      return Math.round(255 * color).toString(16).padStart(2, '0');
-    };
-    return `#${f(0)}${f(8)}${f(4)}`;
+  // RGB to Hex conversion
+  const rgbToHex = (r: number, g: number, b: number) => {
+    return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`.toUpperCase();
   };
 
-  const hexToHsl = (hex: string) => {
+  // Hex to RGB conversion
+  const hexToRgb = (hex: string) => {
     // Remove # if present
     hex = hex.replace('#', '');
 
@@ -334,29 +377,116 @@ const ColorPickerWheel: React.FC<ColorPickerWheelProps> = ({
       hex = 'FFFFFF'; // Default to white
     }
     
-    const r = parseInt(hex.slice(0, 2), 16) / 255;
-    const g = parseInt(hex.slice(2, 4), 16) / 255;
-    const b = parseInt(hex.slice(4, 6), 16) / 255;
+    const r = parseInt(hex.slice(0, 2), 16);
+    const g = parseInt(hex.slice(2, 4), 16);
+    const b = parseInt(hex.slice(4, 6), 16);
 
+    return { r, g, b };
+  };
+
+  // Hue to RGB conversion
+  const hueToRgb = (hue: number) => {
+    const h = hue / 60;
+    const c = 255;
+    const x = c * (1 - Math.abs((h % 2) - 1));
+
+    let r = 0, g = 0, b = 0;
+
+    if (h >= 0 && h < 1) { r = c; g = x; b = 0; }
+    else if (h >= 1 && h < 2) { r = x; g = c; b = 0; }
+    else if (h >= 2 && h < 3) { r = 0; g = c; b = x; }
+    else if (h >= 3 && h < 4) { r = 0; g = x; b = c; }
+    else if (h >= 4 && h < 5) { r = x; g = 0; b = c; }
+    else { r = c; g = 0; b = x; }
+
+    return { r: Math.round(r), g: Math.round(g), b: Math.round(b) };
+  };
+
+  // RGB to Hue conversion
+  const rgbToHue = (r: number, g: number, b: number) => {
+    r /= 255;
+    g /= 255;
+    b /= 255;
+    
     const max = Math.max(r, g, b);
     const min = Math.min(r, g, b);
-    let h = 0, s = 0, l = (max + min) / 2;
-
-    if (max !== min) {
-      const d = max - min;
-      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-      switch (max) {
-        case r: h = (g - b) / d + (g < b ? 6 : 0); break;
-        case g: h = (b - r) / d + 2; break;
-        case b: h = (r - g) / d + 4; break;
-      }
-      h /= 6;
+    let h = 0;
+    
+    if (max === min) {
+      return 0; // achromatic
     }
+    
+    const d = max - min;
+    
+    if (max === r) {
+      h = (g - b) / d + (g < b ? 6 : 0);
+    } else if (max === g) {
+      h = (b - r) / d + 2;
+    } else {
+      h = (r - g) / d + 4;
+    }
+    
+    h *= 60;
+    
+    return h;
+  };
 
+  // RGB to HSV conversion (for preserving saturation and brightness when changing hue)
+  const rgbToHsv = (r: number, g: number, b: number) => {
+    r /= 255;
+    g /= 255;
+    b /= 255;
+    
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    let h = 0;
+    const v = max;
+    
+    const d = max - min;
+    const s = max === 0 ? 0 : d / max;
+    
+    if (max === min) {
+      h = 0; // achromatic
+    } else {
+      if (max === r) {
+        h = (g - b) / d + (g < b ? 6 : 0);
+      } else if (max === g) {
+        h = (b - r) / d + 2;
+      } else {
+        h = (r - g) / d + 4;
+      }
+      h *= 60;
+    }
+    
+    return { h, s, v };
+  };
+
+  // HSV to RGB conversion
+  const hsvToRgb = (h: number, s: number, v: number) => {
+    const c = v * s;
+    const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+    const m = v - c;
+    
+    let r = 0, g = 0, b = 0;
+    
+    if (h >= 0 && h < 60) {
+      r = c; g = x; b = 0;
+    } else if (h >= 60 && h < 120) {
+      r = x; g = c; b = 0;
+    } else if (h >= 120 && h < 180) {
+      r = 0; g = c; b = x;
+    } else if (h >= 180 && h < 240) {
+      r = 0; g = x; b = c;
+    } else if (h >= 240 && h < 300) {
+      r = x; g = 0; b = c;
+    } else {
+      r = c; g = 0; b = x;
+    }
+    
     return {
-      h: Math.round(h * 360),
-      s: Math.round(s * 100),
-      l: Math.round(l * 100)
+      r: Math.round((r + m) * 255),
+      g: Math.round((g + m) * 255),
+      b: Math.round((b + m) * 255)
     };
   };
 
@@ -403,8 +533,8 @@ const ColorPickerWheel: React.FC<ColorPickerWheelProps> = ({
           <div
             className="absolute w-3 h-3 border-2 border-white rounded-full shadow-md pointer-events-none"
             style={{
-              left: `${(1 - saturation / 100) * 100}%`,
-              top: `${100 - lightness}%`,
+              left: `${(red / 255) * 100}%`,
+              top: `${100 - (blue / 255) * 100}%`,
               transform: 'translate(-50%, -50%)'
             }}
           />
@@ -454,7 +584,7 @@ const ColorPickerWheel: React.FC<ColorPickerWheelProps> = ({
         <div className="flex items-center space-x-2 mb-4">
           <div
             className="w-8 h-8 rounded border border-gray-200 flex-shrink-0"
-            style={{ backgroundColor: `hsl(${hue}, ${saturation}%, ${lightness}%)` }}
+            style={{ backgroundColor: `rgb(${red}, ${green}, ${blue})` }}
           />
           <input
             type="text"
