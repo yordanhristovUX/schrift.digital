@@ -68,7 +68,7 @@ const UserManager: React.FC = () => {
             return {
               ...user,
               last_sign_in_at: authUser?.user?.last_sign_in_at,
-              email_confirmed_at: authUser?.user?.email_confirmed_at,
+              email_confirmed_at: authUser?.user?.email_confirmed_at || authUser?.user?.confirmed_at,
               has_subscription: !!customerData
             };
           } catch (err) {
@@ -487,9 +487,9 @@ const UserManager: React.FC = () => {
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex flex-col">
                             {user.email_confirmed_at ? (
-                              <span className="text-sm text-green-600">Verified</span>
+                              <span className="text-sm text-green-600">✓ Verified</span>
                             ) : (
-                              <span className="text-sm text-red-600">Unverified</span>
+                              <span className="text-sm text-red-600">⚠ Unverified</span>
                             )}
                             {user.has_subscription && (
                               <span className="text-xs text-blue-600">Subscriber</span>

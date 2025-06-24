@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Upload, Plus, Trash2, Edit, Save, X } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { Font, FontWeight, FontStyle, LicenseType } from '../../types/font';
@@ -35,6 +36,8 @@ const weightMap: Record<string, FontWeight> = {
   'extrabold': 'ExtraBold',
   'black': 'Black'
 };
+
+import { LayoutDashboard, Type, Users, Settings, LogOut, CreditCard } from 'lucide-react';
 
 const FontManager: React.FC = () => {
   const [fonts, setFonts] = useState<Font[]>([]);
@@ -225,6 +228,79 @@ const FontManager: React.FC = () => {
     <div className="min-h-screen bg-gray-50">
       <div className="ml-64 p-8">
         <div className="max-w-7xl mx-auto">
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    window.location.href = '/login';
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Fixed Sidebar */}
+      <aside className="fixed top-0 left-0 w-64 h-screen bg-white shadow-md z-30">
+        <div className="flex flex-col h-full">
+          <div className="p-6 border-b">
+            <div className="flex items-center">
+              <Type size={24} className="text-violet-700 mr-3" />
+              <h1 className="text-xl font-bold">Admin Panel</h1>
+            </div>
+          </div>
+          
+          <nav className="flex-1 p-4">
+            <div className="space-y-2">
+              <Link
+                to="/admin"
+                className="flex items-center space-x-2 px-4 py-2.5 rounded-lg hover:bg-gray-50 text-gray-700"
+              >
+                <LayoutDashboard size={20} />
+                <span>Dashboard</span>
+              </Link>
+              <Link
+                to="/admin/fonts"
+                className="flex items-center space-x-2 px-4 py-2.5 rounded-lg bg-violet-50 text-violet-700"
+              >
+                <Type size={20} />
+                <span>Fonts</span>
+              </Link>
+              <Link
+                to="/admin/subscriptions"
+                className="flex items-center space-x-2 px-4 py-2.5 rounded-lg hover:bg-gray-50 text-gray-700"
+              >
+                <CreditCard size={20} />
+                <span>Subscriptions</span>
+              </Link>
+              <Link
+                to="/admin/users"
+                className="flex items-center space-x-2 px-4 py-2.5 rounded-lg hover:bg-gray-50 text-gray-700"
+              >
+                <Users size={20} />
+                <span>Users</span>
+              </Link>
+              <Link
+                to="/admin/settings"
+                className="flex items-center space-x-2 px-4 py-2.5 rounded-lg hover:bg-gray-50 text-gray-700"
+              >
+                <Settings size={20} />
+                <span>Settings</span>
+              </Link>
+            </div>
+          </nav>
+
+          <div className="p-4 border-t">
+            <button
+              onClick={handleSignOut}
+              className="flex items-center space-x-2 px-4 py-2.5 rounded-lg hover:bg-red-50 text-red-600 w-full"
+            >
+              <LogOut size={20} />
+              <span>Sign Out</span>
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      {/* Main content */}
+      <main className="ml-64 p-8">
+        <div className="max-w-7xl mx-auto">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl font-bold">Font Manager</h1>
             <button
@@ -251,7 +327,6 @@ const FontManager: React.FC = () => {
               Add New Font
             </button>
           </div>
-
           {error && (
             <div className="mb-6 bg-red-50 border border-red-200 text-red-700 p-4 rounded-lg">
               {error}
@@ -522,7 +597,7 @@ const FontManager: React.FC = () => {
             </table>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 };
