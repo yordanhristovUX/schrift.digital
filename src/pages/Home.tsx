@@ -17,8 +17,8 @@ const Home: React.FC = () => {
   const [selectedWeights, setSelectedWeights] = useState<Record<string, string>>({});
   const [selectedStyles, setSelectedStyles] = useState<Record<string, string>>({});
   const [hasSubscription, setHasSubscription] = useState(false);
-  const [backgroundColor, setBackgroundColor] = useState('#e5e7eb');
-  const [textColor, setTextColor] = useState('#141204');
+  const [backgroundColor, setBackgroundColor] = useState('var(--color-background-primary)');
+  const [textColor, setTextColor] = useState('var(--color-text-primary)');
   const [showBackgroundPicker, setShowBackgroundPicker] = useState(false);
   const [showTextPicker, setShowTextPicker] = useState(false);
   const [backgroundPickerPos, setBackgroundPickerPos] = useState({ x: 0, y: 0 });
@@ -310,7 +310,7 @@ const Home: React.FC = () => {
                     key={font.id} 
                     className="border border-border-primary rounded-sm p-6 transition-all duration-300 hover:shadow-lg space-y-4"
                     style={{ 
-                      backgroundColor: backgroundColor || '#e5e7eb',
+                      backgroundColor: backgroundColor || 'var(--color-background-primary)',
                       color: textColor
                     }}
                   >
