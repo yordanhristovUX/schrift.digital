@@ -87,8 +87,7 @@ const About: React.FC = () => {
           {/* Font Usage Instructions */}
           <div className="card mb-12 mt-16">
             <div className="card-header">
-              <h2 className="card-title flex items-center text-left">
-                <TypeSettingsIcon size={24} className="mr-3 text-[#C40000]" />
+              <h2 className="card-title text-left">
                 {i18n.language === 'bg' ? 'Как да използвате шрифтовете' : 'How to Use the Fonts'}
               </h2>
             </div>
@@ -123,10 +122,7 @@ const About: React.FC = () => {
                         3
                       </div>
                       <div className="text-left">
-                        <h4 className="font-semibold text-[#141204] font-['Listopad'] flex items-center">
-                          <TypeSettingsIcon size={16} className="mr-2" />
-                          Намери Type Settings
-                        </h4>
+                        <h4 className="font-semibold text-[#141204] font-['Listopad']">Намери Type Settings</h4>
                         <p className="text-[#5E6572] font-['Listopad']">Кликни на Type Settings иконата във Figma</p>
                       </div>
                     </div>
@@ -136,9 +132,7 @@ const About: React.FC = () => {
                         4
                       </div>
                       <div className="text-left">
-                        <h4 className="font-semibold text-[#141204] font-['Listopad']">
-                          Активирай BG Cyrillic
-                        </h4>
+                        <h4 className="font-semibold text-[#141204] font-['Listopad']">Активирай BG Cyrillic</h4>
                         <p className="text-[#5E6572] font-['Listopad']">
                           Избери таб <strong>Details</strong>, търси и активирай 
                           <span className="bg-[#F0F0F0] px-2 py-1 rounded text-sm font-mono ml-1">
@@ -178,10 +172,7 @@ const About: React.FC = () => {
                         3
                       </div>
                       <div className="text-left">
-                        <h4 className="font-semibold text-[#141204] font-['Listopad'] flex items-center">
-                          <TypeSettingsIcon size={16} className="mr-2" />
-                          Find Type Settings
-                        </h4>
+                        <h4 className="font-semibold text-[#141204] font-['Listopad']">Find Type Settings</h4>
                         <p className="text-[#5E6572] font-['Listopad']">Click on the Type Settings icon in Figma</p>
                       </div>
                     </div>
@@ -191,9 +182,7 @@ const About: React.FC = () => {
                         4
                       </div>
                       <div className="text-left">
-                        <h4 className="font-semibold text-[#141204] font-['Listopad']">
-                          Activate BG Cyrillic
-                        </h4>
+                        <h4 className="font-semibold text-[#141204] font-['Listopad']">Activate BG Cyrillic</h4>
                         <p className="text-[#5E6572] font-['Listopad']">
                           Select the <strong>Details</strong> tab, search and activate 
                           <span className="bg-[#F0F0F0] px-2 py-1 rounded text-sm font-mono ml-1">
@@ -208,19 +197,16 @@ const About: React.FC = () => {
               
               {/* Visual Tip */}
               <div className="mt-8 p-4 bg-[#F0F8FF] border border-[#B0D4F1] rounded-sm">
-                <div className="flex items-start space-x-3">
-                  <Settings size={20} className="text-[#2563EB] flex-shrink-0 mt-0.5" />
-                  <div className="text-left">
-                    <h4 className="font-semibold text-[#1E40AF] font-['Listopad'] mb-1">
-                      {i18n.language === 'bg' ? '💡 Полезен съвет' : '💡 Pro Tip'}
-                    </h4>
-                    <p className="text-[#1E40AF] font-['Listopad'] text-sm">
-                      {i18n.language === 'bg' 
-                        ? 'Активирането на "BG Cyrillic by N" е ключово за правилното показване на българските букви като "б", "в", "д", "ж", "з", "к", "р", "у", "ф", "ю" и други.'
-                        : 'Activating "BG Cyrillic by N" is essential for proper display of Bulgarian letters like "б", "в", "д", "ж", "з", "к", "р", "у", "ф", "ю" and others.'
-                      }
-                    </p>
-                  </div>
+                <div className="text-left">
+                  <h4 className="font-semibold text-[#1E40AF] font-['Listopad'] mb-1">
+                    {i18n.language === 'bg' ? 'Полезен съвет' : 'Pro Tip'}
+                  </h4>
+                  <p className="text-[#1E40AF] font-['Listopad'] text-sm">
+                    {i18n.language === 'bg' 
+                      ? 'Активирането на "BG Cyrillic by N" е ключово за правилното показване на българските букви като "б", "в", "д", "ж", "з", "к", "р", "у", "ф", "ю" и други.'
+                      : 'Activating "BG Cyrillic by N" is essential for proper display of Bulgarian letters like "б", "в", "д", "ж", "з", "к", "р", "у", "ф", "ю" and others.'
+                    }
+                  </p>
                 </div>
               </div>
             </div>
