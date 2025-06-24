@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Upload, Plus, Trash2, Edit, Save, X, Type, LayoutDashboard, CreditCard, Users, Settings, LogOut } from 'lucide-react';
+import { Upload, Plus, Trash2, Edit, Save, X, Type, LayoutDashboard, CreditCard, Users, Settings, LogOut, Bold, Italic, List, Type as TypeIcon } from 'lucide-react';
+import RichTextEditor from '../../components/RichTextEditor';
 import { supabase } from '../../lib/supabase';
 import { Font, FontWeight, FontStyle, LicenseType } from '../../types/font';
 
@@ -12,6 +13,7 @@ interface FontFormData {
   description: string;
   is_paid: boolean;
   price?: number;
+  subscriber_only: boolean;
   license_type: LicenseType;
   license_url?: string;
   year_published?: number;
@@ -52,6 +54,7 @@ const FontManager: React.FC = () => {
     description: '',
     is_paid: false,
     license_type: 'Free',
+    subscriber_only: false,
     language_support: [],
     opentype_features: [],
     character_set: [],
@@ -93,6 +96,7 @@ const FontManager: React.FC = () => {
       description: font.description || '',
       is_paid: font.is_paid || false,
       price: font.price,
+      subscriber_only: font.subscriber_only || false,
       license_type: font.license_type as LicenseType || 'Free',
       license_url: font.license_url,
       year_published: font.year_published,
@@ -191,6 +195,7 @@ const FontManager: React.FC = () => {
         description: '',
         is_paid: false,
         license_type: 'Free',
+        subscriber_only: false,
         language_support: [],
         opentype_features: [],
         character_set: [],
@@ -404,14 +409,51 @@ const FontManager: React.FC = () => {
 
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Description
+                      Description (Rich Text)
                     </label>
-                    <textarea
+                    <RichTextEditor
                       value={formData.description}
-                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                      onChange={(value) => setFormData({ ...formData, description: value })}
+                      placeholder="Enter font description with formatting..."
+                    />
+                  </div>
+
+                  <div className="flex items-center space-x-4">
+                    <label className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={formData.is_paid}
+                        onChange={(e) => setFormData({ ...formData, is_paid: e.target.checked })}
+                        className="mr-2"
+                      />
+                      <span className="text-sm font-medium text-gray-700">Paid Font</span>
+                    </label>
+                    
+                    <label className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={formData.subscriber_only}
+                        onChange={(e) => setFormData({ ...formData, subscriber_only: e.target.checked })}
+                        className="mr-2"
+                      />
+                      <span className="text-sm font-medium text-gray-700">Subscriber Only</span>
+                    </label>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Price (if paid)
+                    </label>
+                    <input
+                      type="number"
+                      value={formData.price || ''}
+                      onChange={(e) => setFormData({ 
+                        ...formData, 
+                        price: parseFloat(e.target.value)
+                      })}
                       className="w-full p-2 border rounded-md"
-                      rows={4}
-                      required
+                      disabled={!formData.is_paid}
+                      placeholder="0.00"
                     />
                   </div>
 
@@ -433,19 +475,18 @@ const FontManager: React.FC = () => {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Price (if commercial)
+                      License Type
                     </label>
-                    <input
-                      type="number"
-                      value={formData.price || ''}
-                      onChange={(e) => setFormData({ 
-                        ...formData, 
-                        price: parseFloat(e.target.value),
-                        is_paid: parseFloat(e.target.value) > 0
-                      })}
+                    <select
+                      value={formData.license_type}
+                      onChange={(e) => setFormData({ ...formData, license_type: e.target.value as LicenseType })}
                       className="w-full p-2 border rounded-md"
-                      disabled={formData.license_type === 'Free'}
-                    />
+                      required
+                    >
+                      <option value="Free">Free</option>
+                      <option value="Free for personal use">Free for personal use</option>
+                      <option value="Commercial">Commercial</option>
+                    </select>
                   </div>
 
                   {!editingFontId && (
@@ -537,6 +578,9 @@ const FontManager: React.FC = () => {
                     License
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Access
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
@@ -556,6 +600,17 @@ const FontManager: React.FC = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">{font.category}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                        font.subscriber_only
+                          ? 'bg-purple-100 text-purple-800'
+                          : font.is_paid 
+                          ? 'bg-amber-100 text-amber-800'
+                          : 'bg-green-100 text-green-800'
+                      }`}>
+                        {font.subscriber_only ? 'Subscribers' : font.is_paid ? 'Paid' : 'Free'}
+                      </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${

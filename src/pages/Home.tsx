@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Crown } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Helmet } from 'react-helmet-async';
 import { supabase } from '../lib/supabase';
@@ -13,6 +14,7 @@ const Home: React.FC = () => {
   const [previewText, setPreviewText] = useState('Щурецът свири, а жабите скачат върху дъбови листа.');
   const [fontSizes, setFontSizes] = useState<Record<string, number>>({});
   const [selectedWeights, setSelectedWeights] = useState<Record<string, string>>({});
+  const [hasSubscription, setHasSubscription] = useState(false);
   const navigate = useNavigate();
   const { t, i18n } = useTranslation(['common']);
   
@@ -89,6 +91,17 @@ const Home: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    const checkSubscription = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        const { data } = await supabase.rpc('has_active_premium');
+        setHasSubscription(!!data);
+      }
+    };
+    checkSubscription();
+  }, []);
+
+  useEffect(() => {
     // Update preview text based on language
     if (i18n.language === 'en') {
       setPreviewText('The quick brown fox jumps over the lazy dog.');
@@ -106,6 +119,19 @@ const Home: React.FC = () => {
   };
 
   const handleFontClick = async (fontId: string) => {
+    const font = fonts.find(f => f.id === fontId);
+    
+    // Check if font requires subscription and user doesn't have one
+    if (font?.subscriber_only && !hasSubscription) {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        navigate('/login', { state: { from: `/fonts/${fontId}` } });
+        return;
+      }
+      navigate('/supporter');
+      return;
+    }
+
     const { data: { session } } = await supabase.auth.getSession();
     if (session) {
       navigate(`/fonts/${fontId}`);
@@ -209,9 +235,13 @@ const Home: React.FC = () => {
                 return (
                   <div 
                     key={font.id} 
-                    className="border border-border-primary rounded-sm p-6 bg-background-primary transition-all duration-300 hover:shadow-lg"
+                    className={`text-sm font-['Listopad'] ${
+                      font.subscriber_only && !hasSubscription
+                        ? 'text-purple-600 hover:text-purple-700'
+                        : 'text-[#141204] hover:text-[#2D2B1F]'
+                    }`}
                   >
-                    <div className="flex items-center justify-between mb-6">
+                    {font.subscriber_only && !hasSubscription ? 'Become Subscriber' : t('home.download')}
                       <div>
                         <h3 className="text-xl font-semibold text-text-primary">{font.name}</h3>
                         <p className="text-sm text-text-secondary">
@@ -328,6 +358,12 @@ const Home: React.FC = () => {
                             </div>
                           ))}
                         </div>
+                      {font.subscriber_only && (
+                        <span className="inline-flex items-center text-purple-600 mr-2">
+                          <Crown size={14} className="mr-1" />
+                          Subscriber Only •
+                        </span>
+                      )}
                       )}
                     </div>
                   </div>

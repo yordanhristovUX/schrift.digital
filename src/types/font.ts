@@ -27,6 +27,7 @@ export interface Font {
   description: string;
   is_paid: boolean;
   price?: number;
+  subscriber_only?: boolean;
   license_type: LicenseType;
   license_url?: string;
   year_published?: number;

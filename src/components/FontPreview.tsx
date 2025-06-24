@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Font, FontWeight, LanguageOption } from '../types/font';
+import { Crown } from 'lucide-react';
 import { Download } from 'lucide-react';
 import { downloadFont, getWeightValue } from '../lib/fontService';
 import { useNavigate } from 'react-router-dom';
@@ -22,6 +23,7 @@ const FontPreview: React.FC<FontPreviewProps> = ({ font, requireAuth = false }) 
   const [selectedWeight, setSelectedWeight] = useState<string>('Regular');
   const [selectedStyle, setSelectedStyle] = useState<string>('Normal');
   const [language, setLanguage] = useState<LanguageOption>('bulgarian');
+  const [hasSubscription, setHasSubscription] = useState(false);
   const navigate = useNavigate();
   
   const previewRef = useRef<HTMLDivElement>(null);
@@ -31,6 +33,20 @@ const FontPreview: React.FC<FontPreviewProps> = ({ font, requireAuth = false }) 
     russian: 'Все люди рождаются свободными и равными в своем достоинстве и правах.',
     english: 'All human beings are born free and equal in dignity and rights.'
   };
+
+  useEffect(() => {
+    const checkSubscription = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        const { data } = await supabase.rpc('has_active_premium');
+        setHasSubscription(!!data);
+      }
+    };
+
+    if (font.subscriber_only) {
+      checkSubscription();
+    }
+  }, [font.subscriber_only]);
 
   useEffect(() => {
     if (font.weight_files) {
@@ -84,6 +100,17 @@ const FontPreview: React.FC<FontPreviewProps> = ({ font, requireAuth = false }) 
   };
 
   const handleDownload = async () => {
+    // Check if font requires subscription and user doesn't have one
+    if (font.subscriber_only && !hasSubscription) {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        navigate('/login', { state: { from: `/fonts/${font.id}` } });
+        return;
+      }
+      navigate('/supporter');
+      return;
+    }
+
     if (requireAuth) {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
@@ -110,13 +137,28 @@ const FontPreview: React.FC<FontPreviewProps> = ({ font, requireAuth = false }) 
     <div className="bg-[#FFFFFC] rounded-sm shadow-md p-6 mb-8">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">Preview {font.name}</h2>
+        {font.subscriber_only && (
+          <div className="flex items-center text-purple-600 text-sm font-medium mb-2">
+            <Crown size={16} className="mr-1" />
+            Subscriber Only
+          </div>
+        )}
         <div className="flex items-center gap-4">
           <button
             onClick={handleDownload}
-            className="flex items-center px-4 py-2 rounded-sm text-sm font-medium bg-[#141204] text-[#FFFFFC] hover:bg-[#2D2B1F]"
+            className={`flex items-center px-4 py-2 rounded-sm text-sm font-medium ${
+              font.subscriber_only && !hasSubscription
+                ? 'bg-purple-600 text-white hover:bg-purple-700'
+                : 'bg-[#141204] text-[#FFFFFC] hover:bg-[#2D2B1F]'
+            }`}
           >
+            {font.subscriber_only && !hasSubscription && (
+              <Crown size={16} className="mr-2" />
+            )}
             <Download size={16} className="mr-2" />
-            {font.is_paid 
+            {font.subscriber_only && !hasSubscription
+              ? 'Become Subscriber'
+              : font.is_paid 
               ? `Purchase Family $${font.price}` 
               : `Download ${font.name}, ${selectedWeight}${selectedStyle !== 'Normal' ? `, ${selectedStyle}` : ''}`}
           </button>
