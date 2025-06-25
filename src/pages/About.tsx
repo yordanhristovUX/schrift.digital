@@ -35,7 +35,7 @@ const About: React.FC = () => {
       </Helmet>
 
       {/* Hero section */}
-      <section className="section bg-[#141204]">
+      <section className="pt-24 pb-12 bg-[#141204]">
         <div className="container max-w-6xl">
           <h1 className="text-5xl md:text-6xl text-[#FFFFFC] font-bold mb-4 font-['Listopad'] text-left">
             {t('about.title')}
@@ -47,7 +47,7 @@ const About: React.FC = () => {
       </section>
 
       {/* Main content */}
-      <section className="section bg-[#FFFFFC]">
+      <section className="pt-16 pb-16 bg-[#FFFFFC]">
         <div className="container max-w-4xl">
           <div className="prose prose-lg max-w-none space-y-8 text-[#141204] font-['Listopad']">
             <p className="text-lg leading-relaxed text-left">

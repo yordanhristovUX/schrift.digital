@@ -183,7 +183,7 @@ const Profile: React.FC = () => {
   const deleteConfirmationText = t('profile:delete_confirmation.placeholder') === 'Type DELETE' ? 'DELETE' : 'ИЗТРИЙ';
 
   return (
-    <div className="min-h-screen section bg-[#FFFFFC]">
+    <div className="min-h-screen pt-24 pb-12 bg-[#FFFFFC]">
       <div className="container max-w-4xl">
         {/* Page Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">

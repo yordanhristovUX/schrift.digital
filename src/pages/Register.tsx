@@ -57,7 +57,7 @@ const Register: React.FC = () => {
 
   if (confirmationSent) {
     return (
-      <div className="min-h-screen section bg-[#141204]">
+      <div className="min-h-screen pt-24 pb-12 bg-[#141204]">
         <div className="container max-w-md">
           <div className="card">
             <div className="card-header">
@@ -80,7 +80,7 @@ const Register: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen section bg-[#141204]">
+    <div className="min-h-screen pt-24 pb-12 bg-[#141204]">
       <div className="container max-w-md">
         <div className="card">
           <div className="card-header">

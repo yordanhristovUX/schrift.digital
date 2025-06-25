@@ -102,7 +102,7 @@ const Supporter: React.FC = () => {
   const displayPrice = priceData ? formatPrice(priceData.unit_amount, priceData.currency) : '€2.00';
 
   return (
-    <div className="min-h-screen section bg-[#FFFFFC]">
+    <div className="min-h-screen pt-24 pb-12 bg-[#FFFFFC]">
       <div className="container max-w-4xl text-center">
         <div className="flex justify-center mb-8">
           <Crown className="w-16 h-16 text-[#C40000]" />

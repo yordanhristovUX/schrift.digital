@@ -199,7 +199,7 @@ const Login: React.FC = () => {
     error?.toLowerCase().includes('имейлът не е потвърден');
 
   return (
-    <div className="min-h-screen section bg-[#141204]">
+    <div className="min-h-screen pt-24 pb-12 bg-[#141204]">
       <div className="container max-w-md">
         <div className="card">
           <div className="card-header">
