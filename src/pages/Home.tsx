@@ -222,7 +222,7 @@ const Home: React.FC = () => {
         </header>
 
         {/* Font Preview Section */}
-        <section className="section bg-background-primary">
+        <section className="bg-background-primary pt-16 pb-16">
           <div className="container mx-auto max-w-5xl">
             {/* Library count and color picker */}
             <div className="flex justify-between items-center mb-8">
