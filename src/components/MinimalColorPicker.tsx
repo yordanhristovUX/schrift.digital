@@ -114,45 +114,11 @@ const MinimalColorPicker: React.FC = () => {
         />
 
         {showColorPicker && (
-          <div className="absolute top-12 left-0 right-0 mx-4 md:left-0 md:right-auto md:mx-0 bg-white rounded-lg shadow-xl border border-gray-300 p-4 md:p-3 z-50 md:w-auto">
-            <div className="text-sm text-gray-600 mb-3 font-medium text-center">
+          <div className="absolute top-12 right-0 bg-white rounded-lg shadow-xl border border-gray-300 p-3 z-50 min-w-max">
+            <div className="text-xs text-gray-600 mb-2 font-medium">
               {isDarkMode ? 'Text Color' : 'Background Color'}
             </div>
-            
-            {/* Mobile: 3-2 layout, Desktop: horizontal */}
-            <div className="md:hidden space-y-3">
-              {/* First row - 3 colors */}
-              <div className="flex justify-center space-x-6">
-                {colorsToShow.slice(0, 3).map((color) => (
-                  <button
-                    key={color.id}
-                    onClick={() => handleColorSelect(color.id)}
-                    className={`w-14 h-14 rounded-full border hover:scale-110 transition-transform duration-200 ${
-                      selectedColorId === color.id ? 'border-gray-800 ring-2 ring-gray-300' : 'border-gray-300'
-                    }`}
-                    style={{ backgroundColor: color.color }}
-                    title={color.name}
-                  />
-                ))}
-              </div>
-              {/* Second row - 2 colors */}
-              <div className="flex justify-center space-x-6">
-                {colorsToShow.slice(3, 5).map((color) => (
-                  <button
-                    key={color.id}
-                    onClick={() => handleColorSelect(color.id)}
-                    className={`w-14 h-14 rounded-full border hover:scale-110 transition-transform duration-200 ${
-                      selectedColorId === color.id ? 'border-gray-800 ring-2 ring-gray-300' : 'border-gray-300'
-                    }`}
-                    style={{ backgroundColor: color.color }}
-                    title={color.name}
-                  />
-                ))}
-              </div>
-            </div>
-
-            {/* Desktop: horizontal layout */}
-            <div className="hidden md:flex space-x-2">
+            <div className="flex space-x-2">
               {colorsToShow.map((color) => (
                 <button
                   key={color.id}
