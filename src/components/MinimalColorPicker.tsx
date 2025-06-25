@@ -28,6 +28,18 @@ const MinimalColorPicker: React.FC = () => {
   const [selectedTextColor, setSelectedTextColor] = useState('default');
   const [showColorPicker, setShowColorPicker] = useState(false);
   const colorPickerRef = useRef<HTMLDivElement>(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Detect mobile device
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Close picker when clicking outside
   useEffect(() => {
@@ -101,12 +113,12 @@ const MinimalColorPicker: React.FC = () => {
   const selectedColorId = isDarkMode ? selectedTextColor : selectedBgColor;
 
   return (
-    <div className="flex items-center space-x-4">
+    <div className="flex items-center space-x-2 md:space-x-4">
       {/* Color Picker */}
       <div className="relative" ref={colorPickerRef}>
         <button
           onClick={() => setShowColorPicker(!showColorPicker)}
-          className="w-10 h-10 rounded-full border border-gray-300 hover:border-gray-500 transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer"
+          className="w-10 h-10 md:w-10 md:h-10 rounded-full border border-gray-300 hover:border-gray-500 transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer touch-manipulation"
           style={{ 
             backgroundColor: currentDisplayColor,
           }}
@@ -114,16 +126,22 @@ const MinimalColorPicker: React.FC = () => {
         />
 
         {showColorPicker && (
-          <div className="absolute top-12 left-0 bg-white rounded-lg shadow-xl border border-gray-300 p-3 z-50 min-w-max">
+          <div className={`absolute ${
+            isMobile 
+              ? 'top-12 right-0 left-auto' 
+              : 'top-12 left-0'
+          } bg-white rounded-lg shadow-xl border border-gray-300 p-3 z-50 min-w-max`}>
             <div className="text-xs text-gray-600 mb-2 font-medium">
               {isDarkMode ? 'Text Color' : 'Background Color'}
             </div>
-            <div className="flex space-x-2">
+            <div className={`flex ${isMobile ? 'flex-wrap gap-2' : 'space-x-2'}`}>
               {colorsToShow.map((color) => (
                 <button
                   key={color.id}
                   onClick={() => handleColorSelect(color.id)}
-                  className={`w-8 h-8 rounded-full border hover:scale-110 transition-transform duration-200 ${
+                  className={`${
+                    isMobile ? 'w-10 h-10' : 'w-8 h-8'
+                  } rounded-full border hover:scale-110 transition-transform duration-200 touch-manipulation ${
                     selectedColorId === color.id ? 'border-gray-800 ring-1 ring-gray-300' : 'border-gray-300'
                   }`}
                   style={{ backgroundColor: color.color }}
@@ -138,7 +156,7 @@ const MinimalColorPicker: React.FC = () => {
       {/* Dark/Light Mode Toggle */}
       <button
         onClick={handleThemeToggle}
-        className="w-10 h-10 rounded-full border border-gray-300 hover:border-gray-500 transition-all duration-200 shadow-sm hover:shadow-md relative overflow-hidden"
+        className="w-10 h-10 md:w-10 md:h-10 rounded-full border border-gray-300 hover:border-gray-500 transition-all duration-200 shadow-sm hover:shadow-md relative overflow-hidden touch-manipulation"
         title={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
       >
         <div 
