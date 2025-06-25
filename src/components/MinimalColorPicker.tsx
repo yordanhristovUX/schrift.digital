@@ -114,7 +114,7 @@ const MinimalColorPicker: React.FC = () => {
         />
 
         {showColorPicker && (
-          <div className="fixed top-12 left-0 right-0 mx-4 md:absolute md:top-12 md:left-0 md:right-auto md:mx-0 bg-white rounded-lg shadow-xl border border-gray-300 p-4 md:p-3 z-50 md:w-auto">
+          <div className="absolute top-12 left-0 right-0 mx-4 md:left-0 md:right-auto md:mx-0 bg-white rounded-lg shadow-xl border border-gray-300 p-4 md:p-3 z-50 md:w-auto">
             <div className="text-sm text-gray-600 mb-3 font-medium text-center">
               {isDarkMode ? 'Text Color' : 'Background Color'}
             </div>

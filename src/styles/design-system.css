@@ -317,7 +317,7 @@
 /* === SECTION SYSTEM === */
 /* Navigation height compensation */
 :root {
-  --navbar-height: 4rem; /* Reduced navbar height for tighter spacing */
+  --navbar-height: 3rem; /* Further reduced navbar height for tighter spacing */
 }
 
 /* Page sections that need to account for fixed navbar */

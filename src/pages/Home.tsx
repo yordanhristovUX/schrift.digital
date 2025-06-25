@@ -225,9 +225,9 @@ const Home: React.FC = () => {
         <section className="section bg-background-primary">
           <div className="container mx-auto max-w-5xl">
             {/* Mobile: Color picker above, Desktop: inline with reduced spacing */}
-            <div className="mb-8 md:mb-8">
+            <div className="mb-8 md:mb-8 mt-4">
               {/* Color picker - mobile only, positioned above with reduced top margin */}
-              <div className="flex justify-center mb-6 md:hidden">
+              <div className="flex justify-center mb-4 md:hidden">
                 <MinimalColorPicker />
               </div>
               
