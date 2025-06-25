@@ -240,7 +240,7 @@ const Home: React.FC = () => {
                 type="text"
                 value={previewText}
                 onChange={(e) => setPreviewText(e.target.value)}
-                className="w-full text-base p-6 bg-background-primary text-text-primary border border-border-primary hover:border-action-primary focus:border-action-primary focus:outline-none transition-colors duration-200 rounded-sm font-['Listopad']"
+                className="w-full text-base p-6 bg-white text-[#141204] border border-border-primary hover:border-action-primary focus:border-action-primary focus:outline-none transition-colors duration-200 rounded-sm font-['Listopad']"
                 placeholder={t('home.preview_placeholder')}
               />
             </div>
