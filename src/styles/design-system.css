@@ -328,6 +328,14 @@
   padding-bottom: var(--section-padding);
 }
 
+/* Responsive section padding - reduce on mobile */
+@media (max-width: 768px) {
+  .section {
+    padding-top: calc(var(--navbar-height) + var(--space-8)); /* 4rem navbar + 2rem = 6rem total */
+    padding-bottom: var(--space-8); /* 2rem bottom padding */
+  }
+}
+
 .section-sm {
   padding-top: calc(var(--navbar-height) + var(--space-12));
   padding-bottom: var(--space-12);
