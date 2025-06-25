@@ -113,12 +113,14 @@ const MinimalColorPicker: React.FC = () => {
   const selectedColorId = isDarkMode ? selectedTextColor : selectedBgColor;
 
   return (
-    <div className="flex items-center space-x-2 md:space-x-4">
+    <div className="flex items-center space-x-2 md:space-x-4 w-full md:w-auto">
       {/* Color Picker */}
       <div className="relative" ref={colorPickerRef}>
         <button
           onClick={() => setShowColorPicker(!showColorPicker)}
-          className="w-10 h-10 md:w-10 md:h-10 rounded-full border border-gray-300 hover:border-gray-500 transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer touch-manipulation"
+          className={`${
+            isMobile ? 'w-16 h-16' : 'w-10 h-10'
+          } rounded-full border border-gray-300 hover:border-gray-500 transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer touch-manipulation`}
           style={{ 
             backgroundColor: currentDisplayColor,
           }}
@@ -128,19 +130,23 @@ const MinimalColorPicker: React.FC = () => {
         {showColorPicker && (
           <div className={`absolute ${
             isMobile 
-              ? 'top-12 right-0 left-auto' 
+              ? 'top-20 left-1/2 transform -translate-x-1/2 w-72' 
               : 'top-12 left-0'
-          } bg-white rounded-lg shadow-xl border border-gray-300 p-3 z-50 min-w-max`}>
-            <div className="text-xs text-gray-600 mb-2 font-medium">
+          } bg-white rounded-lg shadow-xl border border-gray-300 p-4 z-50 ${isMobile ? '' : 'min-w-max'}`}>
+            <div className={`${isMobile ? 'text-sm' : 'text-xs'} text-gray-600 mb-3 font-medium text-center`}>
               {isDarkMode ? 'Text Color' : 'Background Color'}
             </div>
-            <div className={`flex ${isMobile ? 'flex-wrap gap-2' : 'space-x-2'}`}>
+            <div className={`${
+              isMobile 
+                ? 'grid grid-cols-5 gap-3' 
+                : 'flex space-x-2'
+            }`}>
               {colorsToShow.map((color) => (
                 <button
                   key={color.id}
                   onClick={() => handleColorSelect(color.id)}
                   className={`${
-                    isMobile ? 'w-10 h-10' : 'w-8 h-8'
+                    isMobile ? 'w-12 h-12' : 'w-8 h-8'
                   } rounded-full border hover:scale-110 transition-transform duration-200 touch-manipulation ${
                     selectedColorId === color.id ? 'border-gray-800 ring-1 ring-gray-300' : 'border-gray-300'
                   }`}
@@ -156,7 +162,9 @@ const MinimalColorPicker: React.FC = () => {
       {/* Dark/Light Mode Toggle */}
       <button
         onClick={handleThemeToggle}
-        className="w-10 h-10 md:w-10 md:h-10 rounded-full border border-gray-300 hover:border-gray-500 transition-all duration-200 shadow-sm hover:shadow-md relative overflow-hidden touch-manipulation"
+        className={`${
+          isMobile ? 'w-16 h-16' : 'w-10 h-10'
+        } rounded-full border border-gray-300 hover:border-gray-500 transition-all duration-200 shadow-sm hover:shadow-md relative overflow-hidden touch-manipulation`}
         title={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
       >
         <div 
@@ -167,7 +175,7 @@ const MinimalColorPicker: React.FC = () => {
         />
         <div 
           className={`absolute top-1/2 transform -translate-y-1/2 w-2 h-2 rounded-full transition-all duration-300 ${
-            isDarkMode ? 'left-1 bg-white' : 'right-1 bg-black'
+            isDarkMode ? 'left-2 bg-white' : 'right-2 bg-black'
           }`}
         />
       </button>
