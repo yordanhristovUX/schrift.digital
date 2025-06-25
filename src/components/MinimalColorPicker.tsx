@@ -128,18 +128,85 @@ const MinimalColorPicker: React.FC = () => {
         {showColorPicker && (
           <div className={`absolute ${
             isMobile 
-              ? 'top-12 left-1/2 transform -translate-x-1/2 w-80' 
+              ? 'top-12 left-0 right-0 mx-4' 
               : 'top-12 left-0'
           } bg-white rounded-lg shadow-xl border border-gray-300 ${isMobile ? 'p-6' : 'p-3'} z-50 ${isMobile ? '' : 'min-w-max'}`}>
             <div className={`${isMobile ? 'text-base' : 'text-xs'} text-gray-600 ${isMobile ? 'mb-4' : 'mb-2'} font-medium text-center`}>
               {isDarkMode ? 'Text Color' : 'Background Color'}
             </div>
-            <div className={`${
-              isMobile 
-                ? 'grid grid-cols-5 gap-4' 
-                : 'flex space-x-2'
-            }`}>
-              {colorsToShow.map((color) => (
+            {isMobile ? (
+              <div className="space-y-4">
+                {/* First row - 3 colors */}
+                <div className="flex justify-center space-x-6">
+                  {colorsToShow.slice(0, 3).map((color) => (
+                    <button
+                      key={color.id}
+                      onClick={() => handleColorSelect(color.id)}
+                      className={`w-16 h-16 rounded-full border hover:scale-110 transition-transform duration-200 ${
+                        selectedColorId === color.id ? 'border-gray-800 ring-2 ring-gray-300' : 'border-gray-300'
+                      }`}
+                      style={{ backgroundColor: color.color }}
+                      title={color.name}
+                    />
+                  ))}
+                </div>
+                {/* Second row - 2 colors */}
+                <div className="flex justify-center space-x-6">
+                  {colorsToShow.slice(3, 5).map((color) => (
+                    <button
+                      key={color.id}
+                      onClick={() => handleColorSelect(color.id)}
+                      className={`w-16 h-16 rounded-full border hover:scale-110 transition-transform duration-200 ${
+                        selectedColorId === color.id ? 'border-gray-800 ring-2 ring-gray-300' : 'border-gray-300'
+                      }`}
+                      style={{ backgroundColor: color.color }}
+                      title={color.name}
+                    />
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="flex space-x-2">
+                {colorsToShow.map((color) => (
+                  <button
+                    key={color.id}
+                    onClick={() => handleColorSelect(color.id)}
+                    className={`w-8 h-8 rounded-full border hover:scale-110 transition-transform duration-200 ${
+                      selectedColorId === color.id ? 'border-gray-800 ring-1 ring-gray-300' : 'border-gray-300'
+                    }`}
+                    style={{ backgroundColor: color.color }}
+                    title={color.name}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Dark/Light Mode Toggle */}
+      <button
+        onClick={handleThemeToggle}
+        className="w-10 h-10 rounded-full border border-gray-300 hover:border-gray-500 transition-all duration-200 shadow-sm hover:shadow-md relative overflow-hidden"
+        title={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
+      >
+        <div 
+          className="absolute inset-0 w-1/2 bg-white"
+        />
+        <div 
+          className="absolute inset-0 left-1/2 w-1/2 bg-black"
+        />
+        <div 
+          className={`absolute top-1/2 transform -translate-y-1/2 w-2 h-2 rounded-full transition-all duration-300 ${
+            isDarkMode ? 'left-1 bg-white' : 'right-1 bg-black'
+          }`}
+        />
+      </button>
+    </div>
+  );
+};
+
+export default MinimalColorPicker;
                 <button
                   key={color.id}
                   onClick={() => handleColorSelect(color.id)}
