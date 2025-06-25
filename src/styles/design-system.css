@@ -331,7 +331,7 @@
 /* Responsive section padding - reduce on mobile */
 @media (max-width: 768px) {
   .section {
-    padding-top: calc(var(--navbar-height) + var(--space-16)); /* 4rem navbar + 4rem = 8rem total, but 4rem content padding = 64px */
+    padding-top: calc(var(--space-8) + var(--space-8)); /* 2rem + 2rem = 4rem total = 64px */
     padding-bottom: var(--space-16); /* 4rem bottom padding = 64px */
   }
 }
