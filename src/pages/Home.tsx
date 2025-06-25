@@ -227,7 +227,7 @@ const Home: React.FC = () => {
             {/* Mobile: Color picker above, Desktop: inline */}
             <div className="mb-8">
               {/* Color picker - mobile only, positioned above */}
-              <div className="flex justify-center mb-4 md:hidden">
+              <div className="flex justify-center mb-8 md:hidden">
                 <MinimalColorPicker />
               </div>
               
