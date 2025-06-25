@@ -213,8 +213,8 @@
   font-size: var(--text-base);
   font-family: 'Listopad', sans-serif;
   transition: border-color 0.2s ease-in-out;
-  color: var(--color-text-primary);
-  background-color: var(--color-background-primary);
+  color: #141204;
+  background-color: #ffffff;
 }
 
 .form-input:focus {
