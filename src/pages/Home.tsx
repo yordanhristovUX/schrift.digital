@@ -224,16 +224,16 @@ const Home: React.FC = () => {
         {/* Font Preview Section */}
         <section className="section bg-background-primary">
           <div className="container mx-auto max-w-5xl">
-            {/* Mobile: Color picker above, Desktop: inline */}
-            <div className="mb-8">
-              {/* Color picker - mobile only, positioned above */}
-              <div className="flex justify-center mb-8 md:hidden">
+            {/* Mobile: Color picker above, Desktop: inline with reduced spacing */}
+            <div className="mb-8 md:mb-8">
+              {/* Color picker - mobile only, positioned above with reduced top margin */}
+              <div className="flex justify-center mb-6 md:hidden">
                 <MinimalColorPicker />
               </div>
               
-              {/* Library count and color picker - desktop layout */}
-              <div className="flex justify-between items-center">
-                <p className="text-lg text-text-secondary font-['Listopad']">
+              {/* Library count and color picker */}
+              <div className="flex flex-col md:flex-row md:justify-between md:items-center">
+                <p className="text-lg text-text-secondary font-['Listopad'] text-center md:text-left">
                   {t('home.library_count', { count: fonts.length })}
                 </p>
                 
