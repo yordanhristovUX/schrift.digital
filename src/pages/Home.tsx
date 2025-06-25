@@ -210,7 +210,7 @@ const Home: React.FC = () => {
 
       <div className="min-h-screen">
         {/* Header */}
-        <header className="section bg-background-inverse">
+        <header className="pt-24 pb-12 bg-background-inverse">
           <div className="container mx-auto max-w-6xl">
             <h1 className="text-5xl md:text-6xl text-text-inverse font-bold mb-4 font-['Listopad']">
               {t('home.title')}
