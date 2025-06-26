@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Mail, Facebook, Instagram } from 'lucide-react';
+import { Mail, Facebook } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Logo } from './Logo';
 
@@ -26,22 +26,13 @@ const Footer: React.FC = () => {
                 <Mail size={20} />
               </a>
               <a 
-                href="https://facebook.com/schrift.digital"
+                href="https://www.facebook.com/profile.php?id=61568127719822"
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-[#BCBDC0] hover:text-[#FFFFFC] transition-colors"
                 aria-label="Facebook"
               >
                 <Facebook size={20} />
-              </a>
-              <a 
-                href="https://instagram.com/schrift.digital"
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-[#BCBDC0] hover:text-[#FFFFFC] transition-colors"
-                aria-label="Instagram"
-              >
-                <Instagram size={20} />
               </a>
             </div>
           </div>
