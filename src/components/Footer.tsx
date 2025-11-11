@@ -18,8 +18,8 @@ const Footer: React.FC = () => {
               {t('footer.description')}
             </p>
             <div className="flex space-x-4">
-              <a 
-                href="mailto:contact@schrift.digital"
+              <a
+                href="mailto:culturenteam@gmail.com"
                 className="text-[#BCBDC0] hover:text-[#FFFFFC] transition-colors"
                 aria-label="Email"
               >
@@ -56,7 +56,7 @@ const Footer: React.FC = () => {
             </h3>
             <ul className="space-y-2 font-['Listopad']">
               <li>
-                <a href="mailto:contact@schrift.digital" className="text-[#BCBDC0] hover:text-[#FFFFFC] transition-colors">
+                <a href="mailto:culturenteam@gmail.com" className="text-[#BCBDC0] hover:text-[#FFFFFC] transition-colors">
                   {t('footer.contact.email')}
                 </a>
               </li>

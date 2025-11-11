@@ -214,8 +214,8 @@ const About: React.FC = () => {
 
           {/* Call to action */}
           <div className="text-left">
-            <a 
-              href="mailto:contact@schrift.digital" 
+            <a
+              href="mailto:culturenteam@gmail.com"
               className="btn btn-danger btn-lg"
             >
               <Mail size={20} className="mr-2" />
