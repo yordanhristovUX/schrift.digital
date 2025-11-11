@@ -11,7 +11,7 @@ const ResetPassword: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t } = useTranslation(['auth', 'errors']);
 
   useEffect(() => {
     const handlePasswordReset = async () => {
@@ -157,7 +157,7 @@ const ResetPassword: React.FC = () => {
         <div className="container mx-auto max-w-md">
           <div className="bg-[#FFFFFC] rounded-sm shadow-lg p-8 text-center">
             <div className="animate-spin rounded-sm h-8 w-8 border-b-2 border-[#141204] mx-auto mb-4"></div>
-            <p className="text-[#141204] font-['Listopad']">Initializing password reset...</p>
+            <p className="text-[#141204] font-['Listopad']">{t('auth:resetPassword.initializing')}</p>
           </div>
         </div>
       </div>
@@ -169,7 +169,7 @@ const ResetPassword: React.FC = () => {
       <div className="container mx-auto max-w-md">
         <div className="bg-[#FFFFFC] rounded-sm shadow-lg p-8">
           <h2 className="text-2xl font-bold mb-6 text-[#141204] font-['Listopad']">
-            Задаване на нова парола
+            {t('auth:resetPassword.title')}
           </h2>
 
           {error && (
@@ -180,17 +180,17 @@ const ResetPassword: React.FC = () => {
 
           {success && (
             <div className="mb-6 p-4 bg-green-50 border border-green-200 text-green-700 rounded-sm font-['Listopad']">
-              Паролата е променена успешно! Пренасочване към страницата за вход...
+              {t('auth:resetPassword.success')}
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label 
-                htmlFor="password" 
+              <label
+                htmlFor="password"
                 className="block text-sm font-medium text-[#141204] mb-1 font-['Listopad']"
               >
-                Нова парола
+                {t('auth:resetPassword.newPassword')}
               </label>
               <input
                 id="password"
@@ -205,11 +205,11 @@ const ResetPassword: React.FC = () => {
             </div>
 
             <div>
-              <label 
-                htmlFor="confirmPassword" 
+              <label
+                htmlFor="confirmPassword"
                 className="block text-sm font-medium text-[#141204] mb-1 font-['Listopad']"
               >
-                Потвърди паролата
+                {t('auth:resetPassword.confirmPassword')}
               </label>
               <input
                 id="confirmPassword"
@@ -228,7 +228,7 @@ const ResetPassword: React.FC = () => {
               disabled={loading || !!error}
               className="w-full py-3 px-4 bg-[#141204] text-[#FFFFFC] rounded-sm hover:bg-[#2D2B1F] disabled:opacity-50 font-['Listopad']"
             >
-              {loading ? 'Обработка...' : 'Задай нова парола'}
+              {loading ? t('auth:resetPassword.processing') : t('auth:resetPassword.submit')}
             </button>
           </form>
         </div>

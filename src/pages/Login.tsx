@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '../lib/supabase';
 import Modal from '../components/Modal';
 import { getAuthErrorMessage } from '../lib/authErrorHandler';
@@ -18,6 +19,7 @@ const Login: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const message = (location.state as any)?.message;
+  const { t } = useTranslation(['auth', 'errors']);
 
   // Handle email confirmation
   useEffect(() => {
@@ -84,7 +86,7 @@ const Login: React.FC = () => {
 
   const handleResendConfirmation = async () => {
     if (!email) {
-      setError('Please enter your email address first');
+      setError(t('auth:login.enterEmailFirst'));
       return;
     }
 
@@ -113,7 +115,7 @@ const Login: React.FC = () => {
 
   const handleResetPassword = async () => {
     if (!email) {
-      setError('Please enter your email address first');
+      setError(t('auth:login.enterEmailFirst'));
       return;
     }
 
@@ -204,7 +206,7 @@ const Login: React.FC = () => {
         <div className="card">
           <div className="card-header">
             <h2 className="card-title text-center">
-              {resetPassword ? 'Възстановяване на парола' : 'Вход'}
+              {resetPassword ? t('auth:login.resetPasswordTitle') : t('auth:login.title')}
             </h2>
           </div>
           
@@ -225,18 +227,18 @@ const Login: React.FC = () => {
                 {isEmailNotConfirmedError && (
                   <div className="mt-3 space-y-2">
                     <p className="text-sm">
-                      Моля, проверете входящата си поща (включително папката със спам) за имейл за потвърждение.
+                      {t('auth:login.emailNotConfirmedInfo')}
                     </p>
                     <button
                       onClick={handleResendConfirmation}
                       disabled={resendingEmail || emailResent || !email}
                       className="btn btn-link text-sm"
                     >
-                      {resendingEmail ? 'Изпращане...' : emailResent ? 'Имейлът е изпратен!' : 'Изпрати отново имейл за потвърждение'}
+                      {resendingEmail ? t('auth:login.sending') : emailResent ? t('auth:login.emailSent') : t('auth:login.resendConfirmation')}
                     </button>
                     {!email && (
                       <p className="text-xs">
-                        Въведете имейл адреса си по-горе, за да можете да изпратите отново потвърждението.
+                        {t('auth:login.enterEmailToResend')}
                       </p>
                     )}
                   </div>
@@ -244,11 +246,11 @@ const Login: React.FC = () => {
               </div>
               {isInvalidCredentialsError && (
                 <div className="mt-4 text-sm text-gray-600 font-['Listopad']">
-                  <p>Възможни причини:</p>
+                  <p>{t('auth:login.possibleReasons')}</p>
                   <ul className="list-disc ml-5 mt-2 space-y-1">
-                    <li>Грешно въведен имейл или парола</li>
-                    <li>Все още нямате регистрация</li>
-                    <li>Имейлът не е потвърден</li>
+                    <li>{t('auth:login.wrongCredentials')}</li>
+                    <li>{t('auth:login.noAccount')}</li>
+                    <li>{t('auth:login.emailNotConfirmed')}</li>
                   </ul>
                 </div>
               )}
@@ -257,13 +259,13 @@ const Login: React.FC = () => {
 
           {emailResent && (
             <div className="alert alert-success mb-6">
-              Нов имейл за потвърждение беше изпратен на {email}. Моля, проверете входящата си поща и папката със спам.
+              {t('auth:login.confirmationEmailResent', { email })}
             </div>
           )}
 
           {resetSent && (
             <div className="alert alert-success mb-6">
-              Инструкции за възстановяване на паролата бяха изпратени на {email}. Моля, проверете входящата си поща.
+              {t('auth:login.resetInstructionsSent', { email })}
             </div>
           )}
           
@@ -271,7 +273,7 @@ const Login: React.FC = () => {
             <div className="card-content space-y-6">
               <div className="form-group">
                 <label htmlFor="email" className="form-label">
-                  Имейл
+                  {t('auth:login.email')}
                 </label>
                 <input
                   id="email"
@@ -286,7 +288,7 @@ const Login: React.FC = () => {
               {!resetPassword && (
                 <div className="form-group">
                   <label htmlFor="password" className="form-label">
-                    Парола
+                    {t('auth:login.password')}
                   </label>
                   <input
                     id="password"
@@ -307,10 +309,10 @@ const Login: React.FC = () => {
                 {loading ? (
                   <>
                     <div className="spinner mr-2"></div>
-                    Обработка...
+                    {t('auth:login.processing')}
                   </>
                 ) : (
-                  resetPassword ? 'Изпрати инструкции' : 'Влез'
+                  resetPassword ? t('auth:login.sendInstructions') : t('auth:login.submit')
                 )}
               </button>
             </div>
@@ -319,25 +321,25 @@ const Login: React.FC = () => {
               <div className="text-center space-y-3">
                 <div className="text-sm text-[#5E6572] font-['Listopad']">
                   {resetPassword ? (
-                    <button 
+                    <button
                       type="button"
                       onClick={() => setResetPassword(false)}
                       className="btn btn-link"
                     >
-                      Обратно към вход
+                      {t('auth:login.backToLogin')}
                     </button>
                   ) : (
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-2">
-                      <button 
+                      <button
                         type="button"
                         onClick={() => setResetPassword(true)}
                         className="btn btn-link"
                       >
-                        Забравена парола?
+                        {t('auth:login.forgotPassword')}
                       </button>
                       <span className="hidden sm:inline text-[#5E6572]">•</span>
                       <Link to="/register" className="btn btn-link">
-                        Регистрирайте се
+                        {t('auth:login.register')}
                       </Link>
                     </div>
                   )}
@@ -351,23 +353,23 @@ const Login: React.FC = () => {
       <Modal isOpen={showAdminModal} onClose={() => handleAdminChoice(false)}>
         <div className="p-6">
           <h3 className="text-xl font-bold mb-4 text-[#141204] font-['Listopad']">
-            Изберете начин на влизане
+            {t('auth:login.adminModalTitle')}
           </h3>
           <p className="mb-6 text-[#5E6572] font-['Listopad']">
-            Как искате да продължите?
+            {t('auth:login.adminModalMessage')}
           </p>
           <div className="flex flex-col-reverse sm:flex-row justify-end gap-3">
             <button
               onClick={() => handleAdminChoice(false)}
               className="btn btn-secondary btn-md"
             >
-              Влез като потребител
+              {t('auth:login.loginAsUser')}
             </button>
             <button
               onClick={() => handleAdminChoice(true)}
               className="btn btn-primary btn-md"
             >
-              Отвори админ панел
+              {t('auth:login.openAdminPanel')}
             </button>
           </div>
         </div>
