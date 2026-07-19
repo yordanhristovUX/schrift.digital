@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Crown, Check } from 'lucide-react';
+import { Crown, Check, ExternalLink, Send } from 'lucide-react';
 import { supabase } from '../lib/supabase';
-import { PRODUCTS } from '../stripe-config';
-import { createCheckoutSession, getPrice, formatPrice } from '../lib/stripe';
 import { format } from 'date-fns';
+
+const X_PROFILE_URL = 'https://x.com/Culturenstudio';
 
 const benefits = [
   'Достъп до всички шрифтове',
@@ -16,90 +16,81 @@ const benefits = [
 const Supporter: React.FC = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [user, setUser] = useState<any>(null);
-  const [subscription, setSubscription] = useState<any>(null);
+  const [premiumInfo, setPremiumInfo] = useState<any>(null);
+  const [pendingRequest, setPendingRequest] = useState<any>(null);
+  const [xHandle, setXHandle] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [priceData, setPriceData] = useState<any>(null);
+  const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
-    const getUser = async () => {
+    const load = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         navigate('/login', { state: { from: '/supporter' } });
         return;
       }
 
-      const { data: profile } = await supabase
-        .from('users')
+      // Premium status (admin-granted subscriptions)
+      const { data: premiumData } = await supabase.rpc('get_user_premium_info');
+      if (premiumData && premiumData.length > 0 && premiumData[0].is_active) {
+        setPremiumInfo(premiumData[0]);
+      }
+
+      // Existing pending request
+      const { data: requestData } = await supabase
+        .from('premium_requests')
         .select('*')
-        .eq('id', session.user.id)
-        .single();
+        .eq('user_id', session.user.id)
+        .eq('status', 'pending')
+        .maybeSingle();
 
-      setUser(profile);
-
-      // Get subscription info
-      const { data: customerData } = await supabase
-        .from('stripe_customers')
-        .select('customer_id')
-        .eq('user_id', session.user.id);
-
-      if (customerData?.[0]?.customer_id) {
-        const { data: subscriptionData } = await supabase
-          .from('stripe_subscriptions')
-          .select('*')
-          .eq('customer_id', customerData[0].customer_id);
-
-        if (subscriptionData && subscriptionData.length > 0) {
-          setSubscription(subscriptionData[0]);
-        }
+      if (requestData) {
+        setPendingRequest(requestData);
       }
     };
 
-    const fetchPrice = async () => {
-      try {
-        const data = await getPrice(PRODUCTS.PREMIUM.priceId);
-        setPriceData(data);
-      } catch (err) {
-        console.error('Error fetching price:', err);
-        // Fallback price data
-        setPriceData({
-          unit_amount: 200, // 2.00 EUR in cents
-          currency: 'eur',
-        });
-      }
-    };
-
-    getUser();
-    fetchPrice();
+    load();
   }, [navigate]);
 
-  const handleSubscribe = async () => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     setLoading(true);
     setError(null);
-    
+
     try {
-      const checkoutUrl = await createCheckoutSession({
-        priceId: PRODUCTS.PREMIUM.priceId,
-        successUrl: `${window.location.origin}/profile?success=true`,
-        cancelUrl: `${window.location.origin}/supporter`,
-        mode: 'subscription',
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        navigate('/login', { state: { from: '/supporter' } });
+        return;
+      }
+
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/request-premium`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ x_handle: xHandle }),
       });
 
-      window.location.href = checkoutUrl;
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Нещо се обърка. Опитайте отново.');
+      }
+
+      setSubmitted(true);
+      setPendingRequest({ x_handle: xHandle.replace(/^@/, '') });
     } catch (err: any) {
-      console.error('Checkout Error:', err);
-      setError(err.message || 'Something went wrong while creating the checkout session');
+      console.error('Premium request error:', err);
+      setError(err.message || 'Нещо се обърка. Опитайте отново.');
     } finally {
       setLoading(false);
     }
   };
 
-  const isActiveSubscription = subscription?.status === 'active';
-  const subscriptionEnd = subscription?.current_period_end 
-    ? new Date(subscription.current_period_end * 1000)
-    : null;
-
-  const displayPrice = priceData ? formatPrice(priceData.unit_amount, priceData.currency) : '€2.00';
+  const isActivePremium = !!premiumInfo;
+  const expiresAt = premiumInfo?.expires_at ? new Date(premiumInfo.expires_at) : null;
 
   return (
     <div className="min-h-screen pt-24 pb-12 bg-[#FFFFFC]">
@@ -107,19 +98,19 @@ const Supporter: React.FC = () => {
         <div className="flex justify-center mb-8">
           <Crown className="w-16 h-16 text-[#C40000]" />
         </div>
-        
+
         <h1 className="text-4xl font-bold text-[#141204] mb-4 font-['Listopad']">
-          {isActiveSubscription ? 'Активен абонамент' : 'Стани поддръжник'}
+          {isActivePremium ? 'Активен премиум достъп' : 'Стани поддръжник'}
         </h1>
-        
-        {isActiveSubscription ? (
+
+        {isActivePremium ? (
           <div className="text-xl text-[#5E6572] mb-12 max-w-2xl mx-auto font-['Listopad']">
-            <p>Вашият абонамент е активен до {subscriptionEnd ? format(subscriptionEnd, 'dd.MM.yyyy') : 'N/A'}</p>
+            <p>Вашият премиум достъп е активен до {expiresAt ? format(expiresAt, 'dd.MM.yyyy') : 'N/A'}</p>
             <p className="mt-4">Благодарим ви за подкрепата!</p>
           </div>
         ) : (
           <p className="text-xl text-[#5E6572] mb-12 max-w-2xl mx-auto font-['Listopad']">
-            Подкрепете проекта и се насладете на българска кирилица във Фигма
+            Проектът е в безсрочна алфа версия — докато трае тя, премиум достъпът е напълно безплатен.
           </p>
         )}
 
@@ -129,85 +120,101 @@ const Supporter: React.FC = () => {
           </div>
         )}
 
-        <div className="card max-w-lg mx-auto mb-12">
-          {!isActiveSubscription ? (
-            <>
-              <div className="card-header">
-                <div className="flex items-center justify-center mb-4">
-                  <span className="text-4xl font-bold text-[#141204] font-['Listopad']">{displayPrice}</span>
-                  <span className="text-[#5E6572] ml-2 font-['Listopad']">/ месец</span>
-                </div>
-              </div>
-
-              <div className="card-content">
-                <ul className="space-y-4 mb-8">
-                  {benefits.map((benefit, index) => (
-                    <li key={index} className="flex items-center text-[#141204] font-['Listopad']">
-                      <Check className="w-5 h-5 text-[#C40000] mr-3 flex-shrink-0" />
-                      {benefit}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <div className="card-footer">
-                <button
-                  onClick={handleSubscribe}
-                  disabled={loading}
-                  className="btn btn-primary btn-lg btn-full"
-                >
-                  {loading ? (
-                    <>
-                      <div className="spinner mr-2"></div>
-                      Обработка...
-                    </>
-                  ) : (
-                    'Абонирай се сега'
-                  )}
-                </button>
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="card-header">
-                <div className="flex items-center justify-center mb-4">
-                  <Crown className="w-8 h-8 text-[#C40000] mr-2" />
-                  <span className="text-2xl font-bold text-[#141204] font-['Listopad']">Премиум абонамент</span>
-                </div>
-                <p className="text-[#5E6572] font-['Listopad']">
-                  Активен до {subscriptionEnd ? format(subscriptionEnd, 'dd.MM.yyyy') : 'N/A'}
-                </p>
-              </div>
-
-              <div className="card-content">
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center py-3 border-b border-[#D9D9D9]">
-                    <span className="text-[#5E6572] font-['Listopad']">Статус</span>
-                    <span className="text-[#141204] font-['Listopad'] capitalize">{subscription.status}</span>
+        {!isActivePremium && (
+          <div className="card max-w-lg mx-auto mb-12">
+            {pendingRequest || submitted ? (
+              <>
+                <div className="card-header">
+                  <div className="flex items-center justify-center mb-4">
+                    <Check className="w-8 h-8 text-[#C40000] mr-2" />
+                    <span className="text-2xl font-bold text-[#141204] font-['Listopad']">Заявката е получена</span>
                   </div>
-                  {subscription?.payment_method_last4 && (
-                    <div className="flex justify-between items-center py-3 border-b border-[#D9D9D9]">
-                      <span className="text-[#5E6572] font-['Listopad']">Метод на плащане</span>
-                      <span className="text-[#141204] font-['Listopad']">
-                        {subscription.payment_method_brand} •••• {subscription.payment_method_last4}
-                      </span>
-                    </div>
-                  )}
-                  {subscription?.cancel_at_period_end && (
-                    <div className="flex justify-between items-center py-3">
-                      <span className="text-[#5E6572] font-['Listopad']">Прекратяване</span>
-                      <span className="text-red-600 font-['Listopad']">Ще бъде прекратен в края на периода</span>
-                    </div>
-                  )}
                 </div>
-              </div>
-            </>
-          )}
-        </div>
+                <div className="card-content">
+                  <p className="text-[#5E6572] font-['Listopad']">
+                    Получихме вашата заявка{pendingRequest?.x_handle ? ` за профил @${pendingRequest.x_handle}` : ''}.
+                    След като проверим, че следвате{' '}
+                    <a href={X_PROFILE_URL} target="_blank" rel="noopener noreferrer" className="text-[#C40000] underline">
+                      @Culturenstudio
+                    </a>
+                    , ще активираме премиум достъпа ви. Обикновено отнема до 24 часа.
+                  </p>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="card-header">
+                  <div className="flex items-center justify-center mb-4">
+                    <span className="text-4xl font-bold text-[#141204] font-['Listopad']">Безплатно</span>
+                    <span className="text-[#5E6572] ml-2 font-['Listopad']">/ в алфа</span>
+                  </div>
+                </div>
 
-        {!isActiveSubscription && (
+                <div className="card-content">
+                  <ul className="space-y-4 mb-8">
+                    {benefits.map((benefit, index) => (
+                      <li key={index} className="flex items-center text-[#141204] font-['Listopad']">
+                        <Check className="w-5 h-5 text-[#C40000] mr-3 flex-shrink-0" />
+                        {benefit}
+                      </li>
+                    ))}
+                  </ul>
+
+                  <div className="text-left text-[#141204] font-['Listopad'] space-y-3 mb-8">
+                    <p className="font-bold">Как да получите достъп:</p>
+                    <p>1. Последвайте ни в X (Twitter)</p>
+                    <p>2. Въведете вашия X профил по-долу</p>
+                    <p>3. Ще активираме достъпа ви след проверка</p>
+                  </div>
+
+                  <a
+                    href={X_PROFILE_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn btn-secondary btn-lg btn-full mb-4"
+                  >
+                    <ExternalLink className="w-5 h-5 mr-2" />
+                    Последвай @Culturenstudio
+                  </a>
+                </div>
+
+                <div className="card-footer">
+                  <form onSubmit={handleSubmit}>
+                    <input
+                      type="text"
+                      value={xHandle}
+                      onChange={(e) => setXHandle(e.target.value)}
+                      placeholder="@вашият_x_профил"
+                      required
+                      className="form-input w-full mb-4 text-center font-['Listopad']"
+                    />
+                    <button
+                      type="submit"
+                      disabled={loading || !xHandle.trim()}
+                      className="btn btn-primary btn-lg btn-full"
+                    >
+                      {loading ? (
+                        <>
+                          <div className="spinner mr-2"></div>
+                          Изпращане...
+                        </>
+                      ) : (
+                        <>
+                          <Send className="w-5 h-5 mr-2" />
+                          Последвах — искам достъп
+                        </>
+                      )}
+                    </button>
+                  </form>
+                </div>
+              </>
+            )}
+          </div>
+        )}
+
+        {!isActivePremium && !pendingRequest && !submitted && (
           <p className="text-sm text-[#5E6572] max-w-lg mx-auto font-['Listopad']">
-            Можете да прекратите абонамента си по всяко време. При прекратяване ще запазите достъп до услугата до края на текущия период.
+            Премиум достъпът се дава за периода на алфа версията. Няма скрити такси и не се изисква карта.
           </p>
         )}
       </div>
