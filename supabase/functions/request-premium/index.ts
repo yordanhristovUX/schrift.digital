@@ -61,8 +61,8 @@ Deno.serve(async (req: Request) => {
     }
 
     // Notify the admin on Telegram (requires TELEGRAM_BOT_TOKEN + TELEGRAM_CHAT_ID secrets)
-    const telegramToken = Deno.env.get('TELEGRAM_BOT_TOKEN');
-    const telegramChatId = Deno.env.get('TELEGRAM_CHAT_ID');
+    const telegramToken = Deno.env.get('TELEGRAM_BOT_TOKEN')?.trim();
+    const telegramChatId = Deno.env.get('TELEGRAM_CHAT_ID')?.trim();
     if (telegramToken && telegramChatId) {
       try {
         const text = [
@@ -95,7 +95,7 @@ Deno.serve(async (req: Request) => {
     }
 
     // Notify the admin by email (optional — requires RESEND_API_KEY secret)
-    const resendKey = Deno.env.get('RESEND_API_KEY');
+    const resendKey = Deno.env.get('RESEND_API_KEY')?.trim();
     if (resendKey) {
       try {
         const emailResponse = await fetch('https://api.resend.com/emails', {
