@@ -60,6 +60,40 @@ Deno.serve(async (req: Request) => {
       return jsonResponse({ error: 'Failed to save request' }, 500);
     }
 
+    // Notify the admin on Telegram (requires TELEGRAM_BOT_TOKEN + TELEGRAM_CHAT_ID secrets)
+    const telegramToken = Deno.env.get('TELEGRAM_BOT_TOKEN');
+    const telegramChatId = Deno.env.get('TELEGRAM_CHAT_ID');
+    if (telegramToken && telegramChatId) {
+      try {
+        const text = [
+          '🔔 Нова заявка за премиум достъп',
+          '',
+          `Потребител: ${user.email}`,
+          `X профил: https://x.com/${handle}`,
+          '',
+          'Провери дали следва @Culturenstudio и одобри от:',
+          'https://schrift.culturen.design/admin',
+        ].join('\n');
+
+        const tgResponse = await fetch(`https://api.telegram.org/bot${telegramToken}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            chat_id: telegramChatId,
+            text,
+            disable_web_page_preview: true,
+          }),
+        });
+        if (!tgResponse.ok) {
+          console.error('Failed to send Telegram notification:', await tgResponse.text());
+        }
+      } catch (tgError) {
+        console.error('Error sending Telegram notification:', tgError);
+      }
+    } else {
+      console.log('Telegram secrets not set — skipping Telegram notification');
+    }
+
     // Notify the admin by email (optional — requires RESEND_API_KEY secret)
     const resendKey = Deno.env.get('RESEND_API_KEY');
     if (resendKey) {
