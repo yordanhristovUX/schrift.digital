@@ -23,7 +23,7 @@ serve(async (req) => {
       .select('id, updated_at')
       .order('updated_at', { ascending: false });
 
-    const baseUrl = 'https://schrift.digital';
+    const baseUrl = 'https://schrift.culturen.design';
     const today = new Date().toISOString().split('T')[0];
 
     // Static routes with their priorities

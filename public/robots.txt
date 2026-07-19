@@ -2,7 +2,7 @@ User-agent: *
 Allow: /
 
 # Sitemaps
-Sitemap: https://schrift.digital/sitemap.xml
+Sitemap: https://schrift.culturen.design/sitemap.xml
 
 # Disallow admin routes
 Disallow: /admin/

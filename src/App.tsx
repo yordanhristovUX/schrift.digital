@@ -27,7 +27,7 @@ const SEO: React.FC<{ title?: string; description?: string }> = ({
   description = 'Открийте професионални български шрифтове с автентична кирилица и italic стилове. Безплатни и премиум шрифтове, оптимизирани за Figma.'
 }) => {
   const location = useLocation();
-  const canonicalUrl = `https://schrift.digital${location.pathname}`;
+  const canonicalUrl = `https://schrift.culturen.design${location.pathname}`;
 
   return (
     <Helmet>
