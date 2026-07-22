@@ -103,7 +103,7 @@ const MinimalColorPicker: React.FC = () => {
   return (
     <div className="flex items-center space-x-4">
       {/* Color Picker */}
-      <div className="relative" ref={colorPickerRef}>
+      <div className="relative flex" ref={colorPickerRef}>
         <button
           onClick={() => setShowColorPicker(!showColorPicker)}
           className="w-10 h-10 rounded-full border border-gray-300 hover:border-gray-500 transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer"

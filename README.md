@@ -14,6 +14,7 @@
 ![Supabase](https://img.shields.io/badge/Supabase-3FCF8E?logo=supabase&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=white)
 ![Netlify](https://img.shields.io/badge/Netlify-00C7B7?logo=netlify&logoColor=white)
+![Resend](https://img.shields.io/badge/Resend-000000?logo=resend&logoColor=white)
 
 <img src="docs/screenshots/home.png" alt="Културен Шрифт — home page with interactive type tester" width="100%" />
 
@@ -40,6 +41,7 @@ The result: Bulgarian designers are quietly forced to typeset their own language
 ### For the platform
 - **Complete admin CMS** — font manager with file uploads and per-weight metadata, user management, premium access management, and site settings — all built in-app, no external CMS
 - **Premium request pipeline** — users submit a request from the site → recorded in Postgres → **real-time Telegram notification** to the admin via bot → one-click approval in the admin panel
+- **Branded transactional email** — signup confirmation and password reset are custom HTML templates (bilingual BG/EN, inline-embedded logo) sent through Resend's custom SMTP relay, replacing Supabase's default unbranded, rate-limited mailer
 - **SEO engineered in** — per-route meta tags and canonical URLs (react-helmet-async), JSON-LD structured data, and a **dynamic sitemap generated at the edge** that stays current as fonts are added
 
 <div align="center">
@@ -68,6 +70,7 @@ graph TB
     end
 
     TG["Telegram Bot API"]
+    RESEND["Resend<br/>Custom SMTP"]
 
     SPA -->|served by| CDN
     SPA -->|"supabase-js (RLS-scoped)"| PG
@@ -76,6 +79,7 @@ graph TB
     SPA -->|premium requests| EDGE
     EDGE -->|service role| PG
     EDGE -->|admin notifications| TG
+    AUTH -->|branded confirm/reset emails| RESEND
 ```
 
 ### Edge functions
@@ -103,6 +107,7 @@ Authorization lives in the database, not the client:
 - **Client-side ZIP packaging** — downloads fetch the selected weights and assemble the archive in the browser, keeping the server stateless
 - **The type tester *is* the catalog** — no static specimen images anywhere; every preview is real text in the real font, which doubles as proof that the Bulgarian forms actually work
 - **Design token system** — a small custom design system (`tokens.css` → `themes.css` → `design-system.css`) with semantic color/spacing/typography variables layered under Tailwind
+- **Honest duplicate-signup UX** — Supabase Auth deliberately returns a 200 with no error for a repeat signup on a confirmed email, to prevent account enumeration; the client detects this via the documented empty-`identities` signal and shows "you already have an account" with a one-click password reset, instead of a false "check your email" that never arrives
 
 ## Design
 
@@ -136,7 +141,7 @@ npm install
 npm run dev
 ```
 
-The database schema lives in [`supabase/migrations`](supabase/migrations) and edge functions in [`supabase/functions`](supabase/functions) — a fresh Supabase project can be brought up with the Supabase CLI (`supabase db push`, `supabase functions deploy`).
+The database schema lives in [`supabase/migrations`](supabase/migrations) and edge functions in [`supabase/functions`](supabase/functions) — a fresh Supabase project can be brought up with the Supabase CLI (`supabase db push`, `supabase functions deploy`). Branded auth email HTML lives in [`supabase/templates`](supabase/templates); Supabase has no CLI/API path for pushing these to a hosted project, so they're pasted manually into Dashboard → Authentication → Emails.
 
 ## Credits & License
 
